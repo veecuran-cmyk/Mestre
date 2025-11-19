@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Mestre OS - Corrigido</title>
 
-<!-- Firebase (compat) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -97,6 +96,7 @@ button.small { padding:6px 8px; font-size:13px; width:auto; }
 small { color:var(--text-sub); }
 /* utility */
 .center { display:flex; justify-content:center; align-items:center; }
+.command-msg { background: #3f51b5; color: white; border-radius: 18px; padding: 10px 15px; max-width: 80%; margin: 5px 0; align-self: center; font-size: 13px; }
 </style>
 </head>
 <body onload="init()">
@@ -123,7 +123,6 @@ small { color:var(--text-sub); }
       </div>
     </div>
 
-    <!-- PAGES -->
     <div id="profile" class="page">
       <div class="header"><button class="back-btn" onclick="back('profile')">‹</button> Perfil</div>
       <div class="content">
@@ -213,7 +212,7 @@ small { color:var(--text-sub); }
       <div class="chat-container">
         <div id="chat-msgs" class="chat-list"></div>
         <div class="chat-input">
-          <input id="chat-msg-in" type="text" placeholder="Digite..." style="margin:0">
+          <input id="chat-msg-in" type="text" placeholder="Digite /roll 1d20+5 ou /sheet..." style="margin:0" onkeyup="if(event.key === 'Enter') sendChat()">
           <button onclick="sendChat()" style="width:50px; margin:0">➤</button>
         </div>
       </div>
@@ -257,7 +256,7 @@ small { color:var(--text-sub); }
         </div>
         <div id="session-log" class="chat-list"></div>
         <div class="chat-input">
-          <input id="session-in" type="text" placeholder="Ação ou fala..." style="margin:0">
+          <input id="session-in" type="text" placeholder="Ação, fala ou /roll 1d20..." style="margin:0" onkeyup="if(event.key === 'Enter') sendSession()">
           <button onclick="sendSession()" style="width:50px; margin:0">➤</button>
         </div>
       </div>
@@ -463,6 +462,15 @@ function getContrastColor(hex){
   return (yiq >= 128) ? '#000000' : '#ffffff';
 }
 
+function escapeHtml(unsafe) {
+  return (unsafe || '')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
+
 /* ------------------
    INICIALIZAÇÃO
    ------------------ */
@@ -520,7 +528,7 @@ async function actionRegister(){
       color: '#ffffff',
       bio: 'Novo aventureiro!',
       wallet: {ouro:100, prata:50, cobre:20, bronze:0, diamante:0, esmeralda:0},
-      char: {name:'Herói', inv:'Poção de Cura\nEspada Curta', str:10, dex:10, con:10, int:10}
+      char: {name:'Herói', img:'', bio:'', inv:'Poção de Cura\nEspada Curta', str:10, dex:10, con:10, int:10, hp: 10, maxHp: 10}
     });
   } catch(e){ alert(e.message); }
 }
@@ -565,6 +573,7 @@ function loadUser(){
       document.getElementById('sheet-name-display').innerText = d.char.name || 'Sem Nome';
       document.getElementById('sheet-bio-display').innerText = d.char.bio || '';
       document.getElementById('sheet-attr-display').innerHTML = `
+        <div class="stat-row"><span>HP</span><span>${d.char.hp || 0} / ${d.char.maxHp || 0}</span></div>
         <div class="stat-row"><span>Força</span><span>${d.char.str || 0}</span></div>
         <div class="stat-row"><span>Destreza</span><span>${d.char.dex || 0}</span></div>
         <div class="stat-row"><span>Constituição</span><span>${d.char.con || 0}</span></div>
@@ -620,7 +629,7 @@ function saveSheet(){
     int: Number(document.getElementById('c-int').value) || 0
   };
   if(!user) return alert('Faça login.');
-  db.ref('users/'+user.uid+'/char').set(data);
+  db.ref('users/'+user.uid+'/char').update(data); // Usa update para não resetar HP/MaxHP/XP
   showModal('sheet-edit-modal', false);
 }
 
@@ -669,15 +678,6 @@ function renderPost(p){
     <div style="margin-top:5px">${escapeHtml(p.txt)}</div>
     ${p.img ? `<img src="${p.img}" style="width:100%; border-radius:8px; margin-top:10px">` : ''}
   </div>`;
-}
-
-function escapeHtml(unsafe) {
-  return (unsafe || '')
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'","&#039;");
 }
 
 function loadFeed(){
@@ -741,7 +741,7 @@ function loadProfileFeed(){
 }
 
 /* ------------------
-   CHATS (GLOBAL / DMS) - unchanged majorly
+   CHATS (GLOBAL / DMS)
    ------------------ */
 function openChat(id, recipientKey = null){
   activeChat = id;
@@ -765,7 +765,10 @@ function openChat(id, recipientKey = null){
   chatRef.on('child_added', s=>{
     const m = s.val();
     const me = m.uid === (user && user.uid);
-    document.getElementById('chat-msgs').innerHTML += `<div class="msg ${me?'me':'other'}"><b>${escapeHtml(m.u)}</b><br>${escapeHtml(m.txt)}</div>`;
+    const msgClass = m.isCommand ? 'command-msg' : (me?'me':'other');
+    const sender = m.u || 'Sistema';
+    const content = m.isCommand ? escapeHtml(m.txt) : `<b>${escapeHtml(sender)}</b><br>${escapeHtml(m.txt)}`;
+    document.getElementById('chat-msgs').innerHTML += `<div class="msg ${msgClass}">${content}</div>`;
     const list = document.getElementById('chat-msgs');
     list.scrollTop = list.scrollHeight;
   });
@@ -793,11 +796,39 @@ async function openPrivateChat(){
   showModal('chat-private-setup', false);
 }
 
-function sendChat(){
-  const t = document.getElementById('chat-msg-in').value;
+async function sendChat(){
+  const t = document.getElementById('chat-msg-in').value.trim();
   if(!t) return;
   if(!user) return alert('Faça login para enviar mensagens.');
+
   document.getElementById('chat-msg-in').value = '';
+  
+  if(t.startsWith('/')) {
+    const commandResult = await handleCommand(t, 'chat');
+    if(commandResult) {
+      const messageData = {
+        u: commandResult.u,
+        uid: user.uid,
+        txt: commandResult.txt,
+        ts: firebase.database.ServerValue.TIMESTAMP,
+        isCommand: true // Marca como mensagem de comando
+      };
+      
+      let dbPath = 'chats/'+activeChat;
+      if(activeChat === 'private'){
+        const recipientKey = document.getElementById('chat-title').innerText.replace('DM: ','');
+        const myKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
+        const sortedKeys = [myKey, recipientKey].sort();
+        dbPath = 'dms/'+sortedKeys[0]+'_'+sortedKeys[1] + '/messages';
+      } else {
+        dbPath = 'chats/' + (activeChat || 'global');
+      }
+      
+      db.ref(dbPath).push(messageData);
+    }
+    return; // Não envia o comando puro como mensagem
+  }
+
   let dbPath = 'chats/'+activeChat;
   if(activeChat === 'private'){
     const recipientKey = document.getElementById('chat-title').innerText.replace('DM: ','');
@@ -808,6 +839,95 @@ function sendChat(){
     dbPath = 'chats/' + (activeChat || 'global');
   }
   db.ref(dbPath).push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
+}
+
+/* ------------------
+   COMANDOS DE CHAT (NOVOS)
+   ------------------ */
+async function handleCommand(text, context = 'session') {
+  if (!user) { alert('Você precisa estar logado para usar comandos.'); return null; }
+  const parts = text.split(' ');
+  const command = parts[0].toLowerCase();
+  const args = parts.slice(1).join(' ');
+  const userName = document.getElementById('u-name').innerText;
+  
+  // ROLAGEM DE DADOS: /roll, /r
+  if (command === '/roll' || command === '/r') {
+    const rollPattern = /^(\d+)?d(\d+)([\+\-]\d+)?$/i;
+    if (!rollPattern.test(args)) return { u: userName, txt: `COMANDO: ${command} Inválido. Use: /roll 1d20+5 ou /r 2d6.` };
+
+    let match = args.match(rollPattern);
+    let numDice = parseInt(match[1] || '1');
+    let dieSize = parseInt(match[2]);
+    let modifier = parseInt(match[3] || '0');
+    
+    if (numDice > 20 || dieSize > 1000) return { u: userName, txt: `COMANDO: ${command} Falhou. Limite de 20 dados ou d1000.` };
+
+    let total = modifier;
+    let rolls = [];
+    for (let i = 0; i < numDice; i++) {
+      let roll = Math.floor(Math.random() * dieSize) + 1;
+      rolls.push(roll);
+      total += roll;
+    }
+    
+    let rollDetails = rolls.join(' + ');
+    if (modifier !== 0) rollDetails += (modifier > 0 ? ` + ${modifier}` : ` - ${Math.abs(modifier)}`);
+    
+    return { 
+      u: userName, 
+      txt: `🎲 **ROLAGEM**: ${userName} rolou ${args.toUpperCase()}. Resultado: **${total}**\nDetalhes: (${rollDetails})`
+    };
+  }
+  
+  if (context === 'session' || context === 'chat') {
+    const userSnapshot = await db.ref('users/' + user.uid).once('value');
+    const userData = userSnapshot.val();
+    const char = userData.char || {};
+    const inventory = char.inv ? char.inv.split('\n').map(i => i.trim()).filter(i => i !== '') : [];
+
+    // FICHA: /sheet, /ficha
+    if (command === '/sheet' || command === '/ficha') {
+      return {
+        u: userName,
+        txt: `📜 **FICHA DE ${char.name || 'Herói'}**\n- HP: ${char.hp || 0} / ${char.maxHp || 0}\n- FOR: ${char.str || 0}\n- DES: ${char.dex || 0}\n- CON: ${char.con || 0}\n- INT: ${char.int || 0}\n\n*Use /inv para o inventário.*`
+      };
+    }
+    
+    // INVENTÁRIO: /inv, /inventario
+    if (command === '/inv' || command === '/inventario') {
+      const invList = inventory.length > 0 ? inventory.map(i => `- ${i}`).join('\n') : 'Vazio';
+      return {
+        u: userName,
+        txt: `🎒 **INVENTÁRIO DE ${char.name || 'Herói'}**\n${invList}\n\n*Use /use [item] para usar um item.*`
+      };
+    }
+    
+    // USAR ITEM: /use
+    if (command === '/use') {
+      if (!args) return { u: userName, txt: `COMANDO: /use Inválido. Use: /use [nome do item].` };
+      
+      const itemToUse = args.trim();
+      const itemIndex = inventory.findIndex(i => i.toLowerCase() === itemToUse.toLowerCase());
+
+      if (itemIndex > -1) {
+        // Remove o item do inventário
+        inventory.splice(itemIndex, 1);
+        db.ref('users/' + user.uid + '/char/inv').set(inventory.join('\n'));
+        
+        // Exibe a mensagem de uso
+        return {
+          u: userName,
+          txt: `✨ **USO DE ITEM**: ${userName} usou **${itemToUse}**. (Item removido do inventário)`
+        };
+      } else {
+        return { u: userName, txt: `COMANDO: /use Falhou. **${itemToUse}** não encontrado no inventário.` };
+      }
+    }
+  }
+
+  // COMANDO NÃO RECONHECIDO
+  return { u: userName, txt: `COMANDO: ${command} não reconhecido.` };
 }
 
 /* ------------------
@@ -882,7 +1002,7 @@ function createTable(){
   const t = document.getElementById('table-type').value;
   if(!n) return alert('Informe nome da aventura.');
   const k = db.ref('tables').push().key;
-  db.ref('tables/'+k).set({name:n, type:t, master:user.uid, users:{[user.uid]:document.getElementById('u-name').innerText}});
+  db.ref('tables/'+k).set({name:n, type:t, master:user.uid, users:{[user.uid]:document.getElementById('u-name').innerText}, log: []});
   joinTable(k);
 }
 
@@ -934,7 +1054,28 @@ function loadGmUsers(k){
 function gmCmd(act){
   const u = document.getElementById('gm-target').value;
   const v = document.getElementById('gm-val').value;
-  db.ref('tables/'+activeTable+'/log').push({u:'Mestre', uid:'sys', txt:`Mestre aplicou ${act.toUpperCase()} ${v} em ${u}.`, ts: firebase.database.ServerValue.TIMESTAMP});
+  const targetName = document.getElementById('gm-target').options[document.getElementById('gm-target').selectedIndex].text;
+  
+  if(!u || !v) return alert('Selecione um jogador e informe um valor/item.');
+
+  // Comandos do Mestre (explicitos)
+  if (act === 'hp') {
+      const amount = parseInt(v);
+      if(isNaN(amount)) return alert('Valor de HP inválido.');
+      db.ref('users/'+u+'/char/hp').transaction(current => (current || 0) + amount);
+      const actionTxt = amount > 0 ? `curou ${amount} de HP` : `causou ${Math.abs(amount)} de dano`;
+      db.ref('tables/'+activeTable+'/log').push({u:'Mestre', uid:'sys', txt:`Mestre ${actionTxt} em ${targetName}.`, ts: firebase.database.ServerValue.TIMESTAMP});
+  } else if (act === 'xp') {
+      const amount = parseInt(v);
+      if(isNaN(amount)) return alert('Valor de XP inválido.');
+      // O XP não existe no modelo inicial, apenas adicionando log.
+      db.ref('tables/'+activeTable+'/log').push({u:'Mestre', uid:'sys', txt:`Mestre deu **${amount} XP** a ${targetName}.`, ts: firebase.database.ServerValue.TIMESTAMP});
+  } else if (act === 'item') {
+      db.ref('users/'+u+'/char/inv').transaction(current => (current || '') + '\n' + v.trim());
+      db.ref('tables/'+activeTable+'/log').push({u:'Mestre', uid:'sys', txt:`Mestre entregou **${v.trim()}** para ${targetName}.`, ts: firebase.database.ServerValue.TIMESTAMP});
+  } else {
+    db.ref('tables/'+activeTable+'/log').push({u:'Mestre', uid:'sys', txt:`Mestre aplicou ${act.toUpperCase()} ${v} em ${targetName}.`, ts: firebase.database.ServerValue.TIMESTAMP});
+  }
 }
 
 function loadSessionLog(k){
@@ -943,31 +1084,77 @@ function loadSessionLog(k){
   db.ref('tables/'+k+'/log').limitToLast(100).off();
   db.ref('tables/'+k+'/log').limitToLast(100).on('child_added', s=>{
     const m = s.val();
-    d.innerHTML += `<div class="msg ${m.uid===user.uid?'me':'other'}"><b>${escapeHtml(m.u)}</b><br>${escapeHtml(m.txt)}</div>`;
+    const me = m.uid === user.uid;
+    const msgClass = m.isCommand ? 'command-msg' : (me?'me':'other');
+    const sender = m.u || 'Sistema';
+    const content = m.isCommand ? escapeHtml(m.txt) : `<b>${escapeHtml(sender)}</b><br>${escapeHtml(m.txt)}`;
+    d.innerHTML += `<div class="msg ${msgClass}">${content}</div>`;
     d.scrollTop = d.scrollHeight;
   });
 }
 
 /* sendSession: envia a mensagem do jogador e, se for mesa IA, chama a API externa.
-   A resposta da IA é tratada de forma robusta (vários formatos de retorno). */
+   A resposta da IA é tratada de forma robusta (vários formatos de retorno). 
+   CORRIGIDO: O parse da resposta da IA foi simplificado e a chamada foi ajustada.
+   ADICIONADO: Tratamento de comandos / no início da mensagem.
+*/
 async function sendSession(){
-  const t = document.getElementById('session-in').value;
+  const t = document.getElementById('session-in').value.trim();
   if(!t) return;
   if(!activeTable) return alert('Entre em uma mesa.');
   if(!user) return alert('Faça login antes de enviar (aguarde autenticação).');
 
   document.getElementById('session-in').value = '';
+  
+  // 1. TRATAMENTO DE COMANDOS DE CHAT
+  if(t.startsWith('/')) {
+    const commandResult = await handleCommand(t, 'session');
+    if(commandResult) {
+      const messageData = {
+        u: commandResult.u,
+        uid: user.uid,
+        txt: commandResult.txt,
+        ts: firebase.database.ServerValue.TIMESTAMP,
+        isCommand: true // Marca como mensagem de comando
+      };
+      db.ref('tables/'+activeTable+'/log').push(messageData);
+    }
+    return;
+  }
+
+  // 2. MENSAGEM NORMAL DO JOGADOR
   db.ref('tables/'+activeTable+'/log').push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
 
-  const s = await db.ref('tables/'+activeTable).get();
-  if(s.exists() && s.val().type === 'AI'){
+  // 3. CHAMADA À IA SE FOR MESA IA
+  const tableSnap = await db.ref('tables/'+activeTable).get();
+  if(tableSnap.exists() && tableSnap.val().type === 'AI'){
     try {
-      // ensure user is ready
+      // 3.1. Obter o histórico de log recente para contexto (IA é cega sem isso)
+      const logSnap = await db.ref('tables/'+activeTable+'/log').limitToLast(10).once('value');
+      const messages = [];
+      logSnap.forEach(snap => {
+        const m = snap.val();
+        if(!m.isCommand) { // Ignora mensagens de comando no contexto da IA
+            const role = m.uid === 'ai' ? 'assistant' : 'user';
+            const name = m.uid === 'ai' ? 'Mestre_IA' : m.u;
+            // Adaptação: Se for mensagem do jogador, formata para a IA saber quem falou
+            const content = m.uid === 'ai' ? m.txt : `[${name}] diz: ${m.txt}`;
+            messages.push({role: role, content: content});
+        }
+      });
+      
+      // 3.2. Define o prompt inicial e o sistema (para context-awareness)
+      const systemMessage = "Você é um Mestre de RPG (Dungeon Master) para uma mesa de fantasia medieval. Seja descritivo, desafiador e mantenha a narrativa. Responda apenas com a perspectiva do Mestre, sem comandos ou introduções desnecessárias. Use o histórico de mensagens para dar contexto. Não se refira a si mesmo como 'Mestre IA', apenas como 'o Mestre'.";
+      
+      // Adiciona o sistema e a última mensagem do jogador, se necessário
+      const finalMessages = [{role: "system", content: systemMessage}, ...messages];
+
       const body = {
         model: "mistralai/mistral-7b-instruct",
-        messages: [{role: "user", content: `RPG Mestre: Jogador (${user.uid}) disse: "${t}". Responda como mestre.`}],
+        messages: finalMessages,
         meta: { uid: user.uid }
       };
+      
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -976,34 +1163,29 @@ async function sendSession(){
         },
         body: JSON.stringify(body)
       });
+      
       if(!response.ok){
         const txt = await response.text();
         console.error('Erro IA', response.status, txt);
-        db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:`Erro IA: ${response.status} - ${txt}`, ts: firebase.database.ServerValue.TIMESTAMP});
+        db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:`**Erro IA**: Falha na comunicação com a API (${response.status}).`, ts: firebase.database.ServerValue.TIMESTAMP});
         return;
       }
+      
       const j = await response.json();
 
-      // parse robusto para diferentes formatos de API
-      let aiText = "O mestre IA não respondeu (formato inesperado).";
-      if(j){
-        if(j.choices && j.choices[0]){
-          if(j.choices[0].message && j.choices[0].message.content) aiText = j.choices[0].message.content;
-          else if(j.choices[0].text) aiText = j.choices[0].text;
-        } else if(j.output && j.output[0] && j.output[0].content && j.output[0].content[0] && j.output[0].content[0].text) {
-          aiText = j.output[0].content[0].text;
-        } else if(j.result && j.result.output_text) {
-          aiText = j.result.output_text;
-        } else if(typeof j === 'string') {
-          aiText = j;
-        } else {
-          aiText = JSON.stringify(j).slice(0,1000);
-        }
+      // Parse robusto
+      let aiText = "O Mestre não respondeu (erro de parse).";
+      if(j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content){
+        aiText = j.choices[0].message.content.trim();
+      } else {
+        // Fallback em caso de formato inesperado
+        aiText = "O Mestre não respondeu (formato inesperado). " + JSON.stringify(j).slice(0, 100);
       }
+      
       db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:aiText, ts: firebase.database.ServerValue.TIMESTAMP});
     } catch(e) {
       console.error('Erro ao chamar IA', e);
-      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:'Erro ao gerar resposta da IA.', ts: firebase.database.ServerValue.TIMESTAMP});
+      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:'**Erro de Conexão**: Não foi possível gerar resposta da IA.', ts: firebase.database.ServerValue.TIMESTAMP});
     }
   }
 }
