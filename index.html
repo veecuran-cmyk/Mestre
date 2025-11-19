@@ -714,25 +714,86 @@ ${p.img ? `<img src="${p.img}" style="width:100%; border-radius:8px; margin-top:
 </div>`;
 }
 function loadFeed() {
-    const feedRef = db.ref('feed').limitToLast(20);
     const feedListElement = document.getElementById('feed-list');
-    feedListElement.innerHTML = ''; 
+    if (!feedListElement) {
+        console.error("Erro: Elemento 'feed-list' não encontrado. Verifique seu HTML.");
+        return;
+    }
 
-    // 1. Ouvir a coleção de posts
-    feedRef.on('value', async (snapshot) => {
+    db.ref('feed').limitToLast(20).on('value', async (snapshot) => {
         feedListElement.innerHTML = ''; 
         const posts = [];
+        
+        // 1. Coletar os posts do Firebase
         snapshot.forEach(child => posts.push(child.val()));
 
-        // 2. Inverter a ordem para mostrar os mais novos primeiro
+        // Inverter para mostrar os mais novos primeiro
         posts.reverse(); 
 
-        // 3. Processar cada postagem
+        // 2. Processar e Renderizar (Busca de dados do usuário)
         for (const post of posts) {
             let userName = post.u || 'Anônimo';
             let userColor = 'var(--primary)'; // Cor padrão
+            
+            // 🛑 CRUCIAL: Esperar (await) a busca dos dados do perfil para a cor
+            try {
+                // Busca o perfil do autor
+                const userSnapshot = await db.ref('users/' + post.uid).once('value');
+                const userData = userSnapshot.val();
 
-            // 4. Buscar os dados do usuário para obter a cor
+                if (userData) {
+                    // Obtém nome e cor do perfil (se existirem)
+                    userName = userData.name || post.u; 
+                    userColor = userData.color || userColor;
+                }
+            } catch (error) {
+                console.warn("Aviso: Falha ao buscar perfil do usuário " + post.uid, error);
+            }
+
+            // 3. Renderizar com os dados completos
+            const fullPost = {
+                ...post,
+                u: userName,
+                color: userColor
+            };
+            
+            feedListElement.innerHTML += renderPost(fullPost);
+        }
+        
+        if (posts.length === 0) {
+            feedListElement.innerHTML = 'Nenhuma postagem ainda.';
+        }
+    });
+                }
+    
+function loadProfileFeed() {
+    const profileFeedListElement = document.getElementById('profile-feed-list');
+    
+    if (!profileFeedListElement) {
+        console.error("Erro: Elemento 'profile-feed-list' não encontrado.");
+        return;
+    }
+    
+    // 🛑 CRUCIAL: Verifica se o usuário está logado
+    if (!user || !user.uid) {
+        profileFeedListElement.innerHTML = 'Faça login para ver suas postagens.';
+        return;
+    }
+
+    db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(10).on('value', async (snapshot) => {
+        profileFeedListElement.innerHTML = '';
+        const posts = [];
+        
+        // 1. Coletar os posts
+        snapshot.forEach(c => posts.push(c.val()));
+        posts.reverse(); 
+
+        // 2. Processar e Renderizar (Busca de dados do usuário)
+        for (const post of posts) {
+            let userName = post.u || 'Anônimo';
+            let userColor = 'var(--primary)'; 
+            
+            // Busca o perfil do próprio usuário (que já está logado)
             try {
                 const userSnapshot = await db.ref('users/' + post.uid).once('value');
                 const userData = userSnapshot.val();
@@ -742,29 +803,24 @@ function loadFeed() {
                     userColor = userData.color || userColor;
                 }
             } catch (error) {
-                console.error("Erro ao buscar dados do usuário:", error);
+                console.warn("Aviso: Falha ao buscar perfil do usuário " + post.uid, error);
             }
-
-            // 5. Renderizar o post com os dados completos
-            feedListElement.innerHTML += renderPost({
+            
+            // 3. Renderizar com os dados completos
+            const fullPost = {
                 ...post,
                 u: userName,
                 color: userColor
-            });
+            };
+            
+            profileFeedListElement.innerHTML += renderPost(fullPost);
+        }
+
+        if (posts.length === 0) {
+            profileFeedListElement.innerHTML = 'Nenhuma postagem ainda.';
         }
     });
 }
-function loadProfileFeed() {
-db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(10).on('value', s => {
-const d = document.getElementById('profile-feed-list');
-d.innerHTML = '';
-const l = [];
-s.forEach(c => l.push(c.val()));
-l.reverse().forEach(p => d.innerHTML += renderPost(p));
-if (l.length === 0) d.innerHTML = 'Nenhuma postagem ainda.';
-});
-}
-
 function openChat(id, recipientKey = null) {
 activeChat = id;
 let dbPath = 'chats/'+id;
