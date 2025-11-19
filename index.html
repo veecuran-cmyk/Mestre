@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mestre OS</title>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+<style>
+:root {
+--primary: #6200ea;
+--bg-body: #000000;
+--bg-app: #121212;
+--bg-card: #1e1e1e;
+--text-main: #ffffff;
+--text-sub: #b0b0b0;
+--border: #333333;
+--input-bg: #2c2c2c;
+}
+body {
+margin: 0;
+height: 100vh;
+display: flex;
+justify-content: center;
+align-items: center;
+background: #111;
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+user-select: none;
+}
+.device {
+width: 375px;
+height: 780px;
+background: var(--bg-body);
+border-radius: 40px;
+position: relative;
+box-shadow: 0 0 0 8px #222, 0 0 20px rgba(0,0,0,0.5);
+overflow: hidden;
+}
+.screen {
+width: 100%;
+height: 100%;
+background: var(--bg-app);
+color: var(--text-main);
+display: flex;
+flex-direction: column;
+transition: background 0.3s, color 0.3s;
+}
+.status-bar {
+height: 40px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 0 25px;
+font-size: 12px;
+font-weight: 600;
+z-index: 100;
+}
+.app-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 15px;
+padding: 20px;
+align-content: start;
+flex: 1;
+overflow-y: auto;
+}
+.app-icon {
+display: flex;
+flex-direction: column;
+align-items: center;
+cursor: pointer;
+transition: transform 0.1s;
+}
+.app-icon:active { transform: scale(0.9); }
+.icon-box {
+width: 60px;
+height: 60px;
+background: var(--bg-card);
+border-radius: 15px;
+display: flex;
+justify-content: center;
+align-items: center;
+font-size: 28px;
+margin-bottom: 8px;
+box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+border: 1px solid var(--border);
+}
+.app-icon span { font-size: 11px; text-align: center; color: var(--text-main); }
+.page {
+position: absolute;
+top: 0; left: 0;
+width: 100%; height: 100%;
+background: var(--bg-app);
+display: flex;
+flex-direction: column;
+transform: translateX(100%);
+transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+z-index: 50;
+}
+.page.active { transform: translateX(0); }
+.header {
+height: 50px;
+display: flex;
+align-items: center;
+padding: 0 15px;
+background: var(--bg-card);
+border-bottom: 1px solid var(--border);
+font-weight: bold;
+font-size: 18px;
+flex-shrink: 0;
+}
+.back-btn {
+background: none; border: none;
+font-size: 24px; color: var(--primary);
+margin-right: 15px; cursor: pointer;
+padding: 0;
+}
+.content {
+flex: 1;
+overflow-y: auto;
+padding: 15px;
+display: flex;
+flex-direction: column;
+}
+.card {
+background: var(--bg-card);
+border-radius: 12px;
+padding: 15px;
+margin-bottom: 15px;
+box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+border: 1px solid var(--border);
+}
+input, textarea, select {
+width: 100%;
+padding: 12px;
+background: var(--input-bg);
+border: 1px solid var(--border);
+border-radius: 8px;
+color: var(--text-main);
+font-family: inherit;
+margin-bottom: 10px;
+box-sizing: border-box;
+}
+button {
+width: 100%;
+padding: 12px;
+border-radius: 8px;
+border: none;
+font-weight: 600;
+cursor: pointer;
+background: var(--primary);
+color: #fff;
+margin-bottom: 10px;
+}
+.feed-post {
+border-bottom: 1px solid var(--border);
+padding-bottom: 15px;
+margin-bottom: 15px;
+}
+.chat-container {
+flex: 1;
+display: flex;
+flex-direction: column;
+overflow: hidden;
+}
+.chat-list {
+flex: 1;
+overflow-y: auto;
+padding: 10px;
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
+.msg {
+max-width: 80%;
+padding: 10px 15px;
+border-radius: 18px;
+font-size: 14px;
+line-height: 1.4;
+word-wrap: break-word;
+}
+.msg.me { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+.msg.other { align-self: flex-start; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.chat-input {
+padding: 10px;
+background: var(--bg-card);
+border-top: 1px solid var(--border);
+display: flex;
+gap: 10px;
+}
+.stat-row {
+display: flex;
+justify-content: space-between;
+padding: 8px 0;
+border-bottom: 1px solid var(--border);
+font-size: 14px;
+}
+.color-btn {
+width: 40px; height: 40px;
+border-radius: 50%;
+border: 2px solid var(--border);
+cursor: pointer;
+display: inline-block;
+margin: 5px;
+}
+</style>
+</head>
+<body onload="init()">
+
+<div class="device">
+<div class="screen">
+<div class="status-bar">
+<span id="clock">10:00</span>
+<span><span id="battery">100%</span> 🔋</span>
+</div>
+
+<div id="home" class="content" style="padding-top: 40px;">
+<h2 style="margin: 0 0 20px 20px;">Mestre OS</h2>
+<div class="app-grid">
+<div class="app-icon" onclick="go('profile')"><div class="icon-box" style="color:#2196f3">👤</div><span>Perfil</span></div>
+<div class="app-icon" onclick="go('feed')"><div class="icon-box" style="color:#e91e63">📰</div><span>Feed</span></div>
+<div class="app-icon" onclick="go('chats')"><div class="icon-box" style="color:#4caf50">💬</div><span>Chats</span></div>
+<div class="app-icon" onclick="go('sessions')"><div class="icon-box" style="color:#9c27b0">🎲</div><span>Sessões</span></div>
+<div class="app-icon" onclick="go('sheet')"><div class="icon-box" style="color:#ff9800">📜</div><span>Ficha</span></div>
+<div class="app-icon" onclick="go('bank')"><div class="icon-box" style="color:#ffeb3b">🏦</div><span>Banco</span></div>
+<div class="app-icon" onclick="go('store')"><div class="icon-box" style="color:#795548">🛒</div><span>Loja</span></div>
+<div class="app-icon" onclick="go('notes')"><div class="icon-box" style="color:#607d8b">📝</div><span>Notas</span></div>
+<div class="app-icon" onclick="go('settings')"><div class="icon-box" style="color:#9e9e9e">⚙️</div><span>Ajustes</span></div>
+</div>
+</div>
+
+<div id="profile" class="page">
+<div class="header"><button class="back-btn" onclick="back('profile')">‹</button> Perfil</div>
+<div class="content">
+<div id="view-login">
+<div class="card">
+<h3>Bem-vindo</h3>
+<input type="email" id="email" placeholder="Seu e-mail">
+<input type="password" id="pass" placeholder="Sua senha">
+<button onclick="actionLogin()">Entrar</button>
+<button onclick="actionRegister()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text-main)">Criar Conta</button>
+</div>
+</div>
+<div id="view-user" style="display:none">
+<div class="card" style="text-align:center">
+<div style="width:80px; height:80px; background:var(--border); border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:30px;">👤</div>
+<h3 id="u-name">Nome</h3>
+<p id="u-key" style="font-family:monospace; color:var(--primary); background:var(--input-bg); padding:5px; border-radius:4px;">CHAVE: ...</p>
+<button onclick="genKey()">Gerar Nova Chave</button>
+<button onclick="actionLogout()" style="background:#f44336">Sair</button>
+</div>
+</div>
+</div>
+</div>
+
+<div id="feed" class="page">
+<div class="header"><button class="back-btn" onclick="back('feed')">‹</button> Feed Global</div>
+<div style="padding:10px; background:var(--bg-card); border-bottom:1px solid var(--border);">
+<div style="display:flex; gap:10px;">
+<input id="post-txt" type="text" placeholder="No que está pensando?" style="margin:0; flex:1;">
+<button onclick="addPost()" style="width:auto; margin:0; padding:0 20px;">➤</button>
+</div>
+<input id="post-img" type="text" placeholder="Link da imagem (opcional)" style="margin-top:5px; font-size:12px;">
+</div>
+<div id="feed-list" class="content"></div>
+</div>
+
+<div id="chats" class="page">
+<div class="header"><button class="back-btn" onclick="back('chats')">‹</button> Mensagens</div>
+<div class="content">
+<div class="card" onclick="openChat('global')" style="cursor:pointer; display:flex; align-items:center; gap:15px;">
+<div style="width:40px; height:40px; background:#4caf50; border-radius:50%; display:flex; justify-content:center; align-items:center;">🌍</div>
+<div><b>Chat Global</b><br><small>Público para todos</small></div>
+</div>
+<div class="card" onclick="alert('Crie uma sessão para acessar o chat da mesa')" style="cursor:pointer; display:flex; align-items:center; gap:15px;">
+<div style="width:40px; height:40px; background:#9c27b0; border-radius:50%; display:flex; justify-content:center; align-items:center;">🎲</div>
+<div><b>Chat da Mesa</b><br><small>Acesse via Menu Sessões</small></div>
+</div>
+</div>
+</div>
+
+<div id="chat-view" class="page">
+<div class="header"><button class="back-btn" onclick="back('chat-view')">‹</button> <span id="chat-title">Chat</span></div>
+<div class="chat-container">
+<div id="chat-msgs" class="chat-list"></div>
+<div class="chat-input">
+<input id="chat-msg-in" type="text" placeholder="Digite..." style="margin:0">
+<button onclick="sendChat()" style="width:50px; margin:0">➤</button>
+</div>
+</div>
+</div>
+
+<div id="sessions" class="page">
+<div class="header"><button class="back-btn" onclick="back('sessions')">‹</button> Sessões RPG</div>
+<div class="content">
+<div class="card">
+<h4>Criar Nova Mesa</h4>
+<input id="table-name" type="text" placeholder="Nome da Aventura">
+<select id="table-type">
+<option value="HUMAN">Mestre Humano (Player)</option>
+<option value="AI">Mestre IA (Automático)</option>
+</select>
+<button onclick="createTable()">Iniciar Campanha</button>
+</div>
+<h4>Mesas Disponíveis</h4>
+<div id="table-list"></div>
+</div>
+</div>
+
+<div id="active-session" class="page">
+<div class="header">
+<button class="back-btn" onclick="exitTable()">‹</button>
+<span id="session-name" style="font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Mesa</span>
+<button onclick="toggleGmTools()" id="gm-btn" style="width:auto; background:none; color:var(--primary); display:none; margin:0 0 0 auto; padding:0;">🛠️</button>
+</div>
+<div class="chat-container">
+<div id="gm-panel" style="display:none; background:var(--bg-card); padding:10px; border-bottom:1px solid var(--border);">
+<small>Painel do Mestre</small>
+<div style="display:flex; gap:5px; margin-top:5px;">
+<select id="gm-target" style="margin:0; flex:1;"></select>
+<input id="gm-val" type="text" placeholder="Valor/Item" style="margin:0; flex:1;">
+</div>
+<div style="display:flex; gap:5px; margin-top:5px;">
+<button onclick="gmCmd('hp')" style="margin:0; font-size:12px;">Alterar HP</button>
+<button onclick="gmCmd('xp')" style="margin:0; font-size:12px;">Dar XP</button>
+<button onclick="gmCmd('item')" style="margin:0; font-size:12px;">Dar Item</button>
+</div>
+</div>
+<div id="session-log" class="chat-list"></div>
+<div class="chat-input">
+<input id="session-in" type="text" placeholder="Ação ou fala..." style="margin:0">
+<button onclick="sendSession()" style="width:50px; margin:0">➤</button>
+</div>
+</div>
+</div>
+
+<div id="sheet" class="page">
+<div class="header"><button class="back-btn" onclick="back('sheet')">‹</button> Ficha</div>
+<div class="content">
+<div style="text-align:center;">
+<img id="char-pic" src="" style="width:100px; height:100px; border-radius:50%; background:#333; object-fit:cover; margin-bottom:10px; display:none;">
+</div>
+<div class="card">
+<small>Dados Principais</small>
+<input id="c-name" type="text" placeholder="Nome do Personagem">
+<input id="c-img" type="text" placeholder="Link da Imagem (URL)">
+<textarea id="c-bio" placeholder="Biografia / História"></textarea>
+</div>
+<div class="card">
+<small>Atributos</small>
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+<input id="c-str" type="number" placeholder="Força">
+<input id="c-dex" type="number" placeholder="Destreza">
+<input id="c-con" type="number" placeholder="Constituição">
+<input id="c-int" type="number" placeholder="Inteligência">
+</div>
+</div>
+<div class="card">
+<small>Inventário</small>
+<textarea id="c-inv" rows="5"></textarea>
+</div>
+<button onclick="saveSheet()">Salvar Ficha</button>
+</div>
+</div>
+
+<div id="bank" class="page">
+<div class="header"><button class="back-btn" onclick="back('bank')">‹</button> Banco</div>
+<div class="content">
+<div class="card" style="background: linear-gradient(45deg, #FFD700, #B8860B); color:black; font-weight:bold;">
+<div style="display:flex; justify-content:space-between; align-items:center;">
+<span>Saldo Ouro</span>
+<span id="gold-val" style="font-size:24px;">0</span>
+</div>
+</div>
+<div class="card">
+<h4>Carteira</h4>
+<div id="wallet-div"></div>
+</div>
+<div class="card">
+<h4>Transferir</h4>
+<input id="pay-key" type="text" placeholder="Chave do Jogador Destino">
+<select id="pay-type">
+<option value="ouro">Ouro</option>
+<option value="prata">Prata</option>
+<option value="cobre">Cobre</option>
+<option value="bronze">Bronze</option>
+<option value="diamante">Diamante</option>
+<option value="esmeralda">Esmeralda</option>
+</select>
+<input id="pay-amt" type="number" placeholder="Quantidade">
+<button onclick="transfer()">Enviar</button>
+</div>
+</div>
+</div>
+
+<div id="store" class="page">
+<div class="header"><button class="back-btn" onclick="back('store')">‹</button> Loja</div>
+<div class="content">
+<div style="display:flex; gap:10px; margin-bottom:15px;">
+<button onclick="switchStore('sys')" id="btn-sys" style="flex:1;">Sistema</button>
+<button onclick="switchStore('usr')" id="btn-usr" style="flex:1; background:var(--bg-card); color:var(--text-main);">Jogadores</button>
+</div>
+<div id="store-sys">
+<div class="card">
+<div style="display:flex; justify-content:space-between; align-items:center;">
+<span>⚔️ Espada Longa</span>
+<button onclick="buySys('Espada Longa', 50)" style="width:auto; margin:0; padding:5px 10px;">50 Ouro</button>
+</div>
+</div>
+<div class="card">
+<div style="display:flex; justify-content:space-between; align-items:center;">
+<span>🛡️ Escudo de Ferro</span>
+<button onclick="buySys('Escudo', 30)" style="width:auto; margin:0; padding:5px 10px;">30 Ouro</button>
+</div>
+</div>
+<div class="card">
+<div style="display:flex; justify-content:space-between; align-items:center;">
+<span>🧪 Poção de Vida</span>
+<button onclick="buySys('Poção', 10)" style="width:auto; margin:0; padding:5px 10px;">10 Ouro</button>
+</div>
+</div>
+</div>
+<div id="store-usr" style="display:none;">
+<div class="card">
+<small>Vender Item</small>
+<input id="sell-item" type="text" placeholder="Nome do Item">
+<input id="sell-price" type="number" placeholder="Preço">
+<select id="sell-curr"><option value="ouro">Ouro</option></select>
+<button onclick="postSell()">Anunciar</button>
+</div>
+<div id="market-list"></div>
+</div>
+</div>
+</div>
+
+<div id="notes" class="page">
+<div class="header"><button class="back-btn" onclick="back('notes')">‹</button> Notas</div>
+<div class="content">
+<textarea id="note-pad" style="flex:1; resize:none;" placeholder="Suas anotações..."></textarea>
+<button onclick="saveNote()">Salvar</button>
+</div>
+</div>
+
+<div id="settings" class="page">
+<div class="header"><button class="back-btn" onclick="back('settings')">‹</button> Ajustes</div>
+<div class="content">
+<div class="card">
+<h4>Tema do Sistema</h4>
+<div style="display:flex; gap:10px; margin-bottom:15px;">
+<button onclick="setMode('dark')" style="flex:1; background:#222;">Escuro</button>
+<button onclick="setMode('light')" style="flex:1; background:#eee; color:#000;">Claro</button>
+</div>
+<h4>Cor de Destaque</h4>
+<div>
+<div class="color-btn" style="background:#6200ea" onclick="setAccent('#6200ea')"></div>
+<div class="color-btn" style="background:#d50000" onclick="setAccent('#d50000')"></div>
+<div class="color-btn" style="background:#00c853" onclick="setAccent('#00c853')"></div>
+<div class="color-btn" style="background:#2962ff" onclick="setAccent('#2962ff')"></div>
+<div class="color-btn" style="background:#ffab00" onclick="setAccent('#ffab00')"></div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<script>
+const firebaseConfig = {
+apiKey: "AIzaSyBykDF5TNKQHejUJTp-ue7s5CKfpJp1HV0",
+authDomain: "mestre-471a0.firebaseapp.com",
+databaseURL: "https://mestre-471a0-default-rtdb.firebaseio.com",
+projectId: "mestre-471a0",
+storageBucket: "mestre-471a0.firebasestorage.app",
+messagingSenderId: "142996111628",
+appId: "1:142996111628:web:c3785e54588632f468c929"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+const AI_KEY = "SUA_CHAVE_AQUI"; 
+
+let user = null;
+let activeChat = null;
+let activeTable = null;
+
+function init() {
+setInterval(() => {
+const d = new Date();
+document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}, 1000);
+if(navigator.getBattery) navigator.getBattery().then(b => document.getElementById('battery').innerText = Math.round(b.level*100)+'%');
+auth.onAuthStateChanged(u => {
+user = u;
+if(u) {
+document.getElementById('view-login').style.display = 'none';
+document.getElementById('view-user').style.display = 'block';
+document.getElementById('u-name').innerText = u.email.split('@')[0];
+loadUser();
+} else {
+document.getElementById('view-login').style.display = 'block';
+document.getElementById('view-user').style.display = 'none';
+}
+});
+loadFeed();
+loadTables();
+}
+
+function go(id) { document.getElementById(id).classList.add('active'); if(id==='store') loadMarket(); }
+function back(id) { document.getElementById(id).classList.remove('active'); }
+
+async function actionLogin() {
+try { await auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value); }
+catch(e) { alert(e.message); }
+}
+async function actionRegister() {
+try {
+await auth.createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value);
+const uid = auth.currentUser.uid;
+db.ref('users/'+uid+'/wallet').set({ouro:100, prata:50, cobre:20, bronze:0, diamante:0, esmeralda:0});
+} catch(e) { alert(e.message); }
+}
+function actionLogout() { auth.signOut(); }
+
+function loadUser() {
+db.ref('users/'+user.uid).on('value', s => {
+const d = s.val() || {};
+if(d.key) document.getElementById('u-key').innerText = "CHAVE: "+d.key;
+if(d.note) document.getElementById('note-pad').value = d.note;
+if(d.char) {
+document.getElementById('c-name').value = d.char.name || '';
+document.getElementById('c-img').value = d.char.img || '';
+document.getElementById('c-bio').value = d.char.bio || '';
+document.getElementById('c-inv').value = d.char.inv || '';
+document.getElementById('c-str').value = d.char.str || '';
+document.getElementById('c-dex').value = d.char.dex || '';
+document.getElementById('c-con').value = d.char.con || '';
+document.getElementById('c-int').value = d.char.int || '';
+if(d.char.img) { document.getElementById('char-pic').src = d.char.img; document.getElementById('char-pic').style.display = 'block'; }
+}
+if(d.wallet) {
+document.getElementById('gold-val').innerText = d.wallet.ouro || 0;
+let h = '';
+for(let k in d.wallet) h += `<div class="stat-row"><span>${k.toUpperCase()}</span><span>${d.wallet[k]}</span></div>`;
+document.getElementById('wallet-div').innerHTML = h;
+}
+});
+}
+
+function genKey() {
+const k = Math.random().toString(36).substring(2,8).toUpperCase();
+db.ref('users/'+user.uid+'/key').set(k);
+}
+
+function saveSheet() {
+db.ref('users/'+user.uid+'/char').set({
+name: document.getElementById('c-name').value,
+img: document.getElementById('c-img').value,
+bio: document.getElementById('c-bio').value,
+inv: document.getElementById('c-inv').value,
+str: document.getElementById('c-str').value,
+dex: document.getElementById('c-dex').value,
+con: document.getElementById('c-con').value,
+int: document.getElementById('c-int').value
+});
+alert('Salvo!');
+}
+function saveNote() {
+db.ref('users/'+user.uid+'/note').set(document.getElementById('note-pad').value);
+alert('Salvo!');
+}
+
+function addPost() {
+const t = document.getElementById('post-txt').value;
+const i = document.getElementById('post-img').value;
+if(!t) return;
+db.ref('feed').push({
+u: user.email.split('@')[0],
+uid: user.uid,
+txt: t,
+img: i,
+ts: firebase.database.ServerValue.TIMESTAMP
+});
+document.getElementById('post-txt').value = '';
+document.getElementById('post-img').value = '';
+}
+function loadFeed() {
+db.ref('feed').limitToLast(20).on('value', s => {
+const d = document.getElementById('feed-list');
+d.innerHTML = '';
+const l = [];
+s.forEach(c => l.push(c.val()));
+l.reverse().forEach(p => {
+d.innerHTML += `<div class="card feed-post">
+<small style="color:var(--primary)">${p.u}</small>
+<div style="margin-top:5px">${p.txt}</div>
+${p.img ? `<img src="${p.img}" style="width:100%; border-radius:8px; margin-top:10px">` : ''}
+</div>`;
+});
+});
+}
+
+function openChat(id) {
+activeChat = id;
+document.getElementById('chat-title').innerText = id === 'global' ? 'Global' : 'Mesa';
+document.getElementById('chat-msgs').innerHTML = '';
+go('chat-view');
+db.ref('chats/'+id).limitToLast(30).on('child_added', s => {
+const m = s.val();
+const me = m.uid === user.uid;
+document.getElementById('chat-msgs').innerHTML += `<div class="msg ${me?'me':'other'}"><b>${m.u}</b><br>${m.txt}</div>`;
+document.getElementById('chat-msgs').scrollTop = 99999;
+});
+}
+function sendChat() {
+const t = document.getElementById('chat-msg-in').value;
+if(!t) return;
+db.ref('chats/'+activeChat).push({u:user.email.split('@')[0], uid:user.uid, txt:t});
+document.getElementById('chat-msg-in').value = '';
+}
+
+function createTable() {
+const n = document.getElementById('table-name').value;
+const t = document.getElementById('table-type').value;
+if(!n) return;
+const k = db.ref('tables').push().key;
+db.ref('tables/'+k).set({name:n, type:t, master:user.uid, users:{[user.uid]:user.email.split('@')[0]}});
+joinTable(k);
+}
+function loadTables() {
+db.ref('tables').on('value', s => {
+const d = document.getElementById('table-list');
+d.innerHTML = '';
+s.forEach(x => {
+const t = x.val();
+d.innerHTML += `<div class="card" onclick="joinTable('${x.key}')"><b>${t.name}</b><br><small>${t.type === 'AI' ? '🤖 IA' : '👤 Humano'}</small></div>`;
+});
+});
+}
+function joinTable(k) {
+activeTable = k;
+db.ref('tables/'+k+'/users/'+user.uid).set(user.email.split('@')[0]);
+go('active-session');
+db.ref('tables/'+k).once('value', s => {
+const t = s.val();
+document.getElementById('session-name').innerText = t.name;
+const isGm = t.master === user.uid && t.type === 'HUMAN';
+document.getElementById('gm-btn').style.display = isGm ? 'block' : 'none';
+if(isGm) loadGmUsers(k);
+});
+loadSessionLog(k);
+}
+function exitTable() {
+activeTable = null;
+back('active-session');
+db.ref('tables').off();
+}
+function toggleGmTools() {
+const p = document.getElementById('gm-panel');
+p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+function loadGmUsers(k) {
+db.ref('tables/'+k+'/users').on('value', s => {
+const sel = document.getElementById('gm-target');
+sel.innerHTML = '';
+s.forEach(u => sel.innerHTML += `<option value="${u.key}">${u.val()}</option>`);
+});
+}
+function gmCmd(act) {
+const u = document.getElementById('gm-target').value;
+const v = document.getElementById('gm-val').value;
+db.ref('tables/'+activeTable+'/log').push({u:'SISTEMA', uid:'sys', txt:`Mestre: ${act.toUpperCase()} ${v} para jogador.`});
+}
+function loadSessionLog(k) {
+const d = document.getElementById('session-log');
+d.innerHTML = '';
+db.ref('tables/'+k+'/log').limitToLast(30).on('child_added', s => {
+const m = s.val();
+d.innerHTML += `<div class="msg ${m.uid===user.uid?'me':'other'}"><b>${m.u}</b><br>${m.txt}</div>`;
+d.scrollTop = 99999;
+});
+}
+async function sendSession() {
+const t = document.getElementById('session-in').value;
+if(!t) return;
+document.getElementById('session-in').value = '';
+db.ref('tables/'+activeTable+'/log').push({u:user.email.split('@')[0], uid:user.uid, txt:t});
+const s = await db.ref('tables/'+activeTable).get();
+if(s.val().type === 'AI') {
+try {
+const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+method:"POST", headers:{"Authorization":`Bearer ${AI_KEY}`, "Content-Type":"application/json"},
+body:JSON.stringify({model:"mistralai/mistral-7b-instruct", messages:[{role:"user", content:`RPG Mestre: Jogador disse: "${t}". Responda como mestre.`}]})
+});
+const j = await r.json();
+db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:j.choices[0].message.content});
+} catch(e){}
+}
+}
+
+function transfer() {
+const k = document.getElementById('pay-key').value.toUpperCase();
+const c = document.getElementById('pay-type').value;
+const a = parseInt(document.getElementById('pay-amt').value);
+if(!k || !a) return;
+db.ref('users/'+user.uid+'/wallet/'+c).once('value', s => {
+if((s.val()||0) < a) return alert('Saldo insuficiente');
+db.ref('users').orderByChild('key').equalTo(k).once('value', u => {
+if(!u.exists()) return alert('Chave inválida');
+const dest = Object.keys(u.val())[0];
+db.ref('users/'+user.uid+'/wallet/'+c).set(s.val()-a);
+db.ref('users/'+dest+'/wallet/'+c).transaction(v=>(v||0)+a);
+alert('Enviado!');
+});
+});
+}
+
+function switchStore(m) {
+document.getElementById('store-sys').style.display = m==='sys'?'block':'none';
+document.getElementById('store-usr').style.display = m==='usr'?'block':'none';
+document.getElementById('btn-sys').style.background = m==='sys'?'var(--primary)':'var(--bg-card)';
+document.getElementById('btn-sys').style.color = m==='sys'?'white':'var(--text-main)';
+document.getElementById('btn-usr').style.background = m==='usr'?'var(--primary)':'var(--bg-card)';
+document.getElementById('btn-usr').style.color = m==='usr'?'white':'var(--text-main)';
+}
+function buySys(i, p) {
+db.ref('users/'+user.uid+'/wallet/ouro').once('value', s => {
+if((s.val()||0) >= p) {
+db.ref('users/'+user.uid+'/wallet/ouro').set(s.val()-p);
+const inv = document.getElementById('c-inv');
+inv.value += (inv.value?'\n':'')+i;
+saveSheet();
+alert('Comprado!');
+} else alert('Sem ouro');
+});
+}
+function postSell() {
+db.ref('market').push({
+s: user.uid,
+u: user.email.split('@')[0],
+i: document.getElementById('sell-item').value,
+p: parseInt(document.getElementById('sell-price').value),
+c: document.getElementById('sell-curr').value
+});
+alert('Anunciado');
+}
+function loadMarket() {
+db.ref('market').on('value', s => {
+const d = document.getElementById('market-list');
+d.innerHTML = '';
+s.forEach(x => {
+const i = x.val();
+if(i.s !== user.uid) d.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><span>${i.i}</span><button onclick="buyUsr('${x.key}')" style="width:auto; margin:0; padding:5px;">${i.p} ${i.c}</button></div><small>Vendedor: ${i.u}</small></div>`;
+});
+});
+}
+function buyUsr(k) {
+db.ref('market/'+k).once('value', s => {
+const i = s.val();
+db.ref('users/'+user.uid+'/wallet/'+i.c).once('value', w => {
+if((w.val()||0) >= i.p) {
+db.ref('users/'+user.uid+'/wallet/'+i.c).set(w.val()-i.p);
+db.ref('users/'+i.s+'/wallet/'+i.c).transaction(v=>(v||0)+i.p);
+db.ref('market/'+k).remove();
+const inv = document.getElementById('c-inv');
+inv.value += (inv.value?'\n':'')+i.i;
+saveSheet();
+alert('Comprado!');
+} else alert('Sem saldo');
+});
+});
+}
+
+function setMode(m) {
+const r = document.documentElement.style;
+if(m==='light') {
+r.setProperty('--bg-body', '#ddd');
+r.setProperty('--bg-app', '#f5f5f5');
+r.setProperty('--bg-card', '#ffffff');
+r.setProperty('--text-main', '#000000');
+r.setProperty('--border', '#ccc');
+r.setProperty('--input-bg', '#eee');
+} else {
+r.setProperty('--bg-body', '#000');
+r.setProperty('--bg-app', '#121212');
+r.setProperty('--bg-card', '#1e1e1e');
+r.setProperty('--text-main', '#ffffff');
+r.setProperty('--border', '#333');
+r.setProperty('--input-bg', '#2c2c2c');
+}
+}
+function setAccent(c) { document.documentElement.style.setProperty('--primary', c); }
+</script>
+</body>
+</html>
