@@ -714,13 +714,45 @@ ${p.img ? `<img src="${p.img}" style="width:100%; border-radius:8px; margin-top:
 </div>`;
 }
 function loadFeed() {
-db.ref('feed').limitToLast(20).on('value', s => {
-const d = document.getElementById('feed-list');
-d.innerHTML = '';
-const l = [];
-s.forEach(c => l.push(c.val()));
-l.reverse().forEach(p => d.innerHTML += renderPost(p));
-});
+    const feedRef = db.ref('feed').limitToLast(20);
+    const feedListElement = document.getElementById('feed-list');
+    feedListElement.innerHTML = ''; 
+
+    // 1. Ouvir a coleção de posts
+    feedRef.on('value', async (snapshot) => {
+        feedListElement.innerHTML = ''; 
+        const posts = [];
+        snapshot.forEach(child => posts.push(child.val()));
+
+        // 2. Inverter a ordem para mostrar os mais novos primeiro
+        posts.reverse(); 
+
+        // 3. Processar cada postagem
+        for (const post of posts) {
+            let userName = post.u || 'Anônimo';
+            let userColor = 'var(--primary)'; // Cor padrão
+
+            // 4. Buscar os dados do usuário para obter a cor
+            try {
+                const userSnapshot = await db.ref('users/' + post.uid).once('value');
+                const userData = userSnapshot.val();
+
+                if (userData) {
+                    userName = userData.name || post.u;
+                    userColor = userData.color || userColor;
+                }
+            } catch (error) {
+                console.error("Erro ao buscar dados do usuário:", error);
+            }
+
+            // 5. Renderizar o post com os dados completos
+            feedListElement.innerHTML += renderPost({
+                ...post,
+                u: userName,
+                color: userColor
+            });
+        }
+    });
 }
 function loadProfileFeed() {
 db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(10).on('value', s => {
