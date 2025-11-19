@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mestre OS</title>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mestre OS - Corrigido</title>
+
+<!-- Firebase (compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
 <style>
 :root {
 --primary: #6200ea;
@@ -20,6 +23,7 @@
 --danger: #d50000;
 --success: #00c853;
 }
+*{box-sizing:border-box}
 body {
 margin: 0;
 height: 100vh;
@@ -68,155 +72,27 @@ align-content: start;
 flex: 1;
 overflow-y: auto;
 }
-.app-icon {
-display: flex;
-flex-direction: column;
-align-items: center;
-cursor: pointer;
-transition: transform 0.1s;
-}
-.app-icon:active { transform: scale(0.9); }
-.icon-box {
-width: 60px;
-height: 60px;
-background: var(--bg-card);
-border-radius: 15px;
-display: flex;
-justify-content: center;
-align-items: center;
-font-size: 28px;
-margin-bottom: 8px;
-box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-border: 1px solid var(--border);
-}
-.app-icon span { font-size: 11px; text-align: center; color: var(--text-main); }
-.page {
-position: absolute;
-top: 0; left: 0;
-width: 100%; height: 100%;
-background: var(--bg-surface);
-display: flex;
-flex-direction: column;
-transform: translateX(100%);
-transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-z-index: 50;
-}
-.page.active { transform: translateX(0); }
-.header {
-height: 55px;
-display: flex;
-align-items: center;
-padding: 0 15px;
-background: var(--bg-card);
-border-bottom: 1px solid var(--border);
-font-weight: bold;
-font-size: 18px;
-flex-shrink: 0;
-color: var(--text-main);
-}
-.back-btn {
-background: none; border: none;
-font-size: 26px; color: var(--primary);
-margin-right: 15px; cursor: pointer;
-padding: 0;
-line-height: 1;
-}
-.content {
-flex: 1;
-overflow-y: auto;
-padding: 15px;
-display: flex;
-flex-direction: column;
-}
-.card {
-background: var(--bg-card);
-border-radius: 12px;
-padding: 15px;
-margin-bottom: 15px;
-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-border: 1px solid var(--border);
-}
-input, textarea, select {
-width: 100%;
-padding: 12px;
-background: var(--input-bg);
-border: 1px solid var(--border);
-border-radius: 8px;
-color: var(--text-main);
-font-family: inherit;
-margin-bottom: 10px;
-box-sizing: border-box;
-}
-button {
-width: 100%;
-padding: 12px;
-border-radius: 8px;
-border: none;
-font-weight: 600;
-cursor: pointer;
-background: var(--primary);
-color: var(--text-main);
-margin-bottom: 10px;
-transition: background 0.2s;
-}
-.chat-container {
-flex: 1;
-display: flex;
-flex-direction: column;
-overflow: hidden;
-}
-.chat-list {
-flex: 1;
-overflow-y: auto;
-padding: 10px;
-display: flex;
-flex-direction: column;
-gap: 10px;
-}
-.msg {
-max-width: 80%;
-padding: 10px 15px;
-border-radius: 18px;
-font-size: 14px;
-line-height: 1.4;
-word-wrap: break-word;
-}
-.msg.me { align-self: flex-end; background: var(--primary); color: var(--text-main); border-bottom-right-radius: 4px; }
-.msg.other { align-self: flex-start; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-.chat-input {
-padding: 10px;
-background: var(--bg-card);
-border-top: 1px solid var(--border);
-display: flex;
-gap: 10px;
-flex-shrink: 0;
-}
-.stat-row {
-display: flex;
-justify-content: space-between;
-padding: 8px 0;
-border-bottom: 1px solid var(--border);
-font-size: 14px;
-}
-.modal {
-position: absolute;
-top: 0; left: 0;
-width: 100%; height: 100%;
-background: rgba(0, 0, 0, 0.8);
-z-index: 99;
-display: none;
-justify-content: center;
-align-items: center;
-}
-.modal-content {
-background: var(--bg-surface);
-padding: 20px;
-border-radius: 15px;
-width: 90%;
-max-height: 80%;
-overflow-y: auto;
-border: 2px solid var(--primary);
-}
+.app-icon { display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform .12s;}
+.icon-box { width:60px; height:60px; background: var(--bg-card); border-radius:15px; display:flex; justify-content:center; align-items:center; font-size:28px; margin-bottom:8px; box-shadow:0 2px 5px rgba(0,0,0,.2); border:1px solid var(--border); }
+.app-icon span { font-size:11px; text-align:center; color:var(--text-main); }
+.page { position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg-surface); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); z-index:50; }
+.page.active { transform:translateX(0); }
+.header { height:55px; display:flex; align-items:center; padding:0 15px; background:var(--bg-card); border-bottom:1px solid var(--border); font-weight:bold; font-size:18px; flex-shrink:0; color:var(--text-main); }
+.back-btn { background:none; border:none; font-size:26px; color:var(--primary); margin-right:15px; cursor:pointer; padding:0; line-height:1; }
+.content { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; }
+.card { background:var(--bg-card); border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,.1); border:1px solid var(--border); }
+input, textarea, select { width:100%; padding:12px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; color:var(--text-main); font-family:inherit; margin-bottom:10px; box-sizing:border-box; }
+button { width:100%; padding:12px; border-radius:8px; border:none; font-weight:600; cursor:pointer; background:var(--primary); color:var(--text-main); margin-bottom:10px; transition:background .2s; }
+.chat-container { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.chat-list { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px; }
+.msg { max-width:80%; padding:10px 15px; border-radius:18px; font-size:14px; line-height:1.4; word-wrap:break-word; }
+.msg.me { align-self:flex-end; background:var(--primary); color:var(--text-main); border-bottom-right-radius:4px; }
+.msg.other { align-self:flex-start; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); border-bottom-left-radius:4px; }
+.chat-input { padding:10px; background:var(--bg-card); border-top:1px solid var(--border); display:flex; gap:10px; flex-shrink:0; }
+.stat-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; }
+.modal { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99; display:none; justify-content:center; align-items:center; padding:20px; }
+.modal-content { background:var(--bg-surface); padding:20px; border-radius:15px; width:100%; max-width:560px; max-height:80%; overflow-y:auto; border:2px solid var(--primary); }
+small { color:var(--text-sub); }
 </style>
 </head>
 <body onload="init()">
@@ -228,8 +104,8 @@ border: 2px solid var(--primary);
 <span><span id="battery">100%</span> 🔋</span>
 </div>
 
-<div id="home" class="content" style="padding-top: 40px;">
-<h1 style="margin: 0 0 20px 20px; font-family:'Brush Script MT', cursive; color:var(--primary);">Mestre OS</h1>
+<div id="home" class="content" style="padding-top:40px;">
+<h1 style="margin:0 0 20px 20px; font-family:'Brush Script MT', cursive; color:var(--primary);">Mestre OS</h1>
 <div class="app-grid">
 <div class="app-icon" onclick="go('profile')"><div class="icon-box" style="color:#2196f3">👤</div><span>Perfil</span></div>
 <div class="app-icon" onclick="go('feed')"><div class="icon-box" style="color:#e91e63">📰</div><span>Feed</span></div>
@@ -243,6 +119,7 @@ border: 2px solid var(--primary);
 </div>
 </div>
 
+<!-- PAGES -->
 <div id="profile" class="page">
 <div class="header"><button class="back-btn" onclick="back('profile')">‹</button> Perfil</div>
 <div class="content">
@@ -260,7 +137,7 @@ border: 2px solid var(--primary);
 <img id="u-pic" src="" style="width:80px; height:80px; border-radius:50%; background:var(--border); object-fit:cover; margin:0 auto 10px; display:none;">
 <h3 id="u-name" style="color:var(--primary)">Nome</h3>
 <p id="u-bio" style="font-size:12px; color:var(--text-sub);">Descrição</p>
-<button onclick="toggleProfileEdit()">Editar Perfil</button>
+<button onclick="showModal('profile-edit-modal', true)">Editar Perfil</button>
 </div>
 <div class="card">
 <h4>Minhas Postagens</h4>
@@ -270,7 +147,7 @@ border: 2px solid var(--primary);
 </div>
 </div>
 
-<div id="profile-edit-modal" class="modal" onclick="toggleProfileEdit(event)">
+<div id="profile-edit-modal" class="modal" onclick="modalBackgroundClick(event, 'profile-edit-modal')">
 <div class="modal-content" onclick="event.stopPropagation()">
 <h4>Editar Dados</h4>
 <input type="text" id="u-name-edit" placeholder="Nome de Usuário">
@@ -279,7 +156,7 @@ border: 2px solid var(--primary);
 <input type="text" id="u-img-edit" placeholder="Link da Imagem de Perfil (URL)">
 <textarea id="u-bio-edit" placeholder="Descrição/Bio"></textarea>
 <button onclick="saveProfile()" style="background:var(--success)">Salvar Alterações</button>
-<button onclick="toggleProfileEdit()" style="background:var(--danger)">Cancelar</button>
+<button onclick="showModal('profile-edit-modal', false)" style="background:var(--danger)">Cancelar</button>
 <button onclick="actionLogout()" style="background:var(--text-sub); margin-top:10px;">Sair da Conta</button>
 </div>
 </div>
@@ -287,16 +164,16 @@ border: 2px solid var(--primary);
 <div id="feed" class="page">
 <div class="header"><button class="back-btn" onclick="back('feed')">‹</button> Feed Global</div>
 <div id="feed-list" class="content"></div>
-<button onclick="togglePostModal()" style="position:fixed; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; font-size:24px; padding:0;">+</button>
+<button onclick="showModal('post-modal', true)" style="position:fixed; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; font-size:24px; padding:0;">+</button>
 </div>
 
-<div id="post-modal" class="modal" onclick="togglePostModal(event)">
+<div id="post-modal" class="modal" onclick="modalBackgroundClick(event, 'post-modal')">
 <div class="modal-content" onclick="event.stopPropagation()">
 <h4>Criar Nova Postagem</h4>
 <textarea id="post-txt" rows="5" placeholder="No que está pensando?" style="resize:none;"></textarea>
 <input id="post-img" type="text" placeholder="Link da imagem (Opcional)">
 <button onclick="addPost()">Publicar</button>
-<button onclick="togglePostModal()" style="background:var(--danger)">Cancelar</button>
+<button onclick="showModal('post-modal', false)" style="background:var(--danger)">Cancelar</button>
 </div>
 </div>
 
@@ -318,12 +195,12 @@ border: 2px solid var(--primary);
 </div>
 </div>
 
-<div id="chat-private-setup" class="modal" onclick="closePrivateSetup(event)">
+<div id="chat-private-setup" class="modal" onclick="modalBackgroundClick(event, 'chat-private-setup')">
 <div class="modal-content" onclick="event.stopPropagation()">
 <h4>Iniciar Chat Privado</h4>
 <input type="text" id="dm-key" placeholder="Chave do Destinatário">
 <button onclick="openPrivateChat()">Abrir Chat</button>
-<button onclick="closePrivateSetup()" style="background:var(--danger)">Cancelar</button>
+<button onclick="showModal('chat-private-setup', false)" style="background:var(--danger)">Cancelar</button>
 </div>
 </div>
 
@@ -362,7 +239,7 @@ border: 2px solid var(--primary);
 <button onclick="toggleGmTools()" id="gm-btn" style="width:auto; background:none; color:var(--primary); display:none; margin:0 0 0 auto; padding:0;">🛠️</button>
 </div>
 <div class="chat-container">
-<div id="gm-panel" style="display:none; background:var(--bg-card); padding:10px; border-bottom:1px solid var(--border); flex-shrink: 0;">
+<div id="gm-panel" style="display:none; background:var(--bg-card); padding:10px; border-bottom:1px solid var(--border); flex-shrink:0;">
 <small>Painel do Mestre</small>
 <div style="display:flex; gap:5px; margin-top:5px;">
 <select id="gm-target" style="margin:0; flex:1;"></select>
@@ -398,11 +275,11 @@ border: 2px solid var(--primary);
 <h4>Inventário</h4>
 <div id="sheet-inv-display" style="white-space:pre-wrap;"></div>
 </div>
-<button onclick="toggleSheetEditModal()">Editar Ficha</button>
+<button onclick="showModal('sheet-edit-modal', true)">Editar Ficha</button>
 </div>
 </div>
 
-<div id="sheet-edit-modal" class="modal" onclick="toggleSheetEditModal(event)">
+<div id="sheet-edit-modal" class="modal" onclick="modalBackgroundClick(event, 'sheet-edit-modal')">
 <div class="modal-content" onclick="event.stopPropagation()">
 <h4>Editar Ficha</h4>
 <input id="c-name" type="text" placeholder="Nome do Personagem">
@@ -414,7 +291,7 @@ border: 2px solid var(--primary);
 <input id="c-int" type="number" placeholder="Inteligência">
 <textarea id="c-inv" rows="5" placeholder="Inventário (Um item por linha)"></textarea>
 <button onclick="saveSheet()" style="background:var(--success)">Salvar</button>
-<button onclick="toggleSheetEditModal()" style="background:var(--danger)">Cancelar</button>
+<button onclick="showModal('sheet-edit-modal', false)" style="background:var(--danger)">Cancelar</button>
 </div>
 </div>
 
@@ -517,560 +394,586 @@ border: 2px solid var(--primary);
 </div>
 
 <script>
+/* ------------------
+   CONFIGURAÇÕES FIREBASE
+   Substitua pelos seus valores se necessário.
+   Observação: a apiKey do Firebase NÃO é secreta (é esperada no front-end).
+   Já as chaves de API de terceiros (ex: OpenAI) NÃO devem ficar no front-end em produção.
+   ------------------ */
 const firebaseConfig = {
-apiKey: "AIzaSyBykDF5TNKQHejUJTp-ue7s5CKfpJp1HV0",
-authDomain: "mestre-471a0.firebaseapp.com",
-databaseURL: "https://mestre-471a0-default-rtdb.firebaseio.com",
-projectId: "mestre-471a0",
-storageBucket: "mestre-471a0.firebasestorage.app",
-messagingSenderId: "142996111628",
-appId: "1:142996111628:web:c3785e54588632f468c929"
+  apiKey: "AIzaSyBykDF5TNKQHejUJTp-ue7s5CKfpJp1HV0",
+  authDomain: "mestre-471a0.firebaseapp.com",
+  databaseURL: "https://mestre-471a0-default-rtdb.firebaseio.com",
+  projectId: "mestre-471a0",
+  storageBucket: "mestre-471a0.appspot.com",
+  messagingSenderId: "142996111628",
+  appId: "1:142996111628:web:c3785e54588632f468c929"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
-const AI_KEY = "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"; 
+
+/* Se você quer que a IA responda, coloque a chave no código SÓ para testes locais.
+   Em produção, mova isso para um backend seguro. */
+const AI_KEY = "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";
 
 let user = null;
 let activeChat = null;
 let activeTable = null;
 
+/* ------------------
+   HELPERS DE UI
+   ------------------ */
+function showModal(id, show) {
+    const el = document.getElementById(id);
+  if(!el) return;
+  el.style.display = show ? 'flex' : 'none';
+}
+function modalBackgroundClick(e, id) {
+  if(e.target && e.target.id === id) {
+    showModal(id, false);
+  }
+}
+
+/* ------------------
+   INICIALIZAÇÃO
+   ------------------ */
 function init() {
-setInterval(() => {
-const d = new Date();
-document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-}, 1000);
-if(navigator.getBattery) navigator.getBattery().then(b => document.getElementById('battery').innerText = Math.round(b.level*100)+'%');
-auth.onAuthStateChanged(u => {
-user = u;
-if(u) {
-document.getElementById('view-login').style.display = 'none';
-document.getElementById('view-user').style.display = 'block';
-loadUser();
-} else {
-document.getElementById('view-login').style.display = 'block';
-document.getElementById('view-user').style.display = 'none';
-}
-});
-loadFeed();
-loadTables();
-}
-function go(id) { document.getElementById(id).classList.add('active'); if(id==='store') loadMarket(); }
-function back(id) { document.getElementById(id).classList.remove('active'); }
+  // relógio
+  setInterval(()=>{
+    const d = new Date();
+    document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  }, 1000);
 
-async function actionLogin() {
-try { await auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value); }
-catch(e) { alert(e.message); }
-}
-async function actionRegister() {
-try {
-await auth.createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value);
-const uid = auth.currentUser.uid;
-const defaultName = uid.substring(0,6);
-db.ref('users/'+uid).set({
-name: defaultName,
-key: defaultName.toUpperCase(),
-color: '#ffffff',
-bio: 'Novo aventureiro!',
-wallet: {ouro:100, prata:50, cobre:20, bronze:0, diamante:0, esmeralda:0},
-char: {name:'Herói', inv:'Poção de Cura\nEspada Curta', str:10, dex:10, con:10, int:10}
-});
-} catch(e) { alert(e.message); }
-}
-function actionLogout() { auth.signOut(); }
+  // Bateria (se suportado)
+  if (navigator.getBattery) {
+    navigator.getBattery().then(b => {
+      document.getElementById('battery').innerText = Math.round(b.level*100)+'%';
+    }).catch(()=>{});
+  }
 
-function loadUser() {
-db.ref('users/'+user.uid).on('value', s => {
-const d = s.val() || {};
-const defaultName = user.uid.substring(0,6);
-const uName = d.name || defaultName;
-
-document.getElementById('u-name').innerText = uName;
-document.getElementById('u-name').style.color = d.color || 'var(--primary)';
-document.getElementById('u-bio').innerText = d.bio || 'Sem descrição.';
-if(d.img) {
-document.getElementById('u-pic').src = d.img;
-document.getElementById('u-pic').style.display = 'block';
-} else {
-document.getElementById('u-pic').style.display = 'none';
-}
-
-document.getElementById('note-pad').value = d.note || '';
-
-document.getElementById('u-name-edit').value = uName;
-document.getElementById('u-key-edit').value = d.key || defaultName.toUpperCase();
-document.getElementById('u-color-edit').value = d.color || '#ffffff';
-document.getElementById('u-img-edit').value = d.img || '';
-document.getElementById('u-bio-edit').value = d.bio || '';
-
-if(d.wallet) {
-document.getElementById('gold-val').innerText = d.wallet.ouro || 0;
-let h = '';
-for(let k in d.wallet) h += `<div class="stat-row"><span>${k.toUpperCase()}</span><span>${d.wallet[k]}</span></div>`;
-document.getElementById('wallet-div').innerHTML = h;
-}
-
-if(d.char) {
-document.getElementById('sheet-name-display').innerText = d.char.name || 'Sem Nome';
-document.getElementById('sheet-bio-display').innerText = d.char.bio || '';
-document.getElementById('sheet-attr-display').innerHTML = `
-<div class="stat-row"><span>Força</span><span>${d.char.str || 0}</span></div>
-<div class="stat-row"><span>Destreza</span><span>${d.char.dex || 0}</span></div>
-<div class="stat-row"><span>Constituição</span><span>${d.char.con || 0}</span></div>
-<div class="stat-row"><span>Inteligência</span><span>${d.char.int || 0}</span></div>
-`;
-document.getElementById('sheet-inv-display').innerText = d.char.inv || 'Inventário Vazio';
-
-document.getElementById('c-name').value = d.char.name || '';
-document.getElementById('c-img').value = d.char.img || '';
-document.getElementById('c-bio').value = d.char.bio || '';
-document.getElementById('c-inv').value = d.char.inv || '';
-document.getElementById('c-str').value = d.char.str || '';
-document.getElementById('c-dex').value = d.char.dex || '';
-document.getElementById('c-con').value = d.char.con || '';
-document.getElementById('c-int').value = d.char.int || '';
-
-const invItems = (d.char.inv || '').split('\n').filter(i => i.trim() !== '');
-const sel = document.getElementById('sell-item-select');
-sel.innerHTML = invItems.map(item => `<option value="${item}">${item}</option>`).join('');
-if (invItems.length === 0) sel.innerHTML = '<option value="">Inventário Vazio</option>';
-
-if(d.char.img) {
-document.getElementById('char-pic').src = d.char.img;
-document.getElementById('char-pic').style.display = 'block';
-}
-}
-loadProfileFeed();
-});
-}
-
-function toggleProfileEdit(event) {
-if(event && event.target.id === 'profile-edit-modal') return;
-const modal = document.getElementById('profile-edit-modal');
-modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-}
-function saveProfile() {
-const data = {
-name: document.getElementById('u-name-edit').value,
-key: document.getElementById('u-key-edit').value.toUpperCase(),
-color: document.getElementById('u-color-edit').value,
-img: document.getElementById('u-img-edit').value,
-bio: document.getElementById('u-bio-edit').value
-};
-db.ref('users/'+user.uid).update(data);
-toggleProfileEdit();
-}
-
-function toggleSheetEditModal(event) {
-if(event && event.target.id === 'sheet-edit-modal') return;
-const modal = document.getElementById('sheet-edit-modal');
-modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-}
-function saveSheet() {
-const data = {
-name: document.getElementById('c-name').value,
-img: document.getElementById('c-img').value,
-bio: document.getElementById('c-bio').value,
-inv: document.getElementById('c-inv').value,
-str: document.getElementById('c-str').value,
-dex: document.getElementById('c-dex').value,
-con: document.getElementById('c-con').value,
-int: document.getElementById('c-int').value
-};
-db.ref('users/'+user.uid+'/char').set(data);
-toggleSheetEditModal();
-}
-
-function saveNote() {
-db.ref('users/'+user.uid+'/note').set(document.getElementById('note-pad').value);
-alert('Notas Salvas');
-}
-
-function togglePostModal(event) {
-if(event && event.target.id === 'post-modal') return;
-const modal = document.getElementById('post-modal');
-modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-}
-function addPost() {
-const t = document.getElementById('post-txt').value;
-const i = document.getElementById('post-img').value;
-if(!t) return;
-db.ref('feed').push({
-u: document.getElementById('u-name').innerText,
-uid: user.uid,
-txt: t,
-img: i,
-ts: firebase.database.ServerValue.TIMESTAMP
-});
-document.getElementById('post-txt').value = '';
-document.getElementById('post-img').value = '';
-togglePostModal();
-}
-function renderPost(p) {
-return `<div class="card" style="border-left: 4px solid ${p.color || 'var(--primary)'};">
-<small style="color:${p.color || 'var(--primary)'}">${p.u}</small>
-<div style="margin-top:5px">${p.txt}</div>
-${p.img ? `<img src="${p.img}" style="width:100%; border-radius:8px; margin-top:10px">` : ''}
-</div>`;
-}
-function loadFeed() {
-    const feedListElement = document.getElementById('feed-list');
-    if (!feedListElement) {
-        console.error("Erro: Elemento 'feed-list' não encontrado. Verifique seu HTML.");
-        return;
+  auth.onAuthStateChanged(u=>{
+    user = u;
+    if(u) {
+      document.getElementById('view-login').style.display = 'none';
+      document.getElementById('view-user').style.display = 'block';
+      loadUser();
+    } else {
+      document.getElementById('view-login').style.display = 'block';
+      document.getElementById('view-user').style.display = 'none';
     }
+  });
 
-    db.ref('feed').limitToLast(20).on('value', async (snapshot) => {
-        feedListElement.innerHTML = ''; 
-        const posts = [];
-        
-        // 1. Coletar os posts do Firebase
-        snapshot.forEach(child => posts.push(child.val()));
+  loadFeed();
+  loadTables();
+}
 
-        // Inverter para mostrar os mais novos primeiro
-        posts.reverse(); 
-
-        // 2. Processar e Renderizar (Busca de dados do usuário)
-        for (const post of posts) {
-            let userName = post.u || 'Anônimo';
-            let userColor = 'var(--primary)'; // Cor padrão
-            
-            // 🛑 CRUCIAL: Esperar (await) a busca dos dados do perfil para a cor
-            try {
-                // Busca o perfil do autor
-                const userSnapshot = await db.ref('users/' + post.uid).once('value');
-                const userData = userSnapshot.val();
-
-                if (userData) {
-                    // Obtém nome e cor do perfil (se existirem)
-                    userName = userData.name || post.u; 
-                    userColor = userData.color || userColor;
-                }
-            } catch (error) {
-                console.warn("Aviso: Falha ao buscar perfil do usuário " + post.uid, error);
-            }
-
-            // 3. Renderizar com os dados completos
-            const fullPost = {
-                ...post,
-                u: userName,
-                color: userColor
-            };
-            
-            feedListElement.innerHTML += renderPost(fullPost);
-        }
-        
-        if (posts.length === 0) {
-            feedListElement.innerHTML = 'Nenhuma postagem ainda.';
-        }
+/* ------------------
+   AUTENTICAÇÃO
+   ------------------ */
+async function actionLogin(){
+  try{
+    await auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value);
+  } catch(e){ alert(e.message); }
+}
+async function actionRegister(){
+  try{
+    await auth.createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value);
+    const uid = auth.currentUser.uid;
+    const defaultName = uid.substring(0,6);
+    db.ref('users/'+uid).set({
+      name: defaultName,
+      key: defaultName.toUpperCase(),
+      color: '#ffffff',
+      bio: 'Novo aventureiro!',
+      wallet: {ouro:100, prata:50, cobre:20, bronze:0, diamante:0, esmeralda:0},
+      char: {name:'Herói', inv:'Poção de Cura\nEspada Curta', str:10, dex:10, con:10, int:10}
     });
-                }
-    
-function loadProfileFeed() {
-    const profileFeedListElement = document.getElementById('profile-feed-list');
-    
-    if (!profileFeedListElement) {
-        console.error("Erro: Elemento 'profile-feed-list' não encontrado.");
-        return;
+  } catch(e){ alert(e.message); }
+}
+function actionLogout(){ auth.signOut(); }
+
+/* ------------------
+   USUÁRIO / PERFIL
+   ------------------ */
+function loadUser(){
+  if(!user) return;
+  db.ref('users/'+user.uid).on('value', s=>{
+    const d = s.val() || {};
+    const defaultName = user.uid.substring(0,6);
+    const uName = d.name || defaultName;
+
+    document.getElementById('u-name').innerText = uName;
+    document.getElementById('u-name').style.color = d.color || 'var(--primary)';
+    document.getElementById('u-bio').innerText = d.bio || 'Sem descrição.';
+    if(d.img) {
+      document.getElementById('u-pic').src = d.img;
+      document.getElementById('u-pic').style.display = 'block';
+    } else {
+      document.getElementById('u-pic').style.display = 'none';
     }
-    
-    // 🛑 CRUCIAL: Verifica se o usuário está logado
-    if (!user || !user.uid) {
-        profileFeedListElement.innerHTML = 'Faça login para ver suas postagens.';
-        return;
+
+    document.getElementById('note-pad').value = d.note || '';
+
+    document.getElementById('u-name-edit').value = uName;
+    document.getElementById('u-key-edit').value = d.key || defaultName.toUpperCase();
+    document.getElementById('u-color-edit').value = d.color || '#ffffff';
+    document.getElementById('u-img-edit').value = d.img || '';
+    document.getElementById('u-bio-edit').value = d.bio || '';
+
+    if(d.wallet) {
+      document.getElementById('gold-val').innerText = d.wallet.ouro || 0;
+      let h = '';
+      for(let k in d.wallet) h += `<div class="stat-row"><span>${k.toUpperCase()}</span><span>${d.wallet[k]}</span></div>`;
+      document.getElementById('wallet-div').innerHTML = h;
     }
 
-    db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(10).on('value', async (snapshot) => {
-        profileFeedListElement.innerHTML = '';
-        const posts = [];
-        
-        // 1. Coletar os posts
-        snapshot.forEach(c => posts.push(c.val()));
-        posts.reverse(); 
+    if(d.char) {
+      document.getElementById('sheet-name-display').innerText = d.char.name || 'Sem Nome';
+      document.getElementById('sheet-bio-display').innerText = d.char.bio || '';
+      document.getElementById('sheet-attr-display').innerHTML = `
+        <div class="stat-row"><span>Força</span><span>${d.char.str || 0}</span></div>
+        <div class="stat-row"><span>Destreza</span><span>${d.char.dex || 0}</span></div>
+        <div class="stat-row"><span>Constituição</span><span>${d.char.con || 0}</span></div>
+        <div class="stat-row"><span>Inteligência</span><span>${d.char.int || 0}</span></div>
+      `;
+      document.getElementById('sheet-inv-display').innerText = d.char.inv || 'Inventário Vazio';
 
-        // 2. Processar e Renderizar (Busca de dados do usuário)
-        for (const post of posts) {
-            let userName = post.u || 'Anônimo';
-            let userColor = 'var(--primary)'; 
-            
-            // Busca o perfil do próprio usuário (que já está logado)
-            try {
-                const userSnapshot = await db.ref('users/' + post.uid).once('value');
-                const userData = userSnapshot.val();
+      document.getElementById('c-name').value = d.char.name || '';
+      document.getElementById('c-img').value = d.char.img || '';
+      document.getElementById('c-bio').value = d.char.bio || '';
+      document.getElementById('c-inv').value = d.char.inv || '';
+      document.getElementById('c-str').value = d.char.str || '';
+      document.getElementById('c-dex').value = d.char.dex || '';
+      document.getElementById('c-con').value = d.char.con || '';
+      document.getElementById('c-int').value = d.char.int || '';
 
-                if (userData) {
-                    userName = userData.name || post.u;
-                    userColor = userData.color || userColor;
-                }
-            } catch (error) {
-                console.warn("Aviso: Falha ao buscar perfil do usuário " + post.uid, error);
-            }
-            
-            // 3. Renderizar com os dados completos
-            const fullPost = {
-                ...post,
-                u: userName,
-                color: userColor
-            };
-            
-            profileFeedListElement.innerHTML += renderPost(fullPost);
+      const invItems = (d.char.inv || '').split('\\n').filter(i => i.trim() !== '');
+      const sel = document.getElementById('sell-item-select');
+      sel.innerHTML = invItems.map(item => `<option value="${item}">${item}</option>`).join('');
+      if (invItems.length === 0) sel.innerHTML = '<option value="">Inventário Vazio</option>';
+
+      if(d.char.img) {
+        document.getElementById('char-pic').src = d.char.img;
+        document.getElementById('char-pic').style.display = 'block';
+      }
+    }
+    loadProfileFeed();
+  });
+}
+
+function saveProfile(){
+  const data = {
+    name: document.getElementById('u-name-edit').value,
+    key: document.getElementById('u-key-edit').value.toUpperCase(),
+    color: document.getElementById('u-color-edit').value,
+    img: document.getElementById('u-img-edit').value,
+    bio: document.getElementById('u-bio-edit').value
+  };
+  if(!user) return alert('Faça login.');
+  db.ref('users/'+user.uid).update(data);
+  showModal('profile-edit-modal', false);
+}
+
+function saveSheet(){
+  const data = {
+    name: document.getElementById('c-name').value,
+    img: document.getElementById('c-img').value,
+    bio: document.getElementById('c-bio').value,
+    inv: document.getElementById('c-inv').value,
+    str: Number(document.getElementById('c-str').value) || 0,
+    dex: Number(document.getElementById('c-dex').value) || 0,
+    con: Number(document.getElementById('c-con').value) || 0,
+    int: Number(document.getElementById('c-int').value) || 0
+  };
+  if(!user) return alert('Faça login.');
+  db.ref('users/'+user.uid+'/char').set(data);
+  showModal('sheet-edit-modal', false);
+}
+
+function saveNote(){
+  if(!user) return alert('Faça login.');
+  db.ref('users/'+user.uid+'/note').set(document.getElementById('note-pad').value);
+  alert('Notas Salvas');
+}
+
+/* ------------------
+   FEED
+   ------------------ */
+function addPost(){
+  const t = document.getElementById('post-txt').value;
+  const i = document.getElementById('post-img').value;
+  if(!t) return alert('Digite algo para postar.');
+  if(!user) return alert('Faça login para postar.');
+  db.ref('feed').push({
+    u: document.getElementById('u-name').innerText,
+    uid: user.uid,
+    txt: t,
+    img: i || '',
+    ts: firebase.database.ServerValue.TIMESTAMP
+  });
+  document.getElementById('post-txt').value = '';
+  document.getElementById('post-img').value = '';
+  showModal('post-modal', false);
+}
+
+function renderPost(p){
+  return `<div class="card" style="border-left:4px solid ${p.color || 'var(--primary)'};">
+    <small style="color:${p.color || 'var(--primary)'}">${p.u}</small>
+    <div style="margin-top:5px">${p.txt}</div>
+    ${p.img ? `<img src="${p.img}" style="width:100%; border-radius:8px; margin-top:10px">` : ''}
+  </div>`;
+}
+
+function loadFeed(){
+  const feedListElement = document.getElementById('feed-list');
+  if(!feedListElement) return;
+  db.ref('feed').limitToLast(50).on('value', async snapshot=>{
+    feedListElement.innerHTML = '';
+    const posts = [];
+    snapshot.forEach(child => posts.push(child.val()));
+    posts.reverse();
+    for(const post of posts){
+      let userName = post.u || 'Anônimo';
+      let userColor = 'var(--primary)';
+      try {
+        const userSnapshot = await db.ref('users/' + post.uid).once('value');
+        const userData = userSnapshot.val();
+        if(userData){
+          userName = userData.name || userName;
+          userColor = userData.color || userColor;
         }
+      } catch(e) { console.warn('Erro ao obter usuário do post', e); }
+      const fullPost = {...post, u: userName, color: userColor};
+      feedListElement.innerHTML += renderPost(fullPost);
+    }
+    if(posts.length === 0) feedListElement.innerHTML = 'Nenhuma postagem ainda.';
+  });
+}
 
-        if (posts.length === 0) {
-            profileFeedListElement.innerHTML = 'Nenhuma postagem ainda.';
+function loadProfileFeed(){
+  const profileFeedListElement = document.getElementById('profile-feed-list');
+  if(!profileFeedListElement) return;
+  if(!user || !user.uid){
+    profileFeedListElement.innerHTML = 'Faça login para ver suas postagens.';
+    return;
+  }
+  db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(20).on('value', async snapshot=>{
+    profileFeedListElement.innerHTML = '';
+    const posts = [];
+    snapshot.forEach(c => posts.push(c.val()));
+    posts.reverse();
+    for(const post of posts){
+      let userName = post.u || 'Anônimo';
+      let userColor = 'var(--primary)';
+      try {
+        const userSnapshot = await db.ref('users/' + post.uid).once('value');
+        const userData = userSnapshot.val();
+        if(userData){
+          userName = userData.name || userName;
+          userColor = userData.color || userColor;
         }
+      } catch(e) { console.warn('Erro ao buscar perfil', e); }
+      profileFeedListElement.innerHTML += renderPost({...post, u: userName, color: userColor});
+    }
+    if(posts.length === 0) profileFeedListElement.innerHTML = 'Nenhuma postagem ainda.';
+  });
+}
+
+/* ------------------
+   CHATS (GLOBAL / DMS)
+   ------------------ */
+function openChat(id, recipientKey = null){
+  activeChat = id;
+  let dbPath = 'chats/'+id;
+  if(id === 'private' && recipientKey){
+    const userKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
+    const sortedKeys = [userKey, recipientKey].sort();
+    dbPath = 'dms/'+sortedKeys[0]+'_'+sortedKeys[1] + '/messages';
+    document.getElementById('chat-title').innerText = 'DM: ' + recipientKey;
+  } else if(id === 'global'){
+    document.getElementById('chat-title').innerText = 'Global';
+    dbPath = 'chats/global';
+  } else {
+    document.getElementById('chat-title').innerText = 'Chat';
+  }
+
+  go('chat-view');
+  const chatRef = db.ref(dbPath).limitToLast(50);
+  document.getElementById('chat-msgs').innerHTML = '';
+  chatRef.off(); // prevents duplicate listeners
+  chatRef.on('child_added', s=>{
+    const m = s.val();
+    const me = m.uid === (user && user.uid);
+    document.getElementById('chat-msgs').innerHTML += `<div class="msg ${me?'me':'other'}"><b>${m.u}</b><br>${m.txt}</div>`;
+    const list = document.getElementById('chat-msgs');
+    list.scrollTop = list.scrollHeight;
+  });
+}
+
+function openPrivateSetup(){ showModal('chat-private-setup', true); }
+
+async function openPrivateChat(){
+  const recipientKey = (document.getElementById('dm-key').value || '').toUpperCase();
+  if(!recipientKey) return alert('Insira a Chave do Destinatário');
+  const myKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
+  if(recipientKey === myKey) return alert('Você não pode conversar consigo mesmo!');
+  // localizar o UID do destinatário
+  const recipientSnap = await db.ref('users').orderByChild('key').equalTo(recipientKey).once('value');
+  if(!recipientSnap.exists()) return alert('Chave de destinatário inválida.');
+  const recipientObj = recipientSnap.val();
+  const recipientUid = Object.keys(recipientObj)[0];
+
+  const sortedKeys = [myKey, recipientKey].sort();
+  const dmId = sortedKeys[0] + '_' + sortedKeys[1];
+
+  // garantimos um nó de meta com participantes para regras de segurança e leitura
+  const participantsRef = db.ref('dms/' + dmId + '/participants');
+  participantsRef.update({ [user.uid]: true, [recipientUid]: true });
+
+  openChat('private', recipientKey);
+  showModal('chat-private-setup', false);
+}
+
+function sendChat(){
+  const t = document.getElementById('chat-msg-in').value;
+  if(!t) return;
+  if(!user) return alert('Faça login para enviar mensagens.');
+  document.getElementById('chat-msg-in').value = '';
+  let dbPath = 'chats/'+activeChat;
+  if(activeChat === 'private'){
+    const recipientKey = document.getElementById('chat-title').innerText.replace('DM: ','');
+    const myKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
+    const sortedKeys = [myKey, recipientKey].sort();
+    dbPath = 'dms/'+sortedKeys[0]+'_'+sortedKeys[1] + '/messages';
+  } else {
+    dbPath = 'chats/' + (activeChat || 'global');
+  }
+  db.ref(dbPath).push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
+}
+
+/* ------------------
+   LOJA / MARKET
+   ------------------ */
+function loadMarket(){
+  const d = document.getElementById('market-list');
+  if(!d) return;
+  db.ref('market').off();
+  db.ref('market').on('value', s=>{
+    d.innerHTML = '';
+    s.forEach(x => {
+      const i = x.val();
+      if(i.s !== user.uid) d.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><span>${i.i}</span><button onclick="buyUsr('${x.key}', '${i.i}')" style="width:auto; margin:0; padding:5px;">${i.p} ${i.c}</button></div><small>Vendedor: ${i.u}</small></div>`;
     });
-}
-function openChat(id, recipientKey = null) {
-activeChat = id;
-let dbPath = 'chats/'+id;
-
-if (id === 'private' && recipientKey) {
-const userKey = document.getElementById('u-key-edit').value.toUpperCase();
-const sortedKeys = [userKey, recipientKey].sort();
-dbPath = 'dms/'+sortedKeys[0]+'_'+sortedKeys[1];
-document.getElementById('chat-title').innerText = 'DM: ' + recipientKey;
-} else if (id === 'global') {
-document.getElementById('chat-title').innerText = 'Global';
+  });
 }
 
-go('chat-view');
-const chatRef = db.ref(dbPath).limitToLast(30);
-document.getElementById('chat-msgs').innerHTML = '';
-chatRef.on('child_added', s => {
-const m = s.val();
-const me = m.uid === user.uid;
-document.getElementById('chat-msgs').innerHTML += `<div class="msg ${me?'me':'other'}"><b>${m.u}</b><br>${m.txt}</div>`;
-const list = document.getElementById('chat-msgs');
-list.scrollTop = list.scrollHeight;
-});
+function buySys(i, p){
+  db.ref('users/'+user.uid+'/wallet/ouro').once('value', s=>{
+    if((s.val()||0) >= p) {
+      db.ref('users/'+user.uid+'/wallet/ouro').set(s.val()-p);
+      db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\\n' + i);
+      alert('Comprado!');
+    } else alert('Sem ouro');
+  });
 }
 
-function openPrivateSetup() {
-document.getElementById('chat-private-setup').style.display = 'flex';
-}
-function closePrivateSetup(event) {
-if(event && event.target.id === 'chat-private-setup') document.getElementById('chat-private-setup').style.display = 'none';
-}
-
-async function openPrivateChat() {
-const recipientKey = document.getElementById('dm-key').value.toUpperCase();
-if (!recipientKey) return alert('Insira a Chave do Destinatário');
-const myKey = document.getElementById('u-key-edit').value.toUpperCase();
-if (recipientKey === myKey) return alert('Você não pode conversar consigo mesmo!');
-
-const recipientSnap = await db.ref('users').orderByChild('key').equalTo(recipientKey).once('value');
-if (!recipientSnap.exists()) return alert('Chave de destinatário inválida.');
-
-openChat('private', recipientKey);
-document.getElementById('chat-private-setup').style.display = 'none';
-}
-
-function sendChat() {
-const t = document.getElementById('chat-msg-in').value;
-if(!t) return;
-document.getElementById('chat-msg-in').value = '';
-
-let dbPath = 'chats/'+activeChat;
-if(activeChat === 'private') {
-const recipientKey = document.getElementById('chat-title').innerText.replace('DM: ', '');
-const myKey = document.getElementById('u-key-edit').value.toUpperCase();
-const sortedKeys = [myKey, recipientKey].sort();
-dbPath = 'dms/'+sortedKeys[0]+'_'+sortedKeys[1];
+function postSell(){
+  const item = document.getElementById('sell-item-select').value;
+  const price = Number(document.getElementById('sell-price').value);
+  const curr = document.getElementById('sell-curr').value;
+  if(!item || !price) return alert('Selecione um item e um preço.');
+  db.ref('users/'+user.uid+'/char/inv').once('value', s=>{
+    let inventory = (s.val() || '').split('\\n').filter(i => i.trim() !== '');
+    const itemIndex = inventory.findIndex(i => i.trim() === item.trim());
+    if (itemIndex === -1) return alert('Item não encontrado no inventário.');
+    inventory.splice(itemIndex, 1);
+    db.ref('users/'+user.uid+'/char/inv').set(inventory.join('\\n'));
+    db.ref('market').push({
+      s: user.uid,
+      u: document.getElementById('u-name').innerText,
+      i: item,
+      p: price,
+      c: curr
+    });
+    alert('Item anunciado!');
+  });
 }
 
-db.ref(dbPath).push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t});
+function buyUsr(k, itemName){
+  db.ref('market/'+k).once('value', s=>{
+    const i = s.val();
+    db.ref('users/'+user.uid+'/wallet/'+i.c).once('value', w=>{
+      if((w.val()||0) >= i.p) {
+        db.ref('users/'+user.uid+'/wallet/'+i.c).set(w.val()-i.p);
+        db.ref('users/'+i.s+'/wallet/'+i.c).transaction(v=>(v||0)+i.p);
+        db.ref('market/'+k).remove();
+        db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\\n' + itemName);
+        alert('Comprado!');
+      } else alert('Sem saldo');
+    });
+  });
 }
 
-function setMode(m) {
-const r = document.documentElement.style;
-if(m==='light') {
-r.setProperty('--bg-main', '#ddd');
-r.setProperty('--bg-surface', '#f5f5f5');
-r.setProperty('--bg-card', '#ffffff');
-r.setProperty('--text-main', '#000000');
-r.setProperty('--border', '#ccc');
-r.setProperty('--input-bg', '#eee');
-} else {
-r.setProperty('--bg-main', '#000');
-r.setProperty('--bg-surface', '#121212');
-r.setProperty('--bg-card', '#1e1e1e');
-r.setProperty('--text-main', '#ffffff');
-r.setProperty('--border', '#333');
-r.setProperty('--input-bg', '#2c2c2c');
-}
-}
-function setAccent(c) { document.documentElement.style.setProperty('--primary', c); }
+/* ------------------
+   SESSÕES / MESTRE IA
+   ------------------ */
 
-
-function transfer() {
-const k = document.getElementById('pay-key').value.toUpperCase();
-const c = document.getElementById('pay-type').value;
-const a = parseInt(document.getElementById('pay-amt').value);
-if(!k || !a) return alert('Preencha chave e valor.');
-db.ref('users/'+user.uid+'/wallet/'+c).once('value', s => {
-if((s.val()||0) < a) return alert('Saldo insuficiente');
-db.ref('users').orderByChild('key').equalTo(k).once('value', u => {
-if(!u.exists()) return alert('Chave inválida');
-const dest = Object.keys(u.val())[0];
-db.ref('users/'+user.uid+'/wallet/'+c).set(s.val()-a);
-db.ref('users/'+dest+'/wallet/'+c).transaction(v=>(v||0)+a);
-alert('Enviado!');
-});
-});
+function createTable(){
+  const n = document.getElementById('table-name').value;
+  const t = document.getElementById('table-type').value;
+  if(!n) return alert('Informe nome da aventura.');
+  const k = db.ref('tables').push().key;
+  db.ref('tables/'+k).set({name:n, type:t, master:user.uid, users:{[user.uid]:document.getElementById('u-name').innerText}});
+  joinTable(k);
 }
 
-function loadMarket() {
-const sel = document.getElementById('sell-item-select');
-if (sel.options.length > 0 && sel.options[0].value === "") {
-loadUser(); 
-}
-const d = document.getElementById('market-list');
-db.ref('market').on('value', s => {
-d.innerHTML = '';
-s.forEach(x => {
-const i = x.val();
-if(i.s !== user.uid) d.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><span>${i.i}</span><button onclick="buyUsr('${x.key}', '${i.i}')" style="width:auto; margin:0; padding:5px;">${i.p} ${i.c}</button></div><small>Vendedor: ${i.u}</small></div>`;
-});
-});
+function loadTables(){
+  db.ref('tables').off();
+  db.ref('tables').on('value', s=>{
+    const d = document.getElementById('table-list');
+    d.innerHTML = '';
+    s.forEach(x=>{
+      const t = x.val();
+      d.innerHTML += `<div class="card" onclick="joinTable('${x.key}')" style="cursor:pointer; border-left: 4px solid ${t.type==='AI'?'cyan':'orange'}"><b>${t.name}</b><br><small>${t.type === 'AI' ? '🤖 IA' : '👤 Humano'}</small></div>`;
+    });
+  });
 }
 
-function switchStore(m) {
-document.getElementById('store-sys').style.display = m==='sys'?'block':'none';
-document.getElementById('store-usr').style.display = m==='usr'?'block':'none';
-document.getElementById('btn-sys').style.background = m==='sys'?'var(--primary)':'var(--bg-card)';
-document.getElementById('btn-sys').style.color = m==='sys'?'var(--text-main)':'var(--text-main)';
-document.getElementById('btn-usr').style.background = m==='usr'?'var(--primary)':'var(--bg-card)';
-document.getElementById('btn-usr').style.color = m==='usr'?'var(--text-main)':'var(--text-main)';
-}
-function buySys(i, p) {
-db.ref('users/'+user.uid+'/wallet/ouro').once('value', s => {
-if((s.val()||0) >= p) {
-db.ref('users/'+user.uid+'/wallet/ouro').set(s.val()-p);
-db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\n' + i);
-alert('Comprado!');
-} else alert('Sem ouro');
-});
-}
-function postSell() {
-const item = document.getElementById('sell-item-select').value;
-const price = parseInt(document.getElementById('sell-price').value);
-const curr = document.getElementById('sell-curr').value;
-if(!item || !price) return alert('Selecione um item e um preço.');
-
-db.ref('users/'+user.uid+'/char/inv').once('value', s => {
-let inventory = (s.val() || '').split('\n').filter(i => i.trim() !== '');
-const itemIndex = inventory.findIndex(i => i.trim() === item.trim());
-
-if (itemIndex === -1) return alert('Item não encontrado no inventário.');
-
-inventory.splice(itemIndex, 1);
-db.ref('users/'+user.uid+'/char/inv').set(inventory.join('\n'));
-
-db.ref('market').push({
-s: user.uid,
-u: document.getElementById('u-name').innerText,
-i: item,
-p: price,
-c: curr
-});
-alert('Item anunciado!');
-});
+function joinTable(k){
+  activeTable = k;
+  db.ref('tables/'+k+'/users/'+user.uid).set(document.getElementById('u-name').innerText);
+  go('active-session');
+  db.ref('tables/'+k).once('value', s=>{
+    const t = s.val();
+    document.getElementById('session-name').innerText = t.name;
+    const isGm = t.master === user.uid && t.type === 'HUMAN';
+    document.getElementById('gm-btn').style.display = isGm ? 'block' : 'none';
+    if(isGm) loadGmUsers(k);
+  });
+  loadSessionLog(k);
 }
 
-function buyUsr(k, itemName) {
-db.ref('market/'+k).once('value', s => {
-const i = s.val();
-db.ref('users/'+user.uid+'/wallet/'+i.c).once('value', w => {
-if((w.val()||0) >= i.p) {
-db.ref('users/'+user.uid+'/wallet/'+i.c).set(w.val()-i.p);
-db.ref('users/'+i.s+'/wallet/'+i.c).transaction(v=>(v||0)+i.p);
-db.ref('market/'+k).remove();
-db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\n' + itemName);
-alert('Comprado!');
-} else alert('Sem saldo');
-});
-});
+function exitTable(){
+  activeTable = null;
+  back('active-session');
+  db.ref('tables').off();
 }
 
-function createTable() {
-const n = document.getElementById('table-name').value;
-const t = document.getElementById('table-type').value;
-if(!n) return;
-const k = db.ref('tables').push().key;
-db.ref('tables/'+k).set({name:n, type:t, master:user.uid, users:{[user.uid]:document.getElementById('u-name').innerText}});
-joinTable(k);
+function toggleGmTools(){
+  const p = document.getElementById('gm-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
 }
-function loadTables() {
-db.ref('tables').on('value', s => {
-const d = document.getElementById('table-list');
-d.innerHTML = '';
-s.forEach(x => {
-const t = x.val();
-d.innerHTML += `<div class="card" onclick="joinTable('${x.key}')" style="cursor:pointer; border-left: 4px solid ${t.type==='AI'?'cyan':'orange'}"><b>${t.name}</b><br><small>${t.type === 'AI' ? '🤖 IA' : '👤 Humano'}</small></div>`;
-});
-});
+
+function loadGmUsers(k){
+  db.ref('tables/'+k+'/users').on('value', s=>{
+    const sel = document.getElementById('gm-target');
+    sel.innerHTML = '';
+    s.forEach(u => sel.innerHTML += `<option value="${u.key}">${u.val()}</option>`);
+  });
 }
-function joinTable(k) {
-activeTable = k;
-db.ref('tables/'+k+'/users/'+user.uid).set(document.getElementById('u-name').innerText);
-go('active-session');
-db.ref('tables/'+k).once('value', s => {
-const t = s.val();
-document.getElementById('session-name').innerText = t.name;
-const isGm = t.master === user.uid && t.type === 'HUMAN';
-document.getElementById('gm-btn').style.display = isGm ? 'block' : 'none';
-if(isGm) loadGmUsers(k);
-});
-loadSessionLog(k);
+
+function gmCmd(act){
+  const u = document.getElementById('gm-target').value;
+  const v = document.getElementById('gm-val').value;
+  db.ref('tables/'+activeTable+'/log').push({u:'Mestre', uid:'sys', txt:`Mestre aplicou ${act.toUpperCase()} ${v} em ${u}.`, ts: firebase.database.ServerValue.TIMESTAMP});
 }
-function exitTable() {
-activeTable = null;
-back('active-session');
-db.ref('tables').off();
+
+function loadSessionLog(k){
+  const d = document.getElementById('session-log');
+  d.innerHTML = '';
+  db.ref('tables/'+k+'/log').limitToLast(100).off();
+  db.ref('tables/'+k+'/log').limitToLast(100).on('child_added', s=>{
+    const m = s.val();
+    d.innerHTML += `<div class="msg ${m.uid===user.uid?'me':'other'}"><b>${m.u}</b><br>${m.txt}</div>`;
+    d.scrollTop = d.scrollHeight;
+  });
 }
-function toggleGmTools() {
-const p = document.getElementById('gm-panel');
-p.style.display = p.style.display === 'none' ? 'block' : 'none';
+
+/* sendSession: envia a mensagem do jogador e, se for mesa IA, chama a API externa.
+   A resposta da IA é tratada de forma robusta (vários formatos de retorno). */
+async function sendSession(){
+  const t = document.getElementById('session-in').value;
+  if(!t) return;
+  if(!activeTable) return alert('Entre em uma mesa.');
+  document.getElementById('session-in').value = '';
+  db.ref('tables/'+activeTable+'/log').push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
+
+  const s = await db.ref('tables/'+activeTable).get();
+  if(s.exists() && s.val().type === 'AI'){
+    try {
+      // Chamada à API (exemplo usando OpenRouter). Em produção, faça essa chamada em backend.
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${AI_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "mistralai/mistral-7b-instruct",
+          messages: [{role: "user", content: `RPG Mestre: Jogador disse: "${t}". Responda como mestre.`}]
+        })
+      });
+      const j = await response.json();
+
+      // parse robusto para diferentes formatos de API
+      let aiText = "O mestre IA não respondeu (formato inesperado).";
+      if(j){
+        if(j.choices && j.choices[0]){
+          if(j.choices[0].message && j.choices[0].message.content) aiText = j.choices[0].message.content;
+          else if(j.choices[0].text) aiText = j.choices[0].text;
+        } else if(j.output && j.output[0] && j.output[0].content && j.output[0].content[0] && j.output[0].content[0].text) {
+          aiText = j.output[0].content[0].text;
+        } else if(j.result && j.result.output_text) {
+          aiText = j.result.output_text;
+        } else {
+          aiText = JSON.stringify(j).slice(0,1000);
+        }
+      }
+      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:aiText, ts: firebase.database.ServerValue.TIMESTAMP});
+    } catch(e) {
+      console.error('Erro ao chamar IA', e);
+      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:'Erro ao gerar resposta da IA.', ts: firebase.database.ServerValue.TIMESTAMP});
+    }
+  }
 }
-function loadGmUsers(k) {
-db.ref('tables/'+k+'/users').on('value', s => {
-const sel = document.getElementById('gm-target');
-sel.innerHTML = '';
-s.forEach(u => sel.innerHTML += `<option value="${u.key}">${u.val()}</option>`);
-});
+
+/* ------------------
+   TRANSFERÊNCIAS
+   ------------------ */
+function transfer(){
+  const k = (document.getElementById('pay-key').value || '').toUpperCase();
+  const c = document.getElementById('pay-type').value;
+  const a = Number(document.getElementById('pay-amt').value);
+  if(!k || !a) return alert('Preencha chave e valor.');
+  db.ref('users/'+user.uid+'/wallet/'+c).once('value', s=>{
+    if((s.val()||0) < a) return alert('Saldo insuficiente');
+    db.ref('users').orderByChild('key').equalTo(k).once('value', u=>{
+      if(!u.exists()) return alert('Chave inválida');
+      const dest = Object.keys(u.val())[0];
+      db.ref('users/'+user.uid+'/wallet/'+c).set(s.val()-a);
+      db.ref('users/'+dest+'/wallet/'+c).transaction(v => (v||0)+a);
+      alert('Enviado!');
+    });
+  });
 }
-function gmCmd(act) {
-const u = document.getElementById('gm-target').value;
-const v = document.getElementById('gm-val').value;
-db.ref('tables/'+activeTable+'/log').push({u:'Mestre', uid:'sys', txt:`Mestre aplicou ${act.toUpperCase()} ${v} em ${u}.`});
+
+/* ------------------
+   OUTROS (market switch etc.)
+   ------------------ */
+function switchStore(m){
+  document.getElementById('store-sys').style.display = m==='sys'?'block':'none';
+  document.getElementById('store-usr').style.display = m==='usr'?'block':'none';
+  document.getElementById('btn-sys').style.background = m==='sys'?'var(--primary)':'var(--bg-card)';
+  document.getElementById('btn-usr').style.background = m==='usr'?'var(--primary)':'var(--bg-card)';
 }
-function loadSessionLog(k) {
-const d = document.getElementById('session-log');
-d.innerHTML = '';
-db.ref('tables/'+k+'/log').limitToLast(30).on('child_added', s => {
-const m = s.val();
-d.innerHTML += `<div class="msg ${m.uid===user.uid?'me':'other'}"><b>${m.u}</b><br>${m.txt}</div>`;
-d.scrollTop = d.scrollHeight;
-});
-}
-async function sendSession() {
-const t = document.getElementById('session-in').value;
-if(!t) return;
-document.getElementById('session-in').value = '';
-db.ref('tables/'+activeTable+'/log').push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t});
-const s = await db.ref('tables/'+activeTable).get();
-if(s.val().type === 'AI') {
-try {
-const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-method:"POST", headers:{"Authorization":`Bearer ${AI_KEY}`, "Content-Type":"application/json"},
-body:JSON.stringify({model:"mistralai/mistral-7b-instruct", messages:[{role:"user", content:`RPG Mestre: Jogador disse: "${t}". Responda como mestre.`}]})
-});
-const j = await r.json();
-db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:j.choices[0].message.content});
-} catch(e){}
-}
-}
+
+/* simples helpers de navegação */
+function go(id){ document.getElementById(id).classList.add('active'); if(id==='store') loadMarket(); }
+function back(id){ document.getElementById(id).classList.remove('active'); }
+function setMode(m){ const r = document.documentElement.style; if(m==='light'){ r.setProperty('--bg-main','#ddd'); r.setProperty('--bg-surface','#f5f5f5'); r.setProperty('--bg-card','#ffffff'); r.setProperty('--text-main','#000'); r.setProperty('--border','#ccc'); r.setProperty('--input-bg','#eee'); } else { r.setProperty('--bg-main','#000'); r.setProperty('--bg-surface','#121212'); r.setProperty('--bg-card','#1e1e1e'); r.setProperty('--text-main','#ffffff'); r.setProperty('--border','#333'); r.setProperty('--input-bg','#2c2c2c'); } }
+function setAccent(c){ document.documentElement.style.setProperty('--primary', c); }
+
 </script>
 </body>
 </html>
