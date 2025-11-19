@@ -12,77 +12,79 @@
 
 <style>
 :root {
---primary: #6200ea;
---bg-main: #000000;
---bg-surface: #121212;
---bg-card: #1e1e1e;
---text-main: #ffffff;
---text-sub: #b0b0b0;
---border: #333333;
---input-bg: #2c2c2c;
---danger: #d50000;
---success: #00c853;
+  --primary: #6200ea;
+  --primary-contrast: #ffffff;
+  --bg-main: #000000;
+  --bg-surface: #121212;
+  --bg-card: #1e1e1e;
+  --text-main: #ffffff;
+  --text-sub: #b0b0b0;
+  --border: #333333;
+  --input-bg: #2c2c2c;
+  --danger: #d50000;
+  --success: #00c853;
 }
 *{box-sizing:border-box}
 body {
-margin: 0;
-height: 100vh;
-display: flex;
-justify-content: center;
-align-items: center;
-background: #111;
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-user-select: none;
-transition: background 0.3s;
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--bg-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  user-select: none;
+  transition: background 0.3s;
 }
 .device {
-width: 375px;
-height: 780px;
-background: var(--bg-main);
-border-radius: 40px;
-position: relative;
-box-shadow: 0 0 0 8px var(--border), 0 0 20px rgba(0,0,0,0.5);
-overflow: hidden;
+  width: 375px;
+  height: 780px;
+  background: var(--bg-main);
+  border-radius: 40px;
+  position: relative;
+  box-shadow: 0 0 0 8px var(--border), 0 0 20px rgba(0,0,0,.5);
+  overflow: hidden;
 }
 .screen {
-width: 100%;
-height: 100%;
-background: var(--bg-surface);
-color: var(--text-main);
-display: flex;
-flex-direction: column;
-transition: background 0.3s, color 0.3s;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  transition: background 0.3s, color 0.3s;
 }
 .status-bar {
-height: 40px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 0 25px;
-font-size: 12px;
-font-weight: 600;
-z-index: 100;
+  height: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 25px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 100;
 }
 .app-grid {
-display: grid;
-grid-template-columns: repeat(4, 1fr);
-gap: 15px;
-padding: 20px;
-align-content: start;
-flex: 1;
-overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  padding: 20px;
+  align-content: start;
+  flex: 1;
+  overflow-y: auto;
 }
 .app-icon { display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform .12s;}
 .icon-box { width:60px; height:60px; background: var(--bg-card); border-radius:15px; display:flex; justify-content:center; align-items:center; font-size:28px; margin-bottom:8px; box-shadow:0 2px 5px rgba(0,0,0,.2); border:1px solid var(--border); }
 .app-icon span { font-size:11px; text-align:center; color:var(--text-main); }
-.page { position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg-surface); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); z-index:50; }
+.page { position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg-surface); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); z-index:50; padding-top:55px; }
 .page.active { transform:translateX(0); }
-.header { height:55px; display:flex; align-items:center; padding:0 15px; background:var(--bg-card); border-bottom:1px solid var(--border); font-weight:bold; font-size:18px; flex-shrink:0; color:var(--text-main); }
+.header { position:absolute; top:0; left:0; right:0; height:55px; display:flex; align-items:center; padding:0 15px; background:var(--bg-card); border-bottom:1px solid var(--border); font-weight:bold; font-size:18px; flex-shrink:0; color:var(--text-main); z-index:60; }
 .back-btn { background:none; border:none; font-size:26px; color:var(--primary); margin-right:15px; cursor:pointer; padding:0; line-height:1; }
 .content { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; }
 .card { background:var(--bg-card); border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,.1); border:1px solid var(--border); }
 input, textarea, select { width:100%; padding:12px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; color:var(--text-main); font-family:inherit; margin-bottom:10px; box-sizing:border-box; }
-button { width:100%; padding:12px; border-radius:8px; border:none; font-weight:600; cursor:pointer; background:var(--primary); color:var(--text-main); margin-bottom:10px; transition:background .2s; }
+button { padding:10px 12px; border-radius:8px; border:none; font-weight:600; cursor:pointer; background:var(--primary); color:var(--primary-contrast); margin-bottom:10px; transition:background .2s; }
+button.small { padding:6px 8px; font-size:13px; width:auto; }
 .chat-container { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 .chat-list { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px; }
 .msg { max-width:80%; padding:10px 15px; border-radius:18px; font-size:14px; line-height:1.4; word-wrap:break-word; }
@@ -93,312 +95,316 @@ button { width:100%; padding:12px; border-radius:8px; border:none; font-weight:6
 .modal { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99; display:none; justify-content:center; align-items:center; padding:20px; }
 .modal-content { background:var(--bg-surface); padding:20px; border-radius:15px; width:100%; max-width:560px; max-height:80%; overflow-y:auto; border:2px solid var(--primary); }
 small { color:var(--text-sub); }
+/* utility */
+.center { display:flex; justify-content:center; align-items:center; }
 </style>
 </head>
 <body onload="init()">
 
 <div class="device">
-<div class="screen">
-<div class="status-bar">
-<span id="clock">10:00</span>
-<span><span id="battery">100%</span> 🔋</span>
-</div>
+  <div class="screen">
+    <div class="status-bar">
+      <span id="clock">10:00</span>
+      <span><span id="battery">100%</span> 🔋</span>
+    </div>
 
-<div id="home" class="content" style="padding-top:40px;">
-<h1 style="margin:0 0 20px 20px; font-family:'Brush Script MT', cursive; color:var(--primary);">Mestre OS</h1>
-<div class="app-grid">
-<div class="app-icon" onclick="go('profile')"><div class="icon-box" style="color:#2196f3">👤</div><span>Perfil</span></div>
-<div class="app-icon" onclick="go('feed')"><div class="icon-box" style="color:#e91e63">📰</div><span>Feed</span></div>
-<div class="app-icon" onclick="go('chats')"><div class="icon-box" style="color:#4caf50">💬</div><span>Chats</span></div>
-<div class="app-icon" onclick="go('sessions')"><div class="icon-box" style="color:#9c27b0">🎲</div><span>Sessões</span></div>
-<div class="app-icon" onclick="go('sheet')"><div class="icon-box" style="color:#ff9800">📜</div><span>Ficha</span></div>
-<div class="app-icon" onclick="go('bank')"><div class="icon-box" style="color:#ffeb3b">🏦</div><span>Banco</span></div>
-<div class="app-icon" onclick="go('store')"><div class="icon-box" style="color:#795548">🛒</div><span>Loja</span></div>
-<div class="app-icon" onclick="go('notes')"><div class="icon-box" style="color:#607d8b">📝</div><span>Notas</span></div>
-<div class="app-icon" onclick="go('settings')"><div class="icon-box" style="color:var(--text-sub)">⚙️</div><span>Ajustes</span></div>
-</div>
-</div>
+    <div id="home" class="content" style="padding-top:40px;">
+      <h1 style="margin:0 0 20px 20px; font-family:'Brush Script MT', cursive; color:var(--primary);">Mestre OS</h1>
+      <div class="app-grid">
+        <div class="app-icon" onclick="go('profile')"><div class="icon-box" style="color:#2196f3">👤</div><span>Perfil</span></div>
+        <div class="app-icon" onclick="go('feed')"><div class="icon-box" style="color:#e91e63">📰</div><span>Feed</span></div>
+        <div class="app-icon" onclick="go('chats')"><div class="icon-box" style="color:#4caf50">💬</div><span>Chats</span></div>
+        <div class="app-icon" onclick="go('sessions')"><div class="icon-box" style="color:#9c27b0">🎲</div><span>Sessões</span></div>
+        <div class="app-icon" onclick="go('sheet')"><div class="icon-box" style="color:#ff9800">📜</div><span>Ficha</span></div>
+        <div class="app-icon" onclick="go('bank')"><div class="icon-box" style="color:#ffeb3b">🏦</div><span>Banco</span></div>
+        <div class="app-icon" onclick="go('store')"><div class="icon-box" style="color:#795548">🛒</div><span>Loja</span></div>
+        <div class="app-icon" onclick="go('notes')"><div class="icon-box" style="color:#607d8b">📝</div><span>Notas</span></div>
+        <div class="app-icon" onclick="go('settings')"><div class="icon-box" style="color:var(--text-sub)">⚙️</div><span>Ajustes</span></div>
+      </div>
+    </div>
 
-<!-- PAGES -->
-<div id="profile" class="page">
-<div class="header"><button class="back-btn" onclick="back('profile')">‹</button> Perfil</div>
-<div class="content">
-<div id="view-login">
-<div class="card">
-<h3>Acesso</h3>
-<input type="email" id="email" placeholder="E-mail">
-<input type="password" id="pass" placeholder="Senha">
-<button onclick="actionLogin()">Entrar</button>
-<button onclick="actionRegister()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text-main)">Criar Conta</button>
-</div>
-</div>
-<div id="view-user" style="display:none">
-<div class="card" style="text-align:center">
-<img id="u-pic" src="" style="width:80px; height:80px; border-radius:50%; background:var(--border); object-fit:cover; margin:0 auto 10px; display:none;">
-<h3 id="u-name" style="color:var(--primary)">Nome</h3>
-<p id="u-bio" style="font-size:12px; color:var(--text-sub);">Descrição</p>
-<button onclick="showModal('profile-edit-modal', true)">Editar Perfil</button>
-</div>
-<div class="card">
-<h4>Minhas Postagens</h4>
-<div id="profile-feed-list">Nenhuma postagem ainda.</div>
-</div>
-</div>
-</div>
-</div>
+    <!-- PAGES -->
+    <div id="profile" class="page">
+      <div class="header"><button class="back-btn" onclick="back('profile')">‹</button> Perfil</div>
+      <div class="content">
+        <div id="view-login">
+          <div class="card">
+            <h3>Acesso</h3>
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="pass" placeholder="Senha">
+            <button onclick="actionLogin()">Entrar</button>
+            <button onclick="actionRegister()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text-main)">Criar Conta</button>
+          </div>
+        </div>
+        <div id="view-user" style="display:none">
+          <div class="card" style="text-align:center">
+            <img id="u-pic" src="" style="width:80px; height:80px; border-radius:50%; background:var(--border); object-fit:cover; margin:0 auto 10px; display:none;">
+            <h3 id="u-name" style="color:var(--primary)">Nome</h3>
+            <p id="u-bio" style="font-size:12px; color:var(--text-sub);">Descrição</p>
+            <button onclick="showModal('profile-edit-modal', true)">Editar Perfil</button>
+          </div>
+          <div class="card">
+            <h4>Minhas Postagens</h4>
+            <div id="profile-feed-list">Nenhuma postagem ainda.</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<div id="profile-edit-modal" class="modal" onclick="modalBackgroundClick(event, 'profile-edit-modal')">
-<div class="modal-content" onclick="event.stopPropagation()">
-<h4>Editar Dados</h4>
-<input type="text" id="u-name-edit" placeholder="Nome de Usuário">
-<input type="text" id="u-key-edit" placeholder="Chave de Transação (Editável)">
-<input type="text" id="u-color-edit" placeholder="Cor Hex do Nome (Ex: #FF0000)">
-<input type="text" id="u-img-edit" placeholder="Link da Imagem de Perfil (URL)">
-<textarea id="u-bio-edit" placeholder="Descrição/Bio"></textarea>
-<button onclick="saveProfile()" style="background:var(--success)">Salvar Alterações</button>
-<button onclick="showModal('profile-edit-modal', false)" style="background:var(--danger)">Cancelar</button>
-<button onclick="actionLogout()" style="background:var(--text-sub); margin-top:10px;">Sair da Conta</button>
-</div>
-</div>
+    <div id="profile-edit-modal" class="modal" onclick="modalBackgroundClick(event, 'profile-edit-modal')">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <h4>Editar Dados</h4>
+        <input type="text" id="u-name-edit" placeholder="Nome de Usuário">
+        <input type="text" id="u-key-edit" placeholder="Chave de Transação (Editável)">
+        <input type="text" id="u-color-edit" placeholder="Cor Hex do Nome (Ex: #FF0000)">
+        <input type="text" id="u-img-edit" placeholder="Link da Imagem de Perfil (URL)">
+        <textarea id="u-bio-edit" placeholder="Descrição/Bio"></textarea>
+        <button onclick="saveProfile()" style="background:var(--success)">Salvar Alterações</button>
+        <button onclick="showModal('profile-edit-modal', false)" style="background:var(--danger)">Cancelar</button>
+        <button onclick="actionLogout()" style="background:var(--text-sub); margin-top:10px;">Sair da Conta</button>
+      </div>
+    </div>
 
-<div id="feed" class="page">
-<div class="header"><button class="back-btn" onclick="back('feed')">‹</button> Feed Global</div>
-<div id="feed-list" class="content"></div>
-<button onclick="showModal('post-modal', true)" style="position:fixed; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; font-size:24px; padding:0;">+</button>
-</div>
+    <div id="feed" class="page">
+      <div class="header"><button class="back-btn" onclick="back('feed')">‹</button> Feed Global</div>
+      <div id="feed-list" class="content"></div>
+      <button onclick="showModal('post-modal', true)" style="position:fixed; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; font-size:24px; padding:0;">+</button>
+    </div>
 
-<div id="post-modal" class="modal" onclick="modalBackgroundClick(event, 'post-modal')">
-<div class="modal-content" onclick="event.stopPropagation()">
-<h4>Criar Nova Postagem</h4>
-<textarea id="post-txt" rows="5" placeholder="No que está pensando?" style="resize:none;"></textarea>
-<input id="post-img" type="text" placeholder="Link da imagem (Opcional)">
-<button onclick="addPost()">Publicar</button>
-<button onclick="showModal('post-modal', false)" style="background:var(--danger)">Cancelar</button>
-</div>
-</div>
+    <div id="post-modal" class="modal" onclick="modalBackgroundClick(event, 'post-modal')">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <h4>Criar Nova Postagem</h4>
+        <textarea id="post-txt" rows="5" placeholder="No que está pensando?" style="resize:none;"></textarea>
+        <input id="post-img" type="text" placeholder="Link da imagem (Opcional)">
+        <button onclick="addPost()">Publicar</button>
+        <button onclick="showModal('post-modal', false)" style="background:var(--danger)">Cancelar</button>
+      </div>
+    </div>
 
-<div id="chats" class="page">
-<div class="header"><button class="back-btn" onclick="back('chats')">‹</button> Mensagens</div>
-<div class="content">
-<div class="card" onclick="openChat('global')" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #4caf50;">
-<div style="width:40px; height:40px; background:#4caf50; border-radius:50%; display:flex; justify-content:center; align-items:center;">🌍</div>
-<div><b>Chat Global</b><br><small>Público para todos</small></div>
-</div>
-<div class="card" onclick="openPrivateSetup()" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #2196f3;">
-<div style="width:40px; height:40px; background:#2196f3; border-radius:50%; display:flex; justify-content:center; align-items:center;">🔒</div>
-<div><b>Chat Privado</b><br><small>Mensagens diretas por Chave</small></div>
-</div>
-<div class="card" onclick="alert('Entre em uma sessão para acessar o Chat da Mesa.')" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #9c27b0;">
-<div style="width:40px; height:40px; background:#9c27b0; border-radius:50%; display:flex; justify-content:center; align-items:center;">🎲</div>
-<div><b>Chat da Mesa</b><br><small>Acessível na Sessão</small></div>
-</div>
-</div>
-</div>
+    <div id="chats" class="page">
+      <div class="header"><button class="back-btn" onclick="back('chats')">‹</button> Mensagens</div>
+      <div class="content">
+        <div class="card" onclick="openChat('global')" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #4caf50;">
+          <div style="width:40px; height:40px; background:#4caf50; border-radius:50%; display:flex; justify-content:center; align-items:center;">🌍</div>
+          <div><b>Chat Global</b><br><small>Público para todos</small></div>
+        </div>
+        <div class="card" onclick="openPrivateSetup()" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #2196f3;">
+          <div style="width:40px; height:40px; background:#2196f3; border-radius:50%; display:flex; justify-content:center; align-items:center;">🔒</div>
+          <div><b>Chat Privado</b><br><small>Mensagens diretas por Chave</small></div>
+        </div>
+        <div class="card" onclick="alert('Entre em uma sessão para acessar o Chat da Mesa.')" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #9c27b0;">
+          <div style="width:40px; height:40px; background:#9c27b0; border-radius:50%; display:flex; justify-content:center; align-items:center;">🎲</div>
+          <div><b>Chat da Mesa</b><br><small>Acessível na Sessão</small></div>
+        </div>
+      </div>
+    </div>
 
-<div id="chat-private-setup" class="modal" onclick="modalBackgroundClick(event, 'chat-private-setup')">
-<div class="modal-content" onclick="event.stopPropagation()">
-<h4>Iniciar Chat Privado</h4>
-<input type="text" id="dm-key" placeholder="Chave do Destinatário">
-<button onclick="openPrivateChat()">Abrir Chat</button>
-<button onclick="showModal('chat-private-setup', false)" style="background:var(--danger)">Cancelar</button>
-</div>
-</div>
+    <div id="chat-private-setup" class="modal" onclick="modalBackgroundClick(event, 'chat-private-setup')">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <h4>Iniciar Chat Privado</h4>
+        <input type="text" id="dm-key" placeholder="Chave do Destinatário">
+        <button onclick="openPrivateChat()">Abrir Chat</button>
+        <button onclick="showModal('chat-private-setup', false)" style="background:var(--danger)">Cancelar</button>
+      </div>
+    </div>
 
-<div id="chat-view" class="page">
-<div class="header"><button class="back-btn" onclick="back('chat-view')">‹</button> <span id="chat-title">Chat</span></div>
-<div class="chat-container">
-<div id="chat-msgs" class="chat-list"></div>
-<div class="chat-input">
-<input id="chat-msg-in" type="text" placeholder="Digite..." style="margin:0">
-<button onclick="sendChat()" style="width:50px; margin:0">➤</button>
-</div>
-</div>
-</div>
+    <div id="chat-view" class="page">
+      <div class="header"><button class="back-btn" onclick="back('chat-view')">‹</button> <span id="chat-title">Chat</span></div>
+      <div class="chat-container">
+        <div id="chat-msgs" class="chat-list"></div>
+        <div class="chat-input">
+          <input id="chat-msg-in" type="text" placeholder="Digite..." style="margin:0">
+          <button onclick="sendChat()" style="width:50px; margin:0">➤</button>
+        </div>
+      </div>
+    </div>
 
-<div id="sessions" class="page">
-<div class="header"><button class="back-btn" onclick="back('sessions')">‹</button> Sessões RPG</div>
-<div class="content">
-<div class="card">
-<h4>Criar Nova Mesa</h4>
-<input id="table-name" type="text" placeholder="Nome da Aventura">
-<select id="table-type">
-<option value="HUMAN">Mestre Humano (Player)</option>
-<option value="AI">Mestre IA (Automático)</option>
-</select>
-<button onclick="createTable()">Iniciar Campanha</button>
-</div>
-<h4>Mesas Disponíveis</h4>
-<div id="table-list"></div>
-</div>
-</div>
+    <div id="sessions" class="page">
+      <div class="header"><button class="back-btn" onclick="back('sessions')">‹</button> Sessões RPG</div>
+      <div class="content">
+        <div class="card">
+          <h4>Criar Nova Mesa</h4>
+          <input id="table-name" type="text" placeholder="Nome da Aventura">
+          <select id="table-type">
+            <option value="HUMAN">Mestre Humano (Player)</option>
+            <option value="AI">Mestre IA (Automático)</option>
+          </select>
+          <button onclick="createTable()">Iniciar Campanha</button>
+        </div>
+        <h4>Mesas Disponíveis</h4>
+        <div id="table-list"></div>
+      </div>
+    </div>
 
-<div id="active-session" class="page">
-<div class="header">
-<button class="back-btn" onclick="exitTable()">‹</button>
-<span id="session-name" style="font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Mesa</span>
-<button onclick="toggleGmTools()" id="gm-btn" style="width:auto; background:none; color:var(--primary); display:none; margin:0 0 0 auto; padding:0;">🛠️</button>
-</div>
-<div class="chat-container">
-<div id="gm-panel" style="display:none; background:var(--bg-card); padding:10px; border-bottom:1px solid var(--border); flex-shrink:0;">
-<small>Painel do Mestre</small>
-<div style="display:flex; gap:5px; margin-top:5px;">
-<select id="gm-target" style="margin:0; flex:1;"></select>
-<input id="gm-val" type="text" placeholder="Valor/Item" style="margin:0; flex:1;">
-</div>
-<div style="display:flex; gap:5px; margin-top:5px;">
-<button onclick="gmCmd('hp')" style="margin:0; font-size:12px;">Alterar HP</button>
-<button onclick="gmCmd('xp')" style="margin:0; font-size:12px;">Dar XP</button>
-<button onclick="gmCmd('item')" style="margin:0; font-size:12px;">Dar Item</button>
-</div>
-</div>
-<div id="session-log" class="chat-list"></div>
-<div class="chat-input">
-<input id="session-in" type="text" placeholder="Ação ou fala..." style="margin:0">
-<button onclick="sendSession()" style="width:50px; margin:0">➤</button>
-</div>
-</div>
-</div>
+    <div id="active-session" class="page">
+      <div class="header">
+        <button class="back-btn" onclick="exitTable()">‹</button>
+        <span id="session-name" style="font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Mesa</span>
+        <button onclick="toggleGmTools()" id="gm-btn" style="width:auto; background:none; color:var(--primary); display:none; margin:0 0 0 auto; padding:0;">🛠️</button>
+      </div>
+      <div class="chat-container">
+        <div id="gm-panel" style="display:none; background:var(--bg-card); padding:10px; border-bottom:1px solid var(--border); flex-shrink:0;">
+          <small>Painel do Mestre</small>
+          <div style="display:flex; gap:5px; margin-top:5px;">
+            <select id="gm-target" style="margin:0; flex:1;"></select>
+            <input id="gm-val" type="text" placeholder="Valor/Item" style="margin:0; flex:1;">
+          </div>
+          <div style="display:flex; gap:5px; margin-top:5px;">
+            <button onclick="gmCmd('hp')" style="margin:0; font-size:12px;">Alterar HP</button>
+            <button onclick="gmCmd('xp')" style="margin:0; font-size:12px;">Dar XP</button>
+            <button onclick="gmCmd('item')" style="margin:0; font-size:12px;">Dar Item</button>
+          </div>
+        </div>
+        <div id="session-log" class="chat-list"></div>
+        <div class="chat-input">
+          <input id="session-in" type="text" placeholder="Ação ou fala..." style="margin:0">
+          <button onclick="sendSession()" style="width:50px; margin:0">➤</button>
+        </div>
+      </div>
+    </div>
 
-<div id="sheet" class="page">
-<div class="header"><button class="back-btn" onclick="back('sheet')">‹</button> Ficha do Personagem</div>
-<div class="content">
-<div class="card" style="text-align:center;">
-<img id="char-pic" src="" style="width:100px; height:100px; border-radius:50%; background:#333; object-fit:cover; margin-bottom:10px; display:none;">
-<h3 id="sheet-name-display">Nome</h3>
-<p id="sheet-bio-display" style="font-size:12px; color:var(--text-sub)"></p>
-</div>
-<div class="card">
-<h4>Atributos</h4>
-<div id="sheet-attr-display"></div>
-</div>
-<div class="card">
-<h4>Inventário</h4>
-<div id="sheet-inv-display" style="white-space:pre-wrap;"></div>
-</div>
-<button onclick="showModal('sheet-edit-modal', true)">Editar Ficha</button>
-</div>
-</div>
+    <div id="sheet" class="page">
+      <div class="header"><button class="back-btn" onclick="back('sheet')">‹</button> Ficha do Personagem</div>
+      <div class="content">
+        <div class="card" style="text-align:center;">
+          <img id="char-pic" src="" style="width:100px; height:100px; border-radius:50%; background:#333; object-fit:cover; margin-bottom:10px; display:none;">
+          <h3 id="sheet-name-display">Nome</h3>
+          <p id="sheet-bio-display" style="font-size:12px; color:var(--text-sub)"></p>
+        </div>
+        <div class="card">
+          <h4>Atributos</h4>
+          <div id="sheet-attr-display"></div>
+        </div>
+        <div class="card">
+          <h4>Inventário</h4>
+          <div id="sheet-inv-display" style="white-space:pre-wrap;"></div>
+        </div>
+        <button onclick="showModal('sheet-edit-modal', true)">Editar Ficha</button>
+      </div>
+    </div>
 
-<div id="sheet-edit-modal" class="modal" onclick="modalBackgroundClick(event, 'sheet-edit-modal')">
-<div class="modal-content" onclick="event.stopPropagation()">
-<h4>Editar Ficha</h4>
-<input id="c-name" type="text" placeholder="Nome do Personagem">
-<input id="c-img" type="text" placeholder="URL da Imagem">
-<textarea id="c-bio" placeholder="Biografia" rows="3"></textarea>
-<input id="c-str" type="number" placeholder="Força">
-<input id="c-dex" type="number" placeholder="Destreza">
-<input id="c-con" type="number" placeholder="Constituição">
-<input id="c-int" type="number" placeholder="Inteligência">
-<textarea id="c-inv" rows="5" placeholder="Inventário (Um item por linha)"></textarea>
-<button onclick="saveSheet()" style="background:var(--success)">Salvar</button>
-<button onclick="showModal('sheet-edit-modal', false)" style="background:var(--danger)">Cancelar</button>
-</div>
-</div>
+    <div id="sheet-edit-modal" class="modal" onclick="modalBackgroundClick(event, 'sheet-edit-modal')">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <h4>Editar Ficha</h4>
+        <input id="c-name" type="text" placeholder="Nome do Personagem">
+        <input id="c-img" type="text" placeholder="URL da Imagem">
+        <textarea id="c-bio" placeholder="Biografia" rows="3"></textarea>
+        <input id="c-str" type="number" placeholder="Força">
+        <input id="c-dex" type="number" placeholder="Destreza">
+        <input id="c-con" type="number" placeholder="Constituição">
+        <input id="c-int" type="number" placeholder="Inteligência">
+        <textarea id="c-inv" rows="5" placeholder="Inventário (Um item por linha)"></textarea>
+        <button onclick="saveSheet()" style="background:var(--success)">Salvar</button>
+        <button onclick="showModal('sheet-edit-modal', false)" style="background:var(--danger)">Cancelar</button>
+      </div>
+    </div>
 
-<div id="bank" class="page">
-<div class="header"><button class="back-btn" onclick="back('bank')">‹</button> Banco</div>
-<div class="content">
-<div class="card" style="background: linear-gradient(45deg, #FFD700, #B8860B); color:black; font-weight:bold;">
-<div style="display:flex; justify-content:space-between; align-items:center;">
-<span>Saldo Ouro</span>
-<span id="gold-val" style="font-size:24px;">0</span>
-</div>
-</div>
-<div class="card">
-<h4>Carteira (Todos os Saldo)</h4>
-<div id="wallet-div"></div>
-</div>
-<div class="card">
-<h4>Transferir</h4>
-<input id="pay-key" type="text" placeholder="Chave do Jogador Destino">
-<select id="pay-type">
-<option value="ouro">Ouro</option>
-<option value="prata">Prata</option>
-<option value="cobre">Cobre</option>
-<option value="bronze">Bronze</option>
-<option value="diamante">Diamante</option>
-<option value="esmeralda">Esmeralda</option>
-</select>
-<input id="pay-amt" type="number" placeholder="Quantidade">
-<button onclick="transfer()">Enviar</button>
-</div>
-</div>
-</div>
+    <div id="bank" class="page">
+      <div class="header"><button class="back-btn" onclick="back('bank')">‹</button> Banco</div>
+      <div class="content">
+        <div class="card" style="background: linear-gradient(45deg, #FFD700, #B8860B); color:black; font-weight:bold;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Saldo Ouro</span>
+            <span id="gold-val" style="font-size:24px;">0</span>
+          </div>
+        </div>
+        <div class="card">
+          <h4>Carteira (Todos os Saldo)</h4>
+          <div id="wallet-div"></div>
+        </div>
+        <div class="card">
+          <h4>Transferir</h4>
+          <input id="pay-key" type="text" placeholder="Chave do Jogador Destino">
+          <select id="pay-type">
+            <option value="ouro">Ouro</option>
+            <option value="prata">Prata</option>
+            <option value="cobre">Cobre</option>
+            <option value="bronze">Bronze</option>
+            <option value="diamante">Diamante</option>
+            <option value="esmeralda">Esmeralda</option>
+          </select>
+          <input id="pay-amt" type="number" placeholder="Quantidade">
+          <button onclick="transfer()">Enviar</button>
+        </div>
+      </div>
+    </div>
 
-<div id="store" class="page">
-<div class="header"><button class="back-btn" onclick="back('store')">‹</button> Loja</div>
-<div class="content">
-<div style="display:flex; gap:10px; margin-bottom:15px;">
-<button onclick="switchStore('sys')" id="btn-sys" style="flex:1;">Sistema</button>
-<button onclick="switchStore('usr')" id="btn-usr" style="flex:1; background:var(--bg-card); color:var(--text-main);">Jogadores</button>
-</div>
-<div id="store-sys">
-<div class="card">
-<div style="display:flex; justify-content:space-between; align-items:center;">
-<span>⚔️ Espada Longa</span>
-<button onclick="buySys('Espada Longa', 50)" style="width:auto; margin:0; padding:5px 10px;">50 Ouro</button>
-</div>
-</div>
-<div class="card">
-<div style="display:flex; justify-content:space-between; align-items:center;">
-<span>🛡️ Escudo de Ferro</span>
-<button onclick="buySys('Escudo', 30)" style="width:auto; margin:0; padding:5px 10px;">30 Ouro</button>
-</div>
-</div>
-</div>
-<div id="store-usr" style="display:none;">
-<div class="card">
-<small>Vender Item do Inventário</small>
-<select id="sell-item-select"></select>
-<input id="sell-price" type="number" placeholder="Preço">
-<select id="sell-curr"><option value="ouro">Ouro</option><option value="diamante">Diamante</option></select>
-<button onclick="postSell()">Anunciar</button>
-</div>
-<div id="market-list"></div>
-</div>
-</div>
-</div>
+    <div id="store" class="page">
+      <div class="header"><button class="back-btn" onclick="back('store')">‹</button> Loja</div>
+      <div class="content">
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+          <button onclick="switchStore('sys')" id="btn-sys" style="flex:1;">Sistema</button>
+          <button onclick="switchStore('usr')" id="btn-usr" style="flex:1; background:var(--bg-card); color:var(--text-main);">Jogadores</button>
+        </div>
+        <div id="store-sys">
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span>⚔️ Espada Longa</span>
+              <button onclick="buySys('Espada Longa', 50)" style="width:auto; margin:0; padding:5px 10px;">50 Ouro</button>
+            </div>
+          </div>
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span>🛡️ Escudo de Ferro</span>
+              <button onclick="buySys('Escudo', 30)" style="width:auto; margin:0; padding:5px 10px;">30 Ouro</button>
+            </div>
+          </div>
+        </div>
+        <div id="store-usr" style="display:none;">
+          <div class="card">
+            <small>Vender Item do Inventário</small>
+            <select id="sell-item-select"></select>
+            <input id="sell-price" type="number" placeholder="Preço">
+            <select id="sell-curr"><option value="ouro">Ouro</option><option value="diamante">Diamante</option></select>
+            <button onclick="postSell()">Anunciar</button>
+          </div>
+          <div id="market-list"></div>
+        </div>
+      </div>
+    </div>
 
-<div id="notes" class="page">
-<div class="header"><button class="back-btn" onclick="back('notes')">‹</button> Bloco de Notas</div>
-<div class="content">
-<textarea id="note-pad" style="flex:1; resize:none;" placeholder="Suas anotações..."></textarea>
-<button onclick="saveNote()" style="background:var(--success)">Salvar Notas</button>
-</div>
-</div>
+    <div id="notes" class="page">
+      <div class="header"><button class="back-btn" onclick="back('notes')">‹</button> Bloco de Notas</div>
+      <div class="content">
+        <textarea id="note-pad" style="flex:1; resize:none;" placeholder="Suas anotações..."></textarea>
+        <button onclick="saveNote()" style="background:var(--success)">Salvar Notas</button>
+      </div>
+    </div>
 
-<div id="settings" class="page">
-<div class="header"><button class="back-btn" onclick="back('settings')">‹</button> Ajustes</div>
-<div class="content">
-<div class="card">
-<h4>Tema do Sistema</h4>
-<div style="display:flex; gap:10px; margin-bottom:15px;">
-<button onclick="setMode('dark')" style="flex:1; background:var(--bg-main);">Escuro</button>
-<button onclick="setMode('light')" style="flex:1; background:#eee; color:#000;">Claro</button>
-</div>
-<h4>Cor de Destaque</h4>
-<div style="display:flex; flex-wrap:wrap; gap:10px;">
-<button onclick="setAccent('#6200ea')" style="background:#6200ea; width:30px; height:30px; padding:0;"></button>
-<button onclick="setAccent('#d50000')" style="background:#d50000; width:30px; height:30px; padding:0;"></button>
-<button onclick="setAccent('#00c853')" style="background:#00c853; width:30px; height:30px; padding:0;"></button>
-<button onclick="setAccent('#2962ff')" style="background:#2962ff; width:30px; height:30px; padding:0;"></button>
-<button onclick="setAccent('#ffab00')" style="background:#ffab00; width:30px; height:30px; padding:0;"></button>
-<button onclick="setAccent('#800080')" style="background:#800080; width:30px; height:30px; padding:0;"></button>
-<button onclick="setAccent('#ff4081')" style="background:#ff4081; width:30px; height:30px; padding:0;"></button>
-</div>
-</div>
-</div>
-</div>
+    <div id="settings" class="page">
+      <div class="header"><button class="back-btn" onclick="back('settings')">‹</button> Ajustes</div>
+      <div class="content">
+        <div class="card">
+          <h4>Tema do Sistema</h4>
+          <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button onclick="setMode('dark')" style="flex:1; background:var(--bg-main);">Escuro</button>
+            <button onclick="setMode('light')" style="flex:1; background:#eee; color:#000;">Claro</button>
+          </div>
+          <h4>Cor de Destaque</h4>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+            <button onclick="setAccent('#6200ea')" style="background:#6200ea; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#d50000')" style="background:#d50000; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#00c853')" style="background:#00c853; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#2962ff')" style="background:#2962ff; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#ffab00')" style="background:#ffab00; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#800080')" style="background:#800080; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#ff4081')" style="background:#ff4081; width:30px; height:30px; padding:0;"></button>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input id="color-picker" type="color" value="#6200ea" style="width:48px; height:36px; padding:0; border-radius:6px; border:1px solid var(--border);">
+            <button class="small" onclick="setAccent(document.getElementById('color-picker').value)">Aplicar Cor</button>
+            <button class="small" onclick="resetAccent()">Resetar</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-</div>
+  </div>
 </div>
 
 <script>
 /* ------------------
    CONFIGURAÇÕES FIREBASE
-   Substitua pelos seus valores se necessário.
-   Observação: a apiKey do Firebase NÃO é secreta (é esperada no front-end).
-   Já as chaves de API de terceiros (ex: OpenAI) NÃO devem ficar no front-end em produção.
    ------------------ */
 const firebaseConfig = {
   apiKey: "AIzaSyBykDF5TNKQHejUJTp-ue7s5CKfpJp1HV0",
@@ -413,19 +419,16 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-/* Se você quer que a IA responda, coloque a chave no código SÓ para testes locais.
-   Em produção, mova isso para um backend seguro. */
+/* Chave IA: se for teste local ok — em produção mova para backend */
 const AI_KEY = "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";
 
 let user = null;
 let activeChat = null;
 let activeTable = null;
 
-/* ------------------
-   HELPERS DE UI
-   ------------------ */
+/* ------------------ HELPERS ------------------ */
 function showModal(id, show) {
-    const el = document.getElementById(id);
+  const el = document.getElementById(id);
   if(!el) return;
   el.style.display = show ? 'flex' : 'none';
 }
@@ -433,6 +436,31 @@ function modalBackgroundClick(e, id) {
   if(e.target && e.target.id === id) {
     showModal(id, false);
   }
+}
+
+/* Color utils */
+function hexToRgb(hex){
+  hex = hex.replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  const bigint = parseInt(hex,16);
+  return {r:(bigint>>16)&255, g:(bigint>>8)&255, b:bigint&255};
+}
+function rgbToHex(r,g,b){
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function shade(hex, percent){
+  const c = hexToRgb(hex);
+  const t = percent < 0 ? 0 : 255;
+  const p = Math.abs(percent);
+  const R = Math.round((t - c.r)*p) + c.r;
+  const G = Math.round((t - c.g)*p) + c.g;
+  const B = Math.round((t - c.b)*p) + c.b;
+  return rgbToHex(R,G,B);
+}
+function getContrastColor(hex){
+  const c = hexToRgb(hex);
+  const yiq = ((c.r*299)+(c.g*587)+(c.b*114))/1000;
+  return (yiq >= 128) ? '#000000' : '#ffffff';
 }
 
 /* ------------------
@@ -464,8 +492,13 @@ function init() {
     }
   });
 
+  // load initial data
   loadFeed();
   loadTables();
+
+  // apply initial accent from color-picker
+  const cp = document.getElementById('color-picker');
+  if(cp) setAccent(cp.value);
 }
 
 /* ------------------
@@ -548,10 +581,10 @@ function loadUser(){
       document.getElementById('c-con').value = d.char.con || '';
       document.getElementById('c-int').value = d.char.int || '';
 
-      const invItems = (d.char.inv || '').split('\\n').filter(i => i.trim() !== '');
+      const invItems = (d.char.inv || '').split('\n').filter(i => i.trim() !== '');
       const sel = document.getElementById('sell-item-select');
-      sel.innerHTML = invItems.map(item => `<option value="${item}">${item}</option>`).join('');
-      if (invItems.length === 0) sel.innerHTML = '<option value="">Inventário Vazio</option>';
+      if(sel) sel.innerHTML = invItems.map(item => `<option value="${item}">${item}</option>`).join('');
+      if (invItems.length === 0 && sel) sel.innerHTML = '<option value="">Inventário Vazio</option>';
 
       if(d.char.img) {
         document.getElementById('char-pic').src = d.char.img;
@@ -605,49 +638,82 @@ function addPost(){
   const i = document.getElementById('post-img').value;
   if(!t) return alert('Digite algo para postar.');
   if(!user) return alert('Faça login para postar.');
-  db.ref('feed').push({
+
+  const payload = {
     u: document.getElementById('u-name').innerText,
     uid: user.uid,
     txt: t,
     img: i || '',
     ts: firebase.database.ServerValue.TIMESTAMP
-  });
-  document.getElementById('post-txt').value = '';
-  document.getElementById('post-img').value = '';
-  showModal('post-modal', false);
+  };
+
+  // push and handle result explicitly
+  db.ref('feed').push(payload)
+    .then(()=> {
+      document.getElementById('post-txt').value = '';
+      document.getElementById('post-img').value = '';
+      showModal('post-modal', false);
+      // ensure feed reload (should be realtime but force a quick refresh)
+      setTimeout(()=> loadFeed(), 300);
+    })
+    .catch(err => {
+      console.error('Erro ao postar', err);
+      alert('Erro ao postar: ' + err.message);
+    });
 }
 
 function renderPost(p){
+  const time = p.ts ? new Date(p.ts).toLocaleString() : '';
   return `<div class="card" style="border-left:4px solid ${p.color || 'var(--primary)'};">
-    <small style="color:${p.color || 'var(--primary)'}">${p.u}</small>
-    <div style="margin-top:5px">${p.txt}</div>
+    <small style="color:${p.color || 'var(--primary)'}">${p.u} · ${time}</small>
+    <div style="margin-top:5px">${escapeHtml(p.txt)}</div>
     ${p.img ? `<img src="${p.img}" style="width:100%; border-radius:8px; margin-top:10px">` : ''}
   </div>`;
+}
+
+function escapeHtml(unsafe) {
+  return (unsafe || '')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
 }
 
 function loadFeed(){
   const feedListElement = document.getElementById('feed-list');
   if(!feedListElement) return;
-  db.ref('feed').limitToLast(50).on('value', async snapshot=>{
+  db.ref('feed').limitToLast(200).on('value', async snapshot=>{
     feedListElement.innerHTML = '';
     const posts = [];
-    snapshot.forEach(child => posts.push(child.val()));
-    posts.reverse();
+    snapshot.forEach(child => {
+      const v = child.val();
+      v._id = child.key;
+      posts.push(v);
+    });
+    posts.sort((a,b)=> (b.ts||0)-(a.ts||0)); // newest first
+    const uidCache = {};
     for(const post of posts){
       let userName = post.u || 'Anônimo';
       let userColor = 'var(--primary)';
       try {
-        const userSnapshot = await db.ref('users/' + post.uid).once('value');
-        const userData = userSnapshot.val();
-        if(userData){
-          userName = userData.name || userName;
-          userColor = userData.color || userColor;
+        if(post.uid && !uidCache[post.uid]){
+          const userSnapshot = await db.ref('users/' + post.uid).once('value');
+          uidCache[post.uid] = userSnapshot.val() || {};
+        }
+        const ud = uidCache[post.uid];
+        if(ud){
+          userName = ud.name || userName;
+          userColor = ud.color || userColor;
         }
       } catch(e) { console.warn('Erro ao obter usuário do post', e); }
       const fullPost = {...post, u: userName, color: userColor};
       feedListElement.innerHTML += renderPost(fullPost);
     }
     if(posts.length === 0) feedListElement.innerHTML = 'Nenhuma postagem ainda.';
+  }, err => {
+    console.error('Erro loadFeed', err);
+    feedListElement.innerHTML = 'Erro ao carregar feed.';
   });
 }
 
@@ -658,30 +724,24 @@ function loadProfileFeed(){
     profileFeedListElement.innerHTML = 'Faça login para ver suas postagens.';
     return;
   }
-  db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(20).on('value', async snapshot=>{
+  db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(50).on('value', async snapshot=>{
     profileFeedListElement.innerHTML = '';
     const posts = [];
-    snapshot.forEach(c => posts.push(c.val()));
-    posts.reverse();
+    snapshot.forEach(c => {
+      const v = c.val();
+      v._id = c.key;
+      posts.push(v);
+    });
+    posts.sort((a,b)=> (b.ts||0)-(a.ts||0));
     for(const post of posts){
-      let userName = post.u || 'Anônimo';
-      let userColor = 'var(--primary)';
-      try {
-        const userSnapshot = await db.ref('users/' + post.uid).once('value');
-        const userData = userSnapshot.val();
-        if(userData){
-          userName = userData.name || userName;
-          userColor = userData.color || userColor;
-        }
-      } catch(e) { console.warn('Erro ao buscar perfil', e); }
-      profileFeedListElement.innerHTML += renderPost({...post, u: userName, color: userColor});
+      profileFeedListElement.innerHTML += renderPost(post);
     }
     if(posts.length === 0) profileFeedListElement.innerHTML = 'Nenhuma postagem ainda.';
   });
 }
 
 /* ------------------
-   CHATS (GLOBAL / DMS)
+   CHATS (GLOBAL / DMS) - unchanged majorly
    ------------------ */
 function openChat(id, recipientKey = null){
   activeChat = id;
@@ -699,13 +759,13 @@ function openChat(id, recipientKey = null){
   }
 
   go('chat-view');
-  const chatRef = db.ref(dbPath).limitToLast(50);
+  const chatRef = db.ref(dbPath).limitToLast(200);
   document.getElementById('chat-msgs').innerHTML = '';
-  chatRef.off(); // prevents duplicate listeners
+  chatRef.off();
   chatRef.on('child_added', s=>{
     const m = s.val();
     const me = m.uid === (user && user.uid);
-    document.getElementById('chat-msgs').innerHTML += `<div class="msg ${me?'me':'other'}"><b>${m.u}</b><br>${m.txt}</div>`;
+    document.getElementById('chat-msgs').innerHTML += `<div class="msg ${me?'me':'other'}"><b>${escapeHtml(m.u)}</b><br>${escapeHtml(m.txt)}</div>`;
     const list = document.getElementById('chat-msgs');
     list.scrollTop = list.scrollHeight;
   });
@@ -718,7 +778,6 @@ async function openPrivateChat(){
   if(!recipientKey) return alert('Insira a Chave do Destinatário');
   const myKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
   if(recipientKey === myKey) return alert('Você não pode conversar consigo mesmo!');
-  // localizar o UID do destinatário
   const recipientSnap = await db.ref('users').orderByChild('key').equalTo(recipientKey).once('value');
   if(!recipientSnap.exists()) return alert('Chave de destinatário inválida.');
   const recipientObj = recipientSnap.val();
@@ -727,7 +786,6 @@ async function openPrivateChat(){
   const sortedKeys = [myKey, recipientKey].sort();
   const dmId = sortedKeys[0] + '_' + sortedKeys[1];
 
-  // garantimos um nó de meta com participantes para regras de segurança e leitura
   const participantsRef = db.ref('dms/' + dmId + '/participants');
   participantsRef.update({ [user.uid]: true, [recipientUid]: true });
 
@@ -763,7 +821,7 @@ function loadMarket(){
     d.innerHTML = '';
     s.forEach(x => {
       const i = x.val();
-      if(i.s !== user.uid) d.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><span>${i.i}</span><button onclick="buyUsr('${x.key}', '${i.i}')" style="width:auto; margin:0; padding:5px;">${i.p} ${i.c}</button></div><small>Vendedor: ${i.u}</small></div>`;
+      if(i.s !== user.uid) d.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><span>${escapeHtml(i.i)}</span><button onclick="buyUsr('${x.key}', '${i.i}')" style="width:auto; margin:0; padding:5px;">${i.p} ${i.c}</button></div><small>Vendedor: ${escapeHtml(i.u)}</small></div>`;
     });
   });
 }
@@ -772,7 +830,7 @@ function buySys(i, p){
   db.ref('users/'+user.uid+'/wallet/ouro').once('value', s=>{
     if((s.val()||0) >= p) {
       db.ref('users/'+user.uid+'/wallet/ouro').set(s.val()-p);
-      db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\\n' + i);
+      db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\n' + i);
       alert('Comprado!');
     } else alert('Sem ouro');
   });
@@ -784,11 +842,11 @@ function postSell(){
   const curr = document.getElementById('sell-curr').value;
   if(!item || !price) return alert('Selecione um item e um preço.');
   db.ref('users/'+user.uid+'/char/inv').once('value', s=>{
-    let inventory = (s.val() || '').split('\\n').filter(i => i.trim() !== '');
+    let inventory = (s.val() || '').split('\n').filter(i => i.trim() !== '');
     const itemIndex = inventory.findIndex(i => i.trim() === item.trim());
     if (itemIndex === -1) return alert('Item não encontrado no inventário.');
     inventory.splice(itemIndex, 1);
-    db.ref('users/'+user.uid+'/char/inv').set(inventory.join('\\n'));
+    db.ref('users/'+user.uid+'/char/inv').set(inventory.join('\n'));
     db.ref('market').push({
       s: user.uid,
       u: document.getElementById('u-name').innerText,
@@ -808,7 +866,7 @@ function buyUsr(k, itemName){
         db.ref('users/'+user.uid+'/wallet/'+i.c).set(w.val()-i.p);
         db.ref('users/'+i.s+'/wallet/'+i.c).transaction(v=>(v||0)+i.p);
         db.ref('market/'+k).remove();
-        db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\\n' + itemName);
+        db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\n' + itemName);
         alert('Comprado!');
       } else alert('Sem saldo');
     });
@@ -835,7 +893,7 @@ function loadTables(){
     d.innerHTML = '';
     s.forEach(x=>{
       const t = x.val();
-      d.innerHTML += `<div class="card" onclick="joinTable('${x.key}')" style="cursor:pointer; border-left: 4px solid ${t.type==='AI'?'cyan':'orange'}"><b>${t.name}</b><br><small>${t.type === 'AI' ? '🤖 IA' : '👤 Humano'}</small></div>`;
+      d.innerHTML += `<div class="card" onclick="joinTable('${x.key}')" style="cursor:pointer; border-left: 4px solid ${t.type==='AI'?'cyan':'orange'}"><b>${escapeHtml(t.name)}</b><br><small>${t.type === 'AI' ? '🤖 IA' : '👤 Humano'}</small></div>`;
     });
   });
 }
@@ -869,7 +927,7 @@ function loadGmUsers(k){
   db.ref('tables/'+k+'/users').on('value', s=>{
     const sel = document.getElementById('gm-target');
     sel.innerHTML = '';
-    s.forEach(u => sel.innerHTML += `<option value="${u.key}">${u.val()}</option>`);
+    s.forEach(u => sel.innerHTML += `<option value="${u.key}">${escapeHtml(u.val())}</option>`);
   });
 }
 
@@ -885,7 +943,7 @@ function loadSessionLog(k){
   db.ref('tables/'+k+'/log').limitToLast(100).off();
   db.ref('tables/'+k+'/log').limitToLast(100).on('child_added', s=>{
     const m = s.val();
-    d.innerHTML += `<div class="msg ${m.uid===user.uid?'me':'other'}"><b>${m.u}</b><br>${m.txt}</div>`;
+    d.innerHTML += `<div class="msg ${m.uid===user.uid?'me':'other'}"><b>${escapeHtml(m.u)}</b><br>${escapeHtml(m.txt)}</div>`;
     d.scrollTop = d.scrollHeight;
   });
 }
@@ -896,24 +954,34 @@ async function sendSession(){
   const t = document.getElementById('session-in').value;
   if(!t) return;
   if(!activeTable) return alert('Entre em uma mesa.');
+  if(!user) return alert('Faça login antes de enviar (aguarde autenticação).');
+
   document.getElementById('session-in').value = '';
   db.ref('tables/'+activeTable+'/log').push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
 
   const s = await db.ref('tables/'+activeTable).get();
   if(s.exists() && s.val().type === 'AI'){
     try {
-      // Chamada à API (exemplo usando OpenRouter). Em produção, faça essa chamada em backend.
+      // ensure user is ready
+      const body = {
+        model: "mistralai/mistral-7b-instruct",
+        messages: [{role: "user", content: `RPG Mestre: Jogador (${user.uid}) disse: "${t}". Responda como mestre.`}],
+        meta: { uid: user.uid }
+      };
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${AI_KEY}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          model: "mistralai/mistral-7b-instruct",
-          messages: [{role: "user", content: `RPG Mestre: Jogador disse: "${t}". Responda como mestre.`}]
-        })
+        body: JSON.stringify(body)
       });
+      if(!response.ok){
+        const txt = await response.text();
+        console.error('Erro IA', response.status, txt);
+        db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:`Erro IA: ${response.status} - ${txt}`, ts: firebase.database.ServerValue.TIMESTAMP});
+        return;
+      }
       const j = await response.json();
 
       // parse robusto para diferentes formatos de API
@@ -926,6 +994,8 @@ async function sendSession(){
           aiText = j.output[0].content[0].text;
         } else if(j.result && j.result.output_text) {
           aiText = j.result.output_text;
+        } else if(typeof j === 'string') {
+          aiText = j;
         } else {
           aiText = JSON.stringify(j).slice(0,1000);
         }
@@ -972,7 +1042,29 @@ function switchStore(m){
 function go(id){ document.getElementById(id).classList.add('active'); if(id==='store') loadMarket(); }
 function back(id){ document.getElementById(id).classList.remove('active'); }
 function setMode(m){ const r = document.documentElement.style; if(m==='light'){ r.setProperty('--bg-main','#ddd'); r.setProperty('--bg-surface','#f5f5f5'); r.setProperty('--bg-card','#ffffff'); r.setProperty('--text-main','#000'); r.setProperty('--border','#ccc'); r.setProperty('--input-bg','#eee'); } else { r.setProperty('--bg-main','#000'); r.setProperty('--bg-surface','#121212'); r.setProperty('--bg-card','#1e1e1e'); r.setProperty('--text-main','#ffffff'); r.setProperty('--border','#333'); r.setProperty('--input-bg','#2c2c2c'); } }
-function setAccent(c){ document.documentElement.style.setProperty('--primary', c); }
+function setAccent(c){
+  // set primary and some derived variables to change whole interface feel
+  document.documentElement.style.setProperty('--primary', c);
+  const contrast = getContrastColor(c);
+  document.documentElement.style.setProperty('--primary-contrast', contrast);
+  // border slightly darker
+  const darker = shade(c, -0.2);
+  document.documentElement.style.setProperty('--border', darker);
+  // card background tinted slightly
+  const card = shade(c, -0.9);
+  document.documentElement.style.setProperty('--bg-card', card);
+  // input bg slightly darker than card
+  document.documentElement.style.setProperty('--input-bg', shade(card, -0.08));
+  // update buttons color
+  const buttons = document.querySelectorAll('button');
+  buttons.forEach(b => {
+    if(!b.style.background || b.style.background === '' || b.style.background.startsWith('var(')) {
+      b.style.background = c;
+      b.style.color = contrast;
+    }
+  });
+}
+function resetAccent(){ document.getElementById('color-picker').value = '#6200ea'; setAccent('#6200ea'); }
 
 </script>
 </body>
