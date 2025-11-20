@@ -8,7 +8,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<script src="api.js"></script>
 <style>
 :root {
   --primary: #6200ea;
@@ -424,7 +423,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
-const API_KEY = CONFIG.AI_KEY;
+const BACKEND_URL = '/api/ia_master'; // Mantenha o caminho relativo se usar Vercel/Render com seu Front-end.
 let user = null;
 let activeChat = null;
 let activeTable = null;
@@ -879,8 +878,7 @@ function buyUsr(k, itemName){
 /* ------------------
    SESSÕES / MESTRE IA
    ------------------ */
-
-function createTable(){
+  function createTable(){
   const n = document.getElementById('table-name').value;
   const t = document.getElementById('table-type').value;
   if(!n) return alert('Informe nome da aventura.');
@@ -951,155 +949,67 @@ function loadSessionLog(k){
   });
 }
 
-/* sendSession: envia a mensagem do jogador e, se for mesa IA, chama a API externa.
-   A resposta da IA é tratada de forma robusta (vários formatos de retorno). */
+/* sendSession: envia a mensagem do jogador e, se for mesa IA, chama o Backend Python. */
 async function sendSession(){
-  // texto do input
-  const text = (document.getElementById('session-in').value || '').trim();
-  if(!text) return;
+  const t = document.getElementById('session-in').value;
+  if(!t) return;
   if(!activeTable) return alert('Entre em uma mesa.');
-  if(!user || !user.uid) return alert('Faça login antes de enviar (aguarde autenticação).');
+  if(!user) return alert('Faça login antes de enviar (aguarde autenticação).');
 
-  // limpa input e registra ação do jogador no log (uma vez)
   document.getElementById('session-in').value = '';
-  const playerName = document.getElementById('u-name').innerText || 'Jogador';
-  await db.ref('tables/'+activeTable+'/log').push({
-    u: playerName,
-    uid: user.uid,
-    txt: text,
-    ts: firebase.database.ServerValue.TIMESTAMP
-  });
+  // 1. Salva a mensagem do jogador no log
+  db.ref('tables/'+activeTable+'/log').push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
 
-  // se houver um processCommand (comandos do sistema), tenta processar
-  try {
-    if (typeof processCommand === 'function') {
-      const cmdResult = await processCommand(text, { uid: user.uid, name: playerName, tableId: activeTable });
-      if (cmdResult) {
-        // registra resultado do comando como mensagem de sistema e retorna
-        await db.ref('tables/'+activeTable+'/log').push({
-          u: 'Sistema',
-          uid: 'sys',
-          txt: String(cmdResult),
-          ts: firebase.database.ServerValue.TIMESTAMP,
-          isSystem: true
-        });
-        return;
-      }
-    }
-  } catch (e) {
-    console.error('processCommand erro:', e);
-    // continua normalmente caso processCommand falhe
-  }
+  const s = await db.ref('tables/'+activeTable).get();
+  if(s.exists() && s.val().type === 'AI'){
+    try {
+      // --- Lógica para preparar o histórico e chamar o Backend Python ---
 
-  // verifica se a mesa é IA
-  const tableSnap = await db.ref('tables/'+activeTable).get();
-  if(!tableSnap.exists()) return console.warn('Mesa não existe:', activeTable);
-  const table = tableSnap.val();
-  if(table.type !== 'AI') return; // nada mais a fazer se não for IA
-
-  // prepara chave de API
-  const apiKey = typeof API_KEY !== 'undefined' ? API_KEY : (window.API_KEY || null);
-  if(!apiKey || String(apiKey).length < 10){
-    await db.ref('tables/'+activeTable+'/log').push({
-      u: 'Erro',
-      uid: 'sys',
-      txt: '⚠️ Chave API não configurada (API_KEY). Configure em api.js ou no escopo global.',
-      ts: firebase.database.ServerValue.TIMESTAMP,
-      isSystem: true
-    });
-    return;
-  }
-
-  // monta histórico limitado (últimas N entradas) para contexto
-  const histSnap = await db.ref('tables/'+activeTable+'/log').limitToLast(8).get();
-  const messages = [{ role: 'system', content: 'Você é o Mestre de RPG. Responda de forma curta, imersiva e no tom de mestre.' }];
-  histSnap.forEach(child => {
-    const m = child.val();
-    if(!m) return;
-    // ignora logs de sistema marcados como isSystem true (já temos prompt system)
-    if(m.isSystem) return;
-    // se for mensagem da IA marque como assistant, senão user
-    if(m.uid === 'ai' || m.u === 'Mestre IA' || m.u === 'Mestre') {
-      messages.push({ role: 'assistant', content: String(m.txt) });
-    } else {
-      // inclui nome do jogador para contexto
-      messages.push({ role: 'user', content: `${m.u}: ${m.txt}` });
-    }
-  });
-
-  // adiciona a última fala do jogador (garante que está presente)
-  messages.push({ role: 'user', content: `${playerName}: ${text}` });
-
-  // corpo da requisição (ajuste conforme a API que você usa)
-  const body = {
-    model: "deepseek/deepseek-r1-0528:free",
-    messages: messages,
-    meta: { uid: user.uid, table: activeTable }
-  };
-
-  try {
-    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
-
-    if(!resp.ok){
-      const txt = await resp.text();
-      console.error('Erro IA', resp.status, txt);
-      await db.ref('tables/'+activeTable+'/log').push({
-        u: 'Mestre IA',
-        uid: 'ai',
-        txt: `Erro IA: ${resp.status} - ${txt}`,
-        ts: firebase.database.ServerValue.TIMESTAMP
+      // 2. Recupera o histórico de mensagens (incluindo a última enviada pelo jogador)
+      const histSnap = await db.ref('tables/'+activeTable+'/log').limitToLast(12).get(); // Limita a 12 mensagens para o contexto
+      let messages = [{ role: "system", content: "Você é o Mestre de RPG. Seja breve e criativo. Responda à última mensagem do jogador." }];
+      
+      // 3. Converte o histórico para o formato da API (User/Assistant)
+      histSnap.forEach(child => {
+        const m = child.val();
+        // Garante que apenas mensagens de chat (não sistema) entrem no histórico
+        if (m.uid && m.uid !== 'sys' && m.txt) {
+            const role = m.uid === 'ai' ? "assistant" : "user";
+            // Adiciona o nome do usuário para contexto, exceto para a IA
+            const content = m.uid === 'ai' ? m.txt : `${m.u}: ${m.txt}`;
+            messages.push({ role: role, content: content });
+        }
       });
-      return;
-    }
-
-    const j = await resp.json();
-
-    // parse robusto para vários formatos de resposta
-    let aiText = "O mestre IA não respondeu (formato inesperado).";
-    if(j){
-      if(j.choices && j.choices[0]){
-        if(j.choices[0].message && j.choices[0].message.content) aiText = j.choices[0].message.content;
-        else if(j.choices[0].text) aiText = j.choices[0].text;
-      } else if(j.output && Array.isArray(j.output) && j.output[0] && j.output[0].content && j.output[0].content[0] && j.output[0].content[0].text) {
-        aiText = j.output[0].content[0].text;
-      } else if(j.result && j.result.output_text) {
-        aiText = j.result.output_text;
-      } else if(typeof j === 'string') {
-        aiText = j;
-      } else if(j.choices && Array.isArray(j.choices) && j.choices.length && j.choices[0].message && j.choices[0].message.content) {
-        aiText = j.choices[0].message.content;
-      } else {
-        // fallback: tenta converter JSON em string curta
-        try { aiText = JSON.stringify(j).slice(0,1000); } catch(e){ aiText = String(j); }
+      
+      // 4. Faz a requisição para o Backend Python
+      const response = await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: messages }) // Envia o histórico completo
+      });
+      
+      if(!response.ok){
+        const errJson = await response.json().catch(() => ({error: `Erro HTTP: ${response.status}`}));
+        throw new Error(errJson.error || `Erro de rede/servidor: ${response.status}`);
       }
+      
+      const j = await response.json();
+
+      if (j.error) {
+          throw new Error(j.error);
+      }
+      
+      const aiText = j.text || "O servidor não devolveu o texto esperado.";
+
+      // 5. Salva a resposta da IA no log
+      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:aiText, ts: firebase.database.ServerValue.TIMESTAMP});
+    } catch(e) {
+      console.error('Erro ao chamar Backend IA', e);
+      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'sys', txt:`Falha na comunicação com o Backend Python: ${e.message}`, ts: firebase.database.ServerValue.TIMESTAMP});
     }
-
-    // grava resposta da IA no log da mesa
-    await db.ref('tables/'+activeTable+'/log').push({
-      u: 'Mestre IA',
-      uid: 'ai',
-      txt: aiText,
-      ts: firebase.database.ServerValue.TIMESTAMP
-    });
-
-  } catch (err) {
-    console.error('Erro ao chamar IA', err);
-    const detail = (err && err.message) ? err.message : String(err);
-    await db.ref('tables/'+activeTable+'/log').push({
-      u: 'Mestre IA',
-      uid: 'ai',
-      txt: `**Erro de Conexão**: Não foi possível gerar resposta da IA. Detalhe: ${detail}`,
-      ts: firebase.database.ServerValue.TIMESTAMP
-    });
   }
-}
+          }
+      
   
 /* ------------------
    TRANSFERÊNCIAS
