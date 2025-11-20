@@ -1,4 +1,4 @@
-// Arquivo: vercel.json (Na raiz do seu projeto)
+
 {
   "builds": [
     {
