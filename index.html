@@ -2,11 +2,13 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>Mestre OS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mestre OS - Corrigido</title>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
 <style>
 :root {
   --primary: #6200ea;
@@ -32,18 +34,15 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   user-select: none;
   transition: background 0.3s;
-  overflow: hidden;
 }
 .device {
-  width: 100%;
-  height: 100%;
-  max-width: 412px;
-  max-height: 915px;
+  width: 375px;
+  height: 780px;
   background: var(--bg-main);
+  border-radius: 40px;
   position: relative;
+  box-shadow: 0 0 0 8px var(--border), 0 0 20px rgba(0,0,0,.5);
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 .screen {
   width: 100%;
@@ -53,53 +52,50 @@ body {
   display: flex;
   flex-direction: column;
   transition: background 0.3s, color 0.3s;
-  position: relative;
 }
 .status-bar {
-  height: 30px;
+  height: 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 15px;
+  padding: 0 25px;
   font-size: 12px;
   font-weight: 600;
   z-index: 100;
-  background: var(--bg-card);
 }
 .app-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 15px;
   padding: 20px;
   align-content: start;
   flex: 1;
   overflow-y: auto;
 }
-.app-icon { display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform .1s;}
-.app-icon:active { transform: scale(0.95); }
-.icon-box { width:55px; height:55px; background: var(--bg-card); border-radius:14px; display:flex; justify-content:center; align-items:center; font-size:24px; margin-bottom:6px; box-shadow:0 2px 4px rgba(0,0,0,.3); border:1px solid var(--border); }
-.app-icon span { font-size:10px; text-align:center; color:var(--text-main); }
-.page { position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg-surface); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); z-index:50; padding-top:50px; }
+.app-icon { display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform .12s;}
+.icon-box { width:60px; height:60px; background: var(--bg-card); border-radius:15px; display:flex; justify-content:center; align-items:center; font-size:28px; margin-bottom:8px; box-shadow:0 2px 5px rgba(0,0,0,.2); border:1px solid var(--border); }
+.app-icon span { font-size:11px; text-align:center; color:var(--text-main); }
+.page { position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg-surface); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); z-index:50; padding-top:55px; }
 .page.active { transform:translateX(0); }
-.header { position:absolute; top:0; left:0; right:0; height:50px; display:flex; align-items:center; padding:0 10px; background:var(--bg-card); border-bottom:1px solid var(--border); font-weight:bold; font-size:16px; flex-shrink:0; color:var(--text-main); z-index:60; }
-.back-btn { background:none; border:none; font-size:24px; color:var(--primary); margin-right:10px; cursor:pointer; padding:0 10px; line-height:1; }
+.header { position:absolute; top:0; left:0; right:0; height:55px; display:flex; align-items:center; padding:0 15px; background:var(--bg-card); border-bottom:1px solid var(--border); font-weight:bold; font-size:18px; flex-shrink:0; color:var(--text-main); z-index:60; }
+.back-btn { background:none; border:none; font-size:26px; color:var(--primary); margin-right:15px; cursor:pointer; padding:0; line-height:1; }
 .content { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; }
-.card { background:var(--bg-card); border-radius:12px; padding:12px; margin-bottom:10px; box-shadow:0 2px 4px rgba(0,0,0,.1); border:1px solid var(--border); }
-input, textarea, select { width:100%; padding:10px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; color:var(--text-main); font-family:inherit; margin-bottom:8px; box-sizing:border-box; font-size: 14px; }
-button { padding:10px; border-radius:8px; border:none; font-weight:600; cursor:pointer; background:var(--primary); color:var(--primary-contrast); margin-bottom:8px; transition:opacity .2s; font-size: 14px; }
-button:active { opacity: 0.8; }
-button.small { padding:5px 8px; font-size:12px; width:auto; }
+.card { background:var(--bg-card); border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,.1); border:1px solid var(--border); }
+input, textarea, select { width:100%; padding:12px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; color:var(--text-main); font-family:inherit; margin-bottom:10px; box-sizing:border-box; }
+button { padding:10px 12px; border-radius:8px; border:none; font-weight:600; cursor:pointer; background:var(--primary); color:var(--primary-contrast); margin-bottom:10px; transition:background .2s; }
+button.small { padding:6px 8px; font-size:13px; width:auto; }
 .chat-container { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.chat-list { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:8px; }
-.msg { max-width:85%; padding:8px 12px; border-radius:12px; font-size:14px; line-height:1.3; word-wrap:break-word; }
-.msg.me { align-self:flex-end; background:var(--primary); color:var(--text-main); border-bottom-right-radius:2px; }
-.msg.other { align-self:flex-start; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); border-bottom-left-radius:2px; }
-.command-msg { background: #3f51b5; color: white; border-radius: 12px; padding: 6px 10px; max-width: 90%; margin: 4px 0; align-self: center; font-size: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-.chat-input { padding:8px; background:var(--bg-card); border-top:1px solid var(--border); display:flex; gap:8px; flex-shrink:0; }
-.stat-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-size:13px; }
-.modal { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99; display:none; justify-content:center; align-items:center; padding:20px; backdrop-filter: blur(2px); }
-.modal-content { background: var(--bg-surface); padding: 15px; border-radius: 20px; width: 90%; max-width: 320px; max-height: 75%; overflow-y: auto; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
-small { color:var(--text-sub); font-size: 0.8em; }
+.chat-list { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px; }
+.msg { max-width:80%; padding:10px 15px; border-radius:18px; font-size:14px; line-height:1.4; word-wrap:break-word; }
+.msg.me { align-self:flex-end; background:var(--primary); color:var(--text-main); border-bottom-right-radius:4px; }
+.msg.other { align-self:flex-start; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); border-bottom-left-radius:4px; }
+.chat-input { padding:10px; background:var(--bg-card); border-top:1px solid var(--border); display:flex; gap:10px; flex-shrink:0; }
+.stat-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; }
+.modal { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99; display:none; justify-content:center; align-items:center; padding:20px; }
+.modal-content { background:var(--bg-surface); padding:20px; border-radius:15px; width:100%; max-width:560px; max-height:80%; overflow-y:auto; border:2px solid var(--primary); }
+small { color:var(--text-sub); }
+/* utility */
+.center { display:flex; justify-content:center; align-items:center; }
 </style>
 </head>
 <body onload="init()">
@@ -107,12 +103,12 @@ small { color:var(--text-sub); font-size: 0.8em; }
 <div class="device">
   <div class="screen">
     <div class="status-bar">
-      <span id="clock">--:--</span>
-      <span><span id="battery">--</span>% 🔋</span>
+      <span id="clock">10:00</span>
+      <span><span id="battery">100%</span> 🔋</span>
     </div>
 
     <div id="home" class="content" style="padding-top:40px;">
-      <h1 style="margin:0 0 15px 15px; font-family:cursive; color:var(--primary);">Mestre OS</h1>
+      <h1 style="margin:0 0 20px 20px; font-family:'Brush Script MT', cursive; color:var(--primary);">Mestre OS</h1>
       <div class="app-grid">
         <div class="app-icon" onclick="go('profile')"><div class="icon-box" style="color:#2196f3">👤</div><span>Perfil</span></div>
         <div class="app-icon" onclick="go('feed')"><div class="icon-box" style="color:#e91e63">📰</div><span>Feed</span></div>
@@ -127,7 +123,7 @@ small { color:var(--text-sub); font-size: 0.8em; }
     </div>
 
     <div id="profile" class="page">
-      <div class="header"><button class="back-btn" onclick="back()">‹</button> Perfil</div>
+      <div class="header"><button class="back-btn" onclick="back('profile')">‹</button> Perfil</div>
       <div class="content">
         <div id="view-login">
           <div class="card">
@@ -135,19 +131,19 @@ small { color:var(--text-sub); font-size: 0.8em; }
             <input type="email" id="email" placeholder="E-mail">
             <input type="password" id="pass" placeholder="Senha">
             <button onclick="actionLogin()">Entrar</button>
-            <button onclick="actionRegister()" style="background:transparent; border:1px solid var(--border); color:var(--text-main)">Criar Conta</button>
+            <button onclick="actionRegister()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text-main)">Criar Conta</button>
           </div>
         </div>
         <div id="view-user" style="display:none">
           <div class="card" style="text-align:center">
-            <img id="u-pic" src="" style="width:70px; height:70px; border-radius:50%; background:var(--border); object-fit:cover; margin:0 auto 10px; display:none;">
-            <h3 id="u-name" style="color:var(--primary); margin:5px 0;">Nome</h3>
-            <p id="u-bio" style="font-size:12px; color:var(--text-sub); margin:5px 0;">Descrição</p>
-            <button onclick="showModal('profile-edit-modal', true)" class="small">Editar Perfil</button>
+            <img id="u-pic" src="" style="width:80px; height:80px; border-radius:50%; background:var(--border); object-fit:cover; margin:0 auto 10px; display:none;">
+            <h3 id="u-name" style="color:var(--primary)">Nome</h3>
+            <p id="u-bio" style="font-size:12px; color:var(--text-sub);">Descrição</p>
+            <button onclick="showModal('profile-edit-modal', true)">Editar Perfil</button>
           </div>
           <div class="card">
-            <h4>Postagens</h4>
-            <div id="profile-feed-list">Carregando...</div>
+            <h4>Minhas Postagens</h4>
+            <div id="profile-feed-list">Nenhuma postagem ainda.</div>
           </div>
         </div>
       </div>
@@ -155,81 +151,85 @@ small { color:var(--text-sub); font-size: 0.8em; }
 
     <div id="profile-edit-modal" class="modal" onclick="modalBackgroundClick(event, 'profile-edit-modal')">
       <div class="modal-content" onclick="event.stopPropagation()">
-        <h4 style="margin-top:0">Editar Perfil</h4>
-        <input type="text" id="u-name-edit" placeholder="Nome">
-        <input type="text" id="u-key-edit" placeholder="Chave (ID)">
-        <input type="text" id="u-color-edit" placeholder="Cor Hex (#RRGGBB)">
-        <input type="text" id="u-img-edit" placeholder="URL Imagem">
-        <textarea id="u-bio-edit" placeholder="Bio" rows="3"></textarea>
-        <button onclick="saveProfile()" style="background:var(--success)">Salvar</button>
-        <button onclick="showModal('profile-edit-modal', false)" style="background:var(--danger)">Fechar</button>
-        <button onclick="actionLogout()" style="background:var(--border); margin-top:10px">Sair</button>
+        <h4>Editar Dados</h4>
+        <input type="text" id="u-name-edit" placeholder="Nome de Usuário">
+        <input type="text" id="u-key-edit" placeholder="Chave de Transação (Editável)">
+        <input type="text" id="u-color-edit" placeholder="Cor Hex do Nome (Ex: #FF0000)">
+        <input type="text" id="u-img-edit" placeholder="Link da Imagem de Perfil (URL)">
+        <textarea id="u-bio-edit" placeholder="Descrição/Bio"></textarea>
+        <button onclick="saveProfile()" style="background:var(--success)">Salvar Alterações</button>
+        <button onclick="showModal('profile-edit-modal', false)" style="background:var(--danger)">Cancelar</button>
+        <button onclick="actionLogout()" style="background:var(--text-sub); margin-top:10px;">Sair da Conta</button>
       </div>
     </div>
 
     <div id="feed" class="page">
-      <div class="header"><button class="back-btn" onclick="back()">‹</button> Feed</div>
+      <div class="header"><button class="back-btn" onclick="back('feed')">‹</button> Feed Global</div>
       <div id="feed-list" class="content"></div>
-      <button onclick="showModal('post-modal', true)" style="position:absolute; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; font-size:24px; padding:0; box-shadow:0 4px 10px rgba(0,0,0,0.5);">+</button>
+      <button onclick="showModal('post-modal', true)" style="position:fixed; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; font-size:24px; padding:0;">+</button>
     </div>
 
     <div id="post-modal" class="modal" onclick="modalBackgroundClick(event, 'post-modal')">
       <div class="modal-content" onclick="event.stopPropagation()">
-        <h4 style="margin-top:0">Novo Post</h4>
-        <textarea id="post-txt" rows="4" placeholder="Escreva algo..." style="resize:none;"></textarea>
-        <input id="post-img" type="text" placeholder="URL Imagem (Opcional)">
+        <h4>Criar Nova Postagem</h4>
+        <textarea id="post-txt" rows="5" placeholder="No que está pensando?" style="resize:none;"></textarea>
+        <input id="post-img" type="text" placeholder="Link da imagem (Opcional)">
         <button onclick="addPost()">Publicar</button>
         <button onclick="showModal('post-modal', false)" style="background:var(--danger)">Cancelar</button>
       </div>
     </div>
 
     <div id="chats" class="page">
-      <div class="header"><button class="back-btn" onclick="back()">‹</button> Chats</div>
+      <div class="header"><button class="back-btn" onclick="back('chats')">‹</button> Mensagens</div>
       <div class="content">
-        <div class="card" onclick="openChat('global')" style="cursor:pointer; display:flex; align-items:center; gap:10px; border-left:3px solid #4caf50;">
-          <div style="font-size:20px;">🌍</div>
-          <div><b>Global</b><br><small>Público</small></div>
+        <div class="card" onclick="openChat('global')" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #4caf50;">
+          <div style="width:40px; height:40px; background:#4caf50; border-radius:50%; display:flex; justify-content:center; align-items:center;">🌍</div>
+          <div><b>Chat Global</b><br><small>Público para todos</small></div>
         </div>
-        <div class="card" onclick="openPrivateSetup()" style="cursor:pointer; display:flex; align-items:center; gap:10px; border-left:3px solid #2196f3;">
-          <div style="font-size:20px;">🔒</div>
-          <div><b>Privado</b><br><small>Direto</small></div>
+        <div class="card" onclick="openPrivateSetup()" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #2196f3;">
+          <div style="width:40px; height:40px; background:#2196f3; border-radius:50%; display:flex; justify-content:center; align-items:center;">🔒</div>
+          <div><b>Chat Privado</b><br><small>Mensagens diretas por Chave</small></div>
+        </div>
+        <div class="card" onclick="alert('Entre em uma sessão para acessar o Chat da Mesa.')" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #9c27b0;">
+          <div style="width:40px; height:40px; background:#9c27b0; border-radius:50%; display:flex; justify-content:center; align-items:center;">🎲</div>
+          <div><b>Chat da Mesa</b><br><small>Acessível na Sessão</small></div>
         </div>
       </div>
     </div>
 
     <div id="chat-private-setup" class="modal" onclick="modalBackgroundClick(event, 'chat-private-setup')">
       <div class="modal-content" onclick="event.stopPropagation()">
-        <h4 style="margin-top:0">Novo Chat Privado</h4>
-        <input type="text" id="dm-key" placeholder="Chave do Usuário">
-        <button onclick="openPrivateChat()">Abrir</button>
-        <button onclick="showModal('chat-private-setup', false)" style="background:var(--danger)">Fechar</button>
+        <h4>Iniciar Chat Privado</h4>
+        <input type="text" id="dm-key" placeholder="Chave do Destinatário">
+        <button onclick="openPrivateChat()">Abrir Chat</button>
+        <button onclick="showModal('chat-private-setup', false)" style="background:var(--danger)">Cancelar</button>
       </div>
     </div>
 
     <div id="chat-view" class="page">
-      <div class="header"><button class="back-btn" onclick="back()">‹</button> <span id="chat-title">Chat</span></div>
+      <div class="header"><button class="back-btn" onclick="back('chat-view')">‹</button> <span id="chat-title">Chat</span></div>
       <div class="chat-container">
         <div id="chat-msgs" class="chat-list"></div>
         <div class="chat-input">
-          <input id="chat-msg-in" type="text" placeholder="Digite..." style="margin:0" onkeyup="if(event.key==='Enter') sendChat()">
-          <button onclick="sendChat()" style="width:40px; margin:0">➤</button>
+          <input id="chat-msg-in" type="text" placeholder="Digite..." style="margin:0">
+          <button onclick="sendChat()" style="width:50px; margin:0">➤</button>
         </div>
       </div>
     </div>
 
     <div id="sessions" class="page">
-      <div class="header"><button class="back-btn" onclick="back()">‹</button> Sessões</div>
+      <div class="header"><button class="back-btn" onclick="back('sessions')">‹</button> Sessões RPG</div>
       <div class="content">
         <div class="card">
-          <h4>Nova Mesa</h4>
-          <input id="table-name" type="text" placeholder="Nome">
+          <h4>Criar Nova Mesa</h4>
+          <input id="table-name" type="text" placeholder="Nome da Aventura">
           <select id="table-type">
-            <option value="HUMAN">Mestre Player</option>
-            <option value="AI">Mestre IA</option>
+            <option value="HUMAN">Mestre Humano (Player)</option>
+            <option value="AI">Mestre IA (Automático)</option>
           </select>
-          <button onclick="createTable()">Criar</button>
+          <button onclick="createTable()">Iniciar Campanha</button>
         </div>
-        <h4>Mesas</h4>
+        <h4>Mesas Disponíveis</h4>
         <div id="table-list"></div>
       </div>
     </div>
@@ -237,33 +237,35 @@ small { color:var(--text-sub); font-size: 0.8em; }
     <div id="active-session" class="page">
       <div class="header">
         <button class="back-btn" onclick="exitTable()">‹</button>
-        <span id="session-name" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">Mesa</span>
-        <button onclick="toggleGmTools()" id="gm-btn" style="width:auto; background:none; color:var(--primary); display:none; margin-left:auto; font-size:20px; padding:0 10px;">🛠️</button>
+        <span id="session-name" style="font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Mesa</span>
+        <button onclick="toggleGmTools()" id="gm-btn" style="width:auto; background:none; color:var(--primary); display:none; margin:0 0 0 auto; padding:0;">🛠️</button>
       </div>
       <div class="chat-container">
-        <div id="gm-panel" style="display:none; background:var(--bg-card); padding:10px; border-bottom:1px solid var(--border);">
-          <div style="display:flex; gap:5px; margin-bottom:5px;">
+        <div id="gm-panel" style="display:none; background:var(--bg-card); padding:10px; border-bottom:1px solid var(--border); flex-shrink:0;">
+          <small>Painel do Mestre</small>
+          <div style="display:flex; gap:5px; margin-top:5px;">
             <select id="gm-target" style="margin:0; flex:1;"></select>
-            <input id="gm-val" type="text" placeholder="Val" style="margin:0; flex:1;">
+            <input id="gm-val" type="text" placeholder="Valor/Item" style="margin:0; flex:1;">
           </div>
-          <div style="display:flex; gap:5px;">
-            <button class="small" onclick="gmCmd('hp')">HP</button>
-            <button class="small" onclick="gmCmd('item')">Item</button>
+          <div style="display:flex; gap:5px; margin-top:5px;">
+            <button onclick="gmCmd('hp')" style="margin:0; font-size:12px;">Alterar HP</button>
+            <button onclick="gmCmd('xp')" style="margin:0; font-size:12px;">Dar XP</button>
+            <button onclick="gmCmd('item')" style="margin:0; font-size:12px;">Dar Item</button>
           </div>
         </div>
         <div id="session-log" class="chat-list"></div>
         <div class="chat-input">
-          <input id="session-in" type="text" placeholder="/roll 1d20 ou ação..." style="margin:0" onkeyup="if(event.key==='Enter') sendSession()">
-          <button onclick="sendSession()" style="width:40px; margin:0">➤</button>
+          <input id="session-in" type="text" placeholder="Ação ou fala..." style="margin:0">
+          <button onclick="sendSession()" style="width:50px; margin:0">➤</button>
         </div>
       </div>
     </div>
 
     <div id="sheet" class="page">
-      <div class="header"><button class="back-btn" onclick="back()">‹</button> Ficha</div>
+      <div class="header"><button class="back-btn" onclick="back('sheet')">‹</button> Ficha do Personagem</div>
       <div class="content">
         <div class="card" style="text-align:center;">
-          <img id="char-pic" src="" style="width:80px; height:80px; border-radius:50%; background:#333; object-fit:cover; display:none; margin:0 auto;">
+          <img id="char-pic" src="" style="width:100px; height:100px; border-radius:50%; background:#333; object-fit:cover; margin-bottom:10px; display:none;">
           <h3 id="sheet-name-display">Nome</h3>
           <p id="sheet-bio-display" style="font-size:12px; color:var(--text-sub)"></p>
         </div>
@@ -273,77 +275,85 @@ small { color:var(--text-sub); font-size: 0.8em; }
         </div>
         <div class="card">
           <h4>Inventário</h4>
-          <div id="sheet-inv-display" style="white-space:pre-wrap; font-size:13px;"></div>
+          <div id="sheet-inv-display" style="white-space:pre-wrap;"></div>
         </div>
-        <button onclick="showModal('sheet-edit-modal', true)">Editar</button>
+        <button onclick="showModal('sheet-edit-modal', true)">Editar Ficha</button>
       </div>
     </div>
 
     <div id="sheet-edit-modal" class="modal" onclick="modalBackgroundClick(event, 'sheet-edit-modal')">
       <div class="modal-content" onclick="event.stopPropagation()">
-        <h4 style="margin-top:0">Editar Ficha</h4>
-        <input id="c-name" type="text" placeholder="Nome Personagem">
-        <input id="c-img" type="text" placeholder="URL Imagem">
+        <h4>Editar Ficha</h4>
+        <input id="c-name" type="text" placeholder="Nome do Personagem">
+        <input id="c-img" type="text" placeholder="URL da Imagem">
+        <textarea id="c-bio" placeholder="Biografia" rows="3"></textarea>
         <input id="c-str" type="number" placeholder="Força">
         <input id="c-dex" type="number" placeholder="Destreza">
         <input id="c-con" type="number" placeholder="Constituição">
         <input id="c-int" type="number" placeholder="Inteligência">
-        <textarea id="c-inv" rows="4" placeholder="Inventário (1 por linha)"></textarea>
+        <textarea id="c-inv" rows="5" placeholder="Inventário (Um item por linha)"></textarea>
         <button onclick="saveSheet()" style="background:var(--success)">Salvar</button>
         <button onclick="showModal('sheet-edit-modal', false)" style="background:var(--danger)">Cancelar</button>
       </div>
     </div>
 
     <div id="bank" class="page">
-      <div class="header"><button class="back-btn" onclick="back()">‹</button> Banco</div>
+      <div class="header"><button class="back-btn" onclick="back('bank')">‹</button> Banco</div>
       <div class="content">
-        <div class="card" style="background:linear-gradient(45deg, #FFD700, #B8860B); color:black;">
-          <div style="display:flex; justify-content:space-between;">
-            <b>Ouro</b><span id="gold-val" style="font-size:20px; font-weight:bold">0</span>
+        <div class="card" style="background: linear-gradient(45deg, #FFD700, #B8860B); color:black; font-weight:bold;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Saldo Ouro</span>
+            <span id="gold-val" style="font-size:24px;">0</span>
           </div>
         </div>
         <div class="card">
-          <h4>Carteira</h4>
+          <h4>Carteira (Todos os Saldo)</h4>
           <div id="wallet-div"></div>
         </div>
         <div class="card">
           <h4>Transferir</h4>
-          <input id="pay-key" placeholder="Chave Destino">
+          <input id="pay-key" type="text" placeholder="Chave do Jogador Destino">
           <select id="pay-type">
-            <option value="ouro">Ouro</option><option value="prata">Prata</option><option value="cobre">Cobre</option>
+            <option value="ouro">Ouro</option>
+            <option value="prata">Prata</option>
+            <option value="cobre">Cobre</option>
+            <option value="bronze">Bronze</option>
+            <option value="diamante">Diamante</option>
+            <option value="esmeralda">Esmeralda</option>
           </select>
-          <input id="pay-amt" type="number" placeholder="Qtd">
+          <input id="pay-amt" type="number" placeholder="Quantidade">
           <button onclick="transfer()">Enviar</button>
         </div>
       </div>
     </div>
 
     <div id="store" class="page">
-      <div class="header"><button class="back-btn" onclick="back()">‹</button> Loja</div>
+      <div class="header"><button class="back-btn" onclick="back('store')">‹</button> Loja</div>
       <div class="content">
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
-          <button onclick="switchStore('sys')" id="btn-sys" style="flex:1">Sistema</button>
-          <button onclick="switchStore('usr')" id="btn-usr" style="flex:1; background:var(--bg-card)">Players</button>
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+          <button onclick="switchStore('sys')" id="btn-sys" style="flex:1;">Sistema</button>
+          <button onclick="switchStore('usr')" id="btn-usr" style="flex:1; background:var(--bg-card); color:var(--text-main);">Jogadores</button>
         </div>
         <div id="store-sys">
           <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span>⚔️ Espada</span>
-              <button class="small" onclick="buySys('Espada', 50)">50 O</button>
+              <span>⚔️ Espada Longa</span>
+              <button onclick="buySys('Espada Longa', 50)" style="width:auto; margin:0; padding:5px 10px;">50 Ouro</button>
             </div>
           </div>
           <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span>🛡️ Escudo</span>
-              <button class="small" onclick="buySys('Escudo', 30)">30 O</button>
+              <span>🛡️ Escudo de Ferro</span>
+              <button onclick="buySys('Escudo', 30)" style="width:auto; margin:0; padding:5px 10px;">30 Ouro</button>
             </div>
           </div>
         </div>
         <div id="store-usr" style="display:none;">
           <div class="card">
-            <small>Vender Item</small>
+            <small>Vender Item do Inventário</small>
             <select id="sell-item-select"></select>
             <input id="sell-price" type="number" placeholder="Preço">
+            <select id="sell-curr"><option value="ouro">Ouro</option><option value="diamante">Diamante</option></select>
             <button onclick="postSell()">Anunciar</button>
           </div>
           <div id="market-list"></div>
@@ -352,26 +362,44 @@ small { color:var(--text-sub); font-size: 0.8em; }
     </div>
 
     <div id="notes" class="page">
-      <div class="header"><button class="back-btn" onclick="back()">‹</button> Notas</div>
+      <div class="header"><button class="back-btn" onclick="back('notes')">‹</button> Bloco de Notas</div>
       <div class="content">
         <textarea id="note-pad" style="flex:1; resize:none;" placeholder="Suas anotações..."></textarea>
-        <button onclick="saveNote()" style="background:var(--success)">Salvar</button>
+        <button onclick="saveNote()" style="background:var(--success)">Salvar Notas</button>
       </div>
     </div>
 
     <div id="settings" class="page">
-      <div class="header"><button class="back-btn" onclick="back()">‹</button> Ajustes</div>
+      <div class="header"><button class="back-btn" onclick="back('notes')">‹</button> Bloco de Notas</div>
+      <div class="content">
+        <textarea id="note-pad" style="flex:1; resize:none;" placeholder="Suas anotações..."></textarea>
+        <button onclick="saveNote()" style="background:var(--success)">Salvar Notas</button>
+      </div>
+    </div>
+
+    <div id="settings" class="page">
+      <div class="header"><button class="back-btn" onclick="back('settings')">‹</button> Ajustes</div>
       <div class="content">
         <div class="card">
-          <h4>Tema</h4>
-          <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <button onclick="setMode('dark')" style="flex:1; background:#000">Escuro</button>
-            <button onclick="setMode('light')" style="flex:1; background:#fff; color:#000">Claro</button>
+          <h4>Tema do Sistema</h4>
+          <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button onclick="setMode('dark')" style="flex:1; background:var(--bg-main);">Escuro</button>
+            <button onclick="setMode('light')" style="flex:1; background:#eee; color:#000;">Claro</button>
           </div>
-          <h4>Cor</h4>
-          <div style="display:flex; gap:5px; align-items:center;">
-            <input id="color-picker" type="color" value="#6200ea" style="width:50px; padding:0; height:40px;">
-            <button onclick="setAccent(document.getElementById('color-picker').value)" style="flex:1">Aplicar</button>
+          <h4>Cor de Destaque</h4>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+            <button onclick="setAccent('#6200ea')" style="background:#6200ea; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#d50000')" style="background:#d50000; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#00c853')" style="background:#00c853; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#2962ff')" style="background:#2962ff; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#ffab00')" style="background:#ffab00; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#800080')" style="background:#800080; width:30px; height:30px; padding:0;"></button>
+            <button onclick="setAccent('#ff4081')" style="background:#ff4081; width:30px; height:30px; padding:0;"></button>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input id="color-picker" type="color" value="#6200ea" style="width:48px; height:36px; padding:0; border-radius:6px; border:1px solid var(--border);">
+            <button class="small" onclick="setAccent(document.getElementById('color-picker').value)">Aplicar Cor</button>
+            <button class="small" onclick="resetAccent()">Resetar</button>
           </div>
         </div>
       </div>
@@ -381,6 +409,9 @@ small { color:var(--text-sub); font-size: 0.8em; }
 </div>
 
 <script>
+/* ------------------
+   CONFIGURAÇÕES FIREBASE
+   ------------------ */
 const firebaseConfig = {
   apiKey: "AIzaSyBykDF5TNKQHejUJTp-ue7s5CKfpJp1HV0",
   authDomain: "mestre-471a0.firebaseapp.com",
@@ -394,22 +425,70 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-const AI_KEY = "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"; // <--- COLOQUE SUA CHAVE NOVA AQUI
+/* ⚠️ CHAVE DA IA: 
+   Esta chave está exposta no código frontend, o que é inseguro para produção. 
+   A melhor prática é movê-la para um backend ou função de nuvem.
+*/
+const AI_KEY = "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";
 
 let user = null;
 let activeChat = null;
 let activeTable = null;
 
+/* ------------------ HELPERS ------------------ */
+function showModal(id, show) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.style.display = show ? 'flex' : 'none';
+}
+function modalBackgroundClick(e, id) {
+  if(e.target && e.target.id === id) {
+    showModal(id, false);
+  }
+}
+
+/* Color utils */
+function hexToRgb(hex){
+  hex = hex.replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  const bigint = parseInt(hex,16);
+  return {r:(bigint>>16)&255, g:(bigint>>8)&255, b:bigint&255};
+}
+function rgbToHex(r,g,b){
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function shade(hex, percent){
+  const c = hexToRgb(hex);
+  const t = percent < 0 ? 0 : 255;
+  const p = Math.abs(percent);
+  const R = Math.round((t - c.r)*p) + c.r;
+  const G = Math.round((t - c.g)*p) + c.g;
+  const B = Math.round((t - c.b)*p) + c.b;
+  return rgbToHex(R,G,B);
+}
+function getContrastColor(hex){
+  const c = hexToRgb(hex);
+  const yiq = ((c.r*299)+(c.g*587)+(c.b*114))/1000;
+  return (yiq >= 128) ? '#000000' : '#ffffff';
+}
+
+/* ------------------
+   INICIALIZAÇÃO
+   ------------------ */
 function init() {
+  // relógio
   setInterval(()=>{
     const d = new Date();
     document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
   }, 1000);
+
+  // Bateria (se suportado)
   if (navigator.getBattery) {
     navigator.getBattery().then(b => {
-      document.getElementById('battery').innerText = Math.round(b.level*100);
+      document.getElementById('battery').innerText = Math.round(b.level*100)+'%';
     }).catch(()=>{});
   }
+
   auth.onAuthStateChanged(u=>{
     user = u;
     if(u) {
@@ -421,98 +500,65 @@ function init() {
       document.getElementById('view-user').style.display = 'none';
     }
   });
+
+  // load initial data
   loadFeed();
   loadTables();
+
+  // apply initial accent from color-picker
   const cp = document.getElementById('color-picker');
   if(cp) setAccent(cp.value);
-  
-  // Push initial state
-  history.pushState({page: 'home'}, 'home', '');
 }
 
-window.onpopstate = function(event) {
-  const openModals = document.querySelectorAll('.modal');
-  let modalClosed = false;
-  openModals.forEach(m => {
-    if(m.style.display === 'flex'){
-      m.style.display = 'none';
-      modalClosed = true;
-    }
-  });
-  if(modalClosed) {
-    history.pushState(null, '', ''); 
-    return;
-  }
-
-  const activePages = document.querySelectorAll('.page.active');
-  if(activePages.length > 0){
-    activePages.forEach(p => p.classList.remove('active'));
-  }
-};
-
-function showModal(id, show) {
-  const el = document.getElementById(id);
-  if(!el) return;
-  if(show){
-    el.style.display = 'flex';
-    history.pushState({modal: id}, '', '');
-  } else {
-    el.style.display = 'none';
-    history.back();
-  }
-}
-
-function modalBackgroundClick(e, id) {
-  if(e.target && e.target.id === id) showModal(id, false);
-}
-
-function go(id){ 
-  document.getElementById(id).classList.add('active'); 
-  if(id==='store') loadMarket();
-  history.pushState({page: id}, '', '');
-}
-
-function back(){ 
-  const pages = document.querySelectorAll('.page.active');
-  pages.forEach(p=>p.classList.remove('active'));
-  history.back();
-}
-
+/* ------------------
+   AUTENTICAÇÃO
+   ------------------ */
 async function actionLogin(){
-  try{ await auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value); } 
-  catch(e){ alert(e.message); }
+  try{
+    await auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value);
+  } catch(e){ alert(e.message); }
 }
-
 async function actionRegister(){
   try{
     await auth.createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value);
     const uid = auth.currentUser.uid;
+    const defaultName = uid.substring(0,6);
     db.ref('users/'+uid).set({
-      name: uid.substring(0,6),
-      key: uid.substring(0,6).toUpperCase(),
+      name: defaultName,
+      key: defaultName.toUpperCase(),
       color: '#ffffff',
-      wallet: {ouro:100, prata:0, cobre:0},
-      char: {name:'Heroi', inv:'Poção', str:10, dex:10, con:10, int:10, hp:10, maxHp:10}
+      bio: 'Novo aventureiro!',
+      wallet: {ouro:100, prata:50, cobre:20, bronze:0, diamante:0, esmeralda:0},
+      char: {name:'Herói', inv:'Poção de Cura\nEspada Curta', str:10, dex:10, con:10, int:10}
     });
   } catch(e){ alert(e.message); }
 }
-
 function actionLogout(){ auth.signOut(); }
 
+/* ------------------
+   USUÁRIO / PERFIL
+   ------------------ */
 function loadUser(){
   if(!user) return;
   db.ref('users/'+user.uid).on('value', s=>{
     const d = s.val() || {};
-    document.getElementById('u-name').innerText = d.name || 'User';
+    const defaultName = user.uid.substring(0,6);
+    const uName = d.name || defaultName;
+
+    document.getElementById('u-name').innerText = uName;
     document.getElementById('u-name').style.color = d.color || 'var(--primary)';
-    document.getElementById('u-bio').innerText = d.bio || '';
+    document.getElementById('u-bio').innerText = d.bio || 'Sem descrição.';
     if(d.img) {
       document.getElementById('u-pic').src = d.img;
       document.getElementById('u-pic').style.display = 'block';
+    } else {
+      document.getElementById('u-pic').style.display = 'none';
     }
+
     document.getElementById('note-pad').value = d.note || '';
-    document.getElementById('u-name-edit').value = d.name;
-    document.getElementById('u-key-edit').value = d.key;
+
+    document.getElementById('u-name-edit').value = uName;
+    document.getElementById('u-key-edit').value = d.key || defaultName.toUpperCase();
     document.getElementById('u-color-edit').value = d.color || '#ffffff';
     document.getElementById('u-img-edit').value = d.img || '';
     document.getElementById('u-bio-edit').value = d.bio || '';
@@ -528,25 +574,30 @@ function loadUser(){
       document.getElementById('sheet-name-display').innerText = d.char.name || 'Sem Nome';
       document.getElementById('sheet-bio-display').innerText = d.char.bio || '';
       document.getElementById('sheet-attr-display').innerHTML = `
-        <div class="stat-row"><span>HP</span><span>${d.char.hp||0}/${d.char.maxHp||0}</span></div>
-        <div class="stat-row"><span>FOR</span><span>${d.char.str||0}</span></div>
-        <div class="stat-row"><span>DES</span><span>${d.char.dex||0}</span></div>
-        <div class="stat-row"><span>CON</span><span>${d.char.con||0}</span></div>
-        <div class="stat-row"><span>INT</span><span>${d.char.int||0}</span></div>
+        <div class="stat-row"><span>Força</span><span>${d.char.str || 0}</span></div>
+        <div class="stat-row"><span>Destreza</span><span>${d.char.dex || 0}</span></div>
+        <div class="stat-row"><span>Constituição</span><span>${d.char.con || 0}</span></div>
+        <div class="stat-row"><span>Inteligência</span><span>${d.char.int || 0}</span></div>
       `;
-      document.getElementById('sheet-inv-display').innerText = d.char.inv || '';
-      document.getElementById('c-name').value = d.char.name||'';
-      document.getElementById('c-str').value = d.char.str||0;
-      document.getElementById('c-dex').value = d.char.dex||0;
-      document.getElementById('c-con').value = d.char.con||0;
-      document.getElementById('c-int').value = d.char.int||0;
-      document.getElementById('c-inv').value = d.char.inv||'';
+      document.getElementById('sheet-inv-display').innerText = d.char.inv || 'Inventário Vazio';
+
+      document.getElementById('c-name').value = d.char.name || '';
+      document.getElementById('c-img').value = d.char.img || '';
+      document.getElementById('c-bio').value = d.char.bio || '';
+      document.getElementById('c-inv').value = d.char.inv || '';
+      document.getElementById('c-str').value = d.char.str || '';
+      document.getElementById('c-dex').value = d.char.dex || '';
+      document.getElementById('c-con').value = d.char.con || '';
+      document.getElementById('c-int').value = d.char.int || '';
+
       const invItems = (d.char.inv || '').split('\n').filter(i => i.trim() !== '');
       const sel = document.getElementById('sell-item-select');
       if(sel) sel.innerHTML = invItems.map(item => `<option value="${item}">${item}</option>`).join('');
-      if(d.char.img){
-         document.getElementById('char-pic').src = d.char.img;
-         document.getElementById('char-pic').style.display = 'block';
+      if (invItems.length === 0 && sel) sel.innerHTML = '<option value="">Inventário Vazio</option>';
+
+      if(d.char.img) {
+        document.getElementById('char-pic').src = d.char.img;
+        document.getElementById('char-pic').style.display = 'block';
       }
     }
     loadProfileFeed();
@@ -554,361 +605,483 @@ function loadUser(){
 }
 
 function saveProfile(){
-  if(!user) return;
-  db.ref('users/'+user.uid).update({
+  const data = {
     name: document.getElementById('u-name-edit').value,
     key: document.getElementById('u-key-edit').value.toUpperCase(),
     color: document.getElementById('u-color-edit').value,
     img: document.getElementById('u-img-edit').value,
     bio: document.getElementById('u-bio-edit').value
-  });
+  };
+  if(!user) return alert('Faça login.');
+  db.ref('users/'+user.uid).update(data);
   showModal('profile-edit-modal', false);
 }
 
 function saveSheet(){
-  if(!user) return;
-  db.ref('users/'+user.uid+'/char').update({
+  const data = {
     name: document.getElementById('c-name').value,
     img: document.getElementById('c-img').value,
-    str: Number(document.getElementById('c-str').value),
-    dex: Number(document.getElementById('c-dex').value),
-    con: Number(document.getElementById('c-con').value),
-    int: Number(document.getElementById('c-int').value),
-    inv: document.getElementById('c-inv').value
-  });
+    bio: document.getElementById('c-bio').value,
+    inv: document.getElementById('c-inv').value,
+    str: Number(document.getElementById('c-str').value) || 0,
+    dex: Number(document.getElementById('c-dex').value) || 0,
+    con: Number(document.getElementById('c-con').value) || 0,
+    int: Number(document.getElementById('c-int').value) || 0
+  };
+  if(!user) return alert('Faça login.');
+  db.ref('users/'+user.uid+'/char').set(data);
   showModal('sheet-edit-modal', false);
 }
 
 function saveNote(){
-  if(!user) return;
+  if(!user) return alert('Faça login.');
   db.ref('users/'+user.uid+'/note').set(document.getElementById('note-pad').value);
+  alert('Notas Salvas');
 }
 
+/* ------------------
+   FEED
+   ------------------ */
 function addPost(){
-  if(!user) return;
-  db.ref('feed').push({
+  const t = document.getElementById('post-txt').value;
+  const i = document.getElementById('post-img').value;
+  if(!t) return alert('Digite algo para postar.');
+  if(!user) return alert('Faça login para postar.');
+
+  const payload = {
     u: document.getElementById('u-name').innerText,
     uid: user.uid,
-    txt: document.getElementById('post-txt').value,
-    img: document.getElementById('post-img').value,
+    txt: t,
+    img: i || '',
     ts: firebase.database.ServerValue.TIMESTAMP
-  }).then(()=>{
-    document.getElementById('post-txt').value = '';
-    document.getElementById('post-img').value = '';
-    showModal('post-modal', false);
-  });
+  };
+
+  // push and handle result explicitly
+  db.ref('feed').push(payload)
+    .then(()=> {
+      document.getElementById('post-txt').value = '';
+      document.getElementById('post-img').value = '';
+      showModal('post-modal', false);
+      // ensure feed reload (should be realtime but force a quick refresh)
+      setTimeout(()=> loadFeed(), 300);
+    })
+    .catch(err => {
+      console.error('Erro ao postar', err);
+      alert('Erro ao postar: ' + err.message);
+    });
+}
+
+function renderPost(p){
+  const time = p.ts ? new Date(p.ts).toLocaleString() : '';
+  return `<div class="card" style="border-left:4px solid ${p.color || 'var(--primary)'};">
+    <small style="color:${p.color || 'var(--primary)'}">${p.u} · ${time}</small>
+    <div style="margin-top:5px">${escapeHtml(p.txt)}</div>
+    ${p.img ? `<img src="${p.img}" style="width:100%; border-radius:8px; margin-top:10px">` : ''}
+  </div>`;
+}
+
+function escapeHtml(unsafe) {
+  return (unsafe || '')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
 }
 
 function loadFeed(){
-  db.ref('feed').limitToLast(50).on('value', s=>{
-    const d = document.getElementById('feed-list');
-    d.innerHTML = '';
-    const p = [];
-    s.forEach(c => p.push(c.val()));
-    p.sort((a,b)=>(b.ts||0)-(a.ts||0));
-    p.forEach(x => d.innerHTML += renderPost(x));
+  const feedListElement = document.getElementById('feed-list');
+  if(!feedListElement) return;
+  db.ref('feed').limitToLast(200).on('value', async snapshot=>{
+    feedListElement.innerHTML = '';
+    const posts = [];
+    snapshot.forEach(child => {
+      const v = child.val();
+      v._id = child.key;
+      posts.push(v);
+    });
+    posts.sort((a,b)=> (b.ts||0)-(a.ts||0)); // newest first
+    const uidCache = {};
+    for(const post of posts){
+      let userName = post.u || 'Anônimo';
+      let userColor = 'var(--primary)';
+      try {
+        if(post.uid && !uidCache[post.uid]){
+          const userSnapshot = await db.ref('users/' + post.uid).once('value');
+          uidCache[post.uid] = userSnapshot.val() || {};
+        }
+        const ud = uidCache[post.uid];
+        if(ud){
+          userName = ud.name || userName;
+          userColor = ud.color || userColor;
+        }
+      } catch(e) { console.warn('Erro ao obter usuário do post', e); }
+      const fullPost = {...post, u: userName, color: userColor};
+      feedListElement.innerHTML += renderPost(fullPost);
+    }
+    if(posts.length === 0) feedListElement.innerHTML = 'Nenhuma postagem ainda.';
+  }, err => {
+    console.error('Erro loadFeed', err);
+    feedListElement.innerHTML = 'Erro ao carregar feed.';
   });
 }
 
 function loadProfileFeed(){
-  if(!user) return;
-  db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(20).on('value', s=>{
-    const d = document.getElementById('profile-feed-list');
-    d.innerHTML = '';
-    const p = [];
-    s.forEach(c => p.push(c.val()));
-    p.sort((a,b)=>(b.ts||0)-(a.ts||0));
-    p.forEach(x => d.innerHTML += renderPost(x));
+  const profileFeedListElement = document.getElementById('profile-feed-list');
+  if(!profileFeedListElement) return;
+  if(!user || !user.uid){
+    profileFeedListElement.innerHTML = 'Faça login para ver suas postagens.';
+    return;
+  }
+  db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(50).on('value', async snapshot=>{
+    profileFeedListElement.innerHTML = '';
+    const posts = [];
+    snapshot.forEach(c => {
+      const v = c.val();
+      v._id = c.key;
+      posts.push(v);
+    });
+    posts.sort((a,b)=> (b.ts||0)-(a.ts||0));
+    for(const post of posts){
+      profileFeedListElement.innerHTML += renderPost(post);
+    }
+    if(posts.length === 0) profileFeedListElement.innerHTML = 'Nenhuma postagem ainda.';
   });
 }
 
-function renderPost(p){
-  return `<div class="card" style="border-left:3px solid ${p.color||'var(--primary)'}">
-    <small>${p.u}</small><br>${p.txt}
-    ${p.img?`<img src="${p.img}" style="width:100%;border-radius:8px;margin-top:5px">`:''}
-  </div>`;
-}
-
-function openChat(id, rKey=null){
+/* ------------------
+   CHATS (GLOBAL / DMS) - unchanged majorly
+   ------------------ */
+function openChat(id, recipientKey = null){
   activeChat = id;
-  let p = 'chats/'+id;
-  if(id === 'private'){
-    const myKey = document.getElementById('u-key-edit').value.toUpperCase();
-    const keys = [myKey, rKey].sort();
-    p = 'dms/'+keys[0]+'_'+keys[1]+'/msg';
-    document.getElementById('chat-title').innerText = 'DM: '+rKey;
-  } else {
+  let dbPath = 'chats/'+id;
+  if(id === 'private' && recipientKey){
+    const userKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
+    const sortedKeys = [userKey, recipientKey].sort();
+    dbPath = 'dms/'+sortedKeys[0]+'_'+sortedKeys[1] + '/messages';
+    document.getElementById('chat-title').innerText = 'DM: ' + recipientKey;
+  } else if(id === 'global'){
     document.getElementById('chat-title').innerText = 'Global';
+    dbPath = 'chats/global';
+  } else {
+    document.getElementById('chat-title').innerText = 'Chat';
   }
+
   go('chat-view');
-  const d = document.getElementById('chat-msgs');
-  d.innerHTML = '';
-  db.ref(p).limitToLast(50).off();
-  db.ref(p).limitToLast(50).on('child_added', s=>{
+  const chatRef = db.ref(dbPath).limitToLast(200);
+  document.getElementById('chat-msgs').innerHTML = '';
+  chatRef.off();
+  chatRef.on('child_added', s=>{
     const m = s.val();
-    const me = m.uid===user.uid;
-    const cls = m.isCmd ? 'command-msg' : (me?'me':'other');
-    d.innerHTML += `<div class="msg ${cls}">${m.isCmd?m.txt:`<b>${m.u}</b><br>${m.txt}`}</div>`;
-    d.scrollTop = d.scrollHeight;
+    const me = m.uid === (user && user.uid);
+    document.getElementById('chat-msgs').innerHTML += `<div class="msg ${me?'me':'other'}"><b>${escapeHtml(m.u)}</b><br>${escapeHtml(m.txt)}</div>`;
+    const list = document.getElementById('chat-msgs');
+    list.scrollTop = list.scrollHeight;
   });
 }
 
 function openPrivateSetup(){ showModal('chat-private-setup', true); }
 
 async function openPrivateChat(){
-  const k = document.getElementById('dm-key').value.toUpperCase();
-  const u = await db.ref('users').orderByChild('key').equalTo(k).once('value');
-  if(u.exists()){
-    openChat('private', k);
-    showModal('chat-private-setup', false);
-  } else alert('Key not found');
+  const recipientKey = (document.getElementById('dm-key').value || '').toUpperCase();
+  if(!recipientKey) return alert('Insira a Chave do Destinatário');
+  const myKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
+  if(recipientKey === myKey) return alert('Você não pode conversar consigo mesmo!');
+  const recipientSnap = await db.ref('users').orderByChild('key').equalTo(recipientKey).once('value');
+  if(!recipientSnap.exists()) return alert('Chave de destinatário inválida.');
+  const recipientObj = recipientSnap.val();
+  const recipientUid = Object.keys(recipientObj)[0];
+
+  const sortedKeys = [myKey, recipientKey].sort();
+  const dmId = sortedKeys[0] + '_' + sortedKeys[1];
+
+  const participantsRef = db.ref('dms/' + dmId + '/participants');
+  participantsRef.update({ [user.uid]: true, [recipientUid]: true });
+
+  openChat('private', recipientKey);
+  showModal('chat-private-setup', false);
 }
 
-async function handleCommand(txt, ctx){
-  const [cmd, ...argsArr] = txt.split(' ');
-  const args = argsArr.join(' ');
-  const uName = document.getElementById('u-name').innerText;
-  const uData = (await db.ref('users/'+user.uid).once('value')).val();
-  const char = uData.char || {};
-
-  if(cmd === '/roll' || cmd === '/r'){
-    const m = args.match(/^(\d+)?d(\d+)([\+\-]\d+)?$/i);
-    if(!m) return {u:uName, txt:`Uso: /roll 1d20+5`};
-    let n=parseInt(m[1]||1), sides=parseInt(m[2]), mod=parseInt(m[3]||0), tot=mod, rolls=[];
-    for(let i=0;i<n;i++){ let r=Math.floor(Math.random()*sides)+1; rolls.push(r); tot+=r; }
-    return {u:uName, txt:`🎲 ${args}: **${tot}** (${rolls.join('+')}${mod?((mod>0?'+':'')+mod):''})`};
-  }
-  if(cmd==='/sheet'){
-    return {u:uName, txt:`📜 **${char.name}**\nHP:${char.hp}/${char.maxHp} STR:${char.str} DEX:${char.dex} CON:${char.con} INT:${char.int}`};
-  }
-  if(cmd==='/inv'){
-    return {u:uName, txt:`🎒 **Inv:**\n${char.inv||'Vazio'}`};
-  }
-  if(cmd==='/use'){
-    let inv = (char.inv||'').split('\n');
-    let idx = inv.findIndex(i=>i.toLowerCase().includes(args.toLowerCase()));
-    if(idx>-1){
-      let it = inv.splice(idx,1)[0];
-      db.ref('users/'+user.uid+'/char/inv').set(inv.join('\n'));
-      return {u:uName, txt:`✨ Usou **${it}**`};
-    }
-    return {u:uName, txt:`Item não encontrado`};
-  }
-  return {u:uName, txt:`Comando inválido`};
-}
-
-async function sendChat(){
+function sendChat(){
   const t = document.getElementById('chat-msg-in').value;
   if(!t) return;
+  if(!user) return alert('Faça login para enviar mensagens.');
   document.getElementById('chat-msg-in').value = '';
-  if(t.startsWith('/')){
-     const res = await handleCommand(t, 'chat');
-     if(res){
-       let p = activeChat==='private'? 'dms/'+getDmId()+'/msg' : 'chats/global';
-       db.ref(p).push({u:res.u, uid:user.uid, txt:res.txt, isCmd:true});
-     }
-     return;
+  let dbPath = 'chats/'+activeChat;
+  if(activeChat === 'private'){
+    const recipientKey = document.getElementById('chat-title').innerText.replace('DM: ','');
+    const myKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
+    const sortedKeys = [myKey, recipientKey].sort();
+    dbPath = 'dms/'+sortedKeys[0]+'_'+sortedKeys[1] + '/messages';
+  } else {
+    dbPath = 'chats/' + (activeChat || 'global');
   }
-  let p = activeChat==='private'? 'dms/'+getDmId()+'/msg' : 'chats/global';
-  db.ref(p).push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t});
+  db.ref(dbPath).push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
 }
 
-function getDmId(){
-  const myKey = document.getElementById('u-key-edit').value.toUpperCase();
-  const rKey = document.getElementById('chat-title').innerText.replace('DM: ','');
-  return [myKey, rKey].sort().join('_');
+/* ------------------
+   LOJA / MARKET
+   ------------------ */
+function loadMarket(){
+  const d = document.getElementById('market-list');
+  if(!d) return;
+  db.ref('market').off();
+  db.ref('market').on('value', s=>{
+    d.innerHTML = '';
+    s.forEach(x => {
+      const i = x.val();
+      if(i.s !== user.uid) d.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><span>${escapeHtml(i.i)}</span><button onclick="buyUsr('${x.key}', '${i.i}')" style="width:auto; margin:0; padding:5px;">${i.p} ${i.c}</button></div><small>Vendedor: ${escapeHtml(i.u)}</small></div>`;
+    });
+  });
 }
+
+function buySys(i, p){
+  db.ref('users/'+user.uid+'/wallet/ouro').once('value', s=>{
+    if((s.val()||0) >= p) {
+      db.ref('users/'+user.uid+'/wallet/ouro').set(s.val()-p);
+      db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\n' + i);
+      alert('Comprado!');
+    } else alert('Sem ouro');
+  });
+}
+
+function postSell(){
+  const item = document.getElementById('sell-item-select').value;
+  const price = Number(document.getElementById('sell-price').value);
+  const curr = document.getElementById('sell-curr').value;
+  if(!item || !price) return alert('Selecione um item e um preço.');
+  db.ref('users/'+user.uid+'/char/inv').once('value', s=>{
+    let inventory = (s.val() || '').split('\n').filter(i => i.trim() !== '');
+    const itemIndex = inventory.findIndex(i => i.trim() === item.trim());
+    if (itemIndex === -1) return alert('Item não encontrado no inventário.');
+    inventory.splice(itemIndex, 1);
+    db.ref('users/'+user.uid+'/char/inv').set(inventory.join('\n'));
+    db.ref('market').push({
+      s: user.uid,
+      u: document.getElementById('u-name').innerText,
+      i: item,
+      p: price,
+      c: curr
+    });
+    alert('Item anunciado!');
+  });
+}
+
+function buyUsr(k, itemName){
+  db.ref('market/'+k).once('value', s=>{
+    const i = s.val();
+    db.ref('users/'+user.uid+'/wallet/'+i.c).once('value', w=>{
+      if((w.val()||0) >= i.p) {
+        db.ref('users/'+user.uid+'/wallet/'+i.c).set(w.val()-i.p);
+        db.ref('users/'+i.s+'/wallet/'+i.c).transaction(v=>(v||0)+i.p);
+        db.ref('market/'+k).remove();
+        db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\n' + itemName);
+        alert('Comprado!');
+      } else alert('Sem saldo');
+    });
+  });
+}
+
+/* ------------------
+   SESSÕES / MESTRE IA
+   ------------------ */
 
 function createTable(){
+  const n = document.getElementById('table-name').value;
+  const t = document.getElementById('table-type').value;
+  if(!n) return alert('Informe nome da aventura.');
   const k = db.ref('tables').push().key;
-  db.ref('tables/'+k).set({
-    name: document.getElementById('table-name').value,
-    type: document.getElementById('table-type').value,
-    master: user.uid,
-    users: {[user.uid]: document.getElementById('u-name').innerText}
-  });
+  db.ref('tables/'+k).set({name:n, type:t, master:user.uid, users:{[user.uid]:document.getElementById('u-name').innerText}});
   joinTable(k);
 }
 
 function loadTables(){
+  db.ref('tables').off();
   db.ref('tables').on('value', s=>{
     const d = document.getElementById('table-list');
     d.innerHTML = '';
     s.forEach(x=>{
       const t = x.val();
-      d.innerHTML += `<div class="card" onclick="joinTable('${x.key}')"><b>${t.name}</b> (${t.type})</div>`;
+      d.innerHTML += `<div class="card" onclick="joinTable('${x.key}')" style="cursor:pointer; border-left: 4px solid ${t.type==='AI'?'cyan':'orange'}"><b>${escapeHtml(t.name)}</b><br><small>${t.type === 'AI' ? '🤖 IA' : '👤 Humano'}</small></div>`;
     });
   });
 }
 
 function joinTable(k){
   activeTable = k;
+  db.ref('tables/'+k+'/users/'+user.uid).set(document.getElementById('u-name').innerText);
   go('active-session');
   db.ref('tables/'+k).once('value', s=>{
     const t = s.val();
     document.getElementById('session-name').innerText = t.name;
     const isGm = t.master === user.uid && t.type === 'HUMAN';
-    document.getElementById('gm-btn').style.display = isGm?'block':'none';
-    if(isGm){
-       const sel = document.getElementById('gm-target');
-       sel.innerHTML='';
-       for(let uid in t.users) sel.innerHTML+=`<option value="${uid}">${t.users[uid]}</option>`;
-    }
+    document.getElementById('gm-btn').style.display = isGm ? 'block' : 'none';
+    if(isGm) loadGmUsers(k);
   });
+  loadSessionLog(k);
+}
+
+function exitTable(){
+  activeTable = null;
+  back('active-session');
+  db.ref('tables').off();
+}
+
+function toggleGmTools(){
+  const p = document.getElementById('gm-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+function loadGmUsers(k){
+  db.ref('tables/'+k+'/users').on('value', s=>{
+    const sel = document.getElementById('gm-target');
+    sel.innerHTML = '';
+    s.forEach(u => sel.innerHTML += `<option value="${u.key}">${escapeHtml(u.val())}</option>`);
+  });
+}
+
+function gmCmd(act){
+  const u = document.getElementById('gm-target').value;
+  const v = document.getElementById('gm-val').value;
+  db.ref('tables/'+activeTable+'/log').push({u:'Mestre', uid:'sys', txt:`Mestre aplicou ${act.toUpperCase()} ${v} em ${u}.`, ts: firebase.database.ServerValue.TIMESTAMP});
+}
+
+function loadSessionLog(k){
   const d = document.getElementById('session-log');
-  d.innerHTML='';
-  db.ref('tables/'+k+'/log').limitToLast(50).off();
-  db.ref('tables/'+k+'/log').limitToLast(50).on('child_added', s=>{
+  d.innerHTML = '';
+  db.ref('tables/'+k+'/log').limitToLast(100).off();
+  db.ref('tables/'+k+'/log').limitToLast(100).on('child_added', s=>{
     const m = s.val();
-    const me = m.uid===user.uid;
-    const cls = m.isCommand ? 'command-msg' : (me?'me':'other');
-    d.innerHTML += `<div class="msg ${cls}">${m.isCommand?m.txt:`<b>${m.u}</b><br>${m.txt}`}</div>`;
+    d.innerHTML += `<div class="msg ${m.uid===user.uid?'me':'other'}"><b>${escapeHtml(m.u)}</b><br>${escapeHtml(m.txt)}</div>`;
     d.scrollTop = d.scrollHeight;
   });
 }
 
-function exitTable(){ activeTable=null; back(); }
-function toggleGmTools(){ 
-  const p=document.getElementById('gm-panel'); p.style.display=p.style.display==='none'?'block':'none'; 
-}
-function gmCmd(act){
-  const u = document.getElementById('gm-target').value;
-  const v = document.getElementById('gm-val').value;
-  if(act==='hp') db.ref('users/'+u+'/char/hp').transaction(c=>(c||0)+Number(v));
-  if(act==='item') db.ref('users/'+u+'/char/inv').transaction(c=>(c||'')+'\n'+v);
-  db.ref('tables/'+activeTable+'/log').push({u:'GM', uid:'sys', txt:`GM: ${act} ${v}`, isCommand:true});
-}
-
+/* sendSession: envia a mensagem do jogador e, se for mesa IA, chama a API externa.
+   A resposta da IA é tratada de forma robusta (vários formatos de retorno). */
 async function sendSession(){
   const t = document.getElementById('session-in').value;
-  if(!t || !activeTable) return;
+  if(!t) return;
+  if(!activeTable) return alert('Entre em uma mesa.');
+  if(!user) return alert('Faça login antes de enviar (aguarde autenticação).');
+
   document.getElementById('session-in').value = '';
+  db.ref('tables/'+activeTable+'/log').push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
 
-  if(t.startsWith('/')){
-    const res = await handleCommand(t, 'session');
-    if(res) db.ref('tables/'+activeTable+'/log').push({u:res.u, uid:user.uid, txt:res.txt, isCommand:true});
-    return;
-  }
-
-  db.ref('tables/'+activeTable+'/log').push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts:firebase.database.ServerValue.TIMESTAMP});
-
-  const tData = (await db.ref('tables/'+activeTable).once('value')).val();
-  if(tData.type === 'AI'){
+  const s = await db.ref('tables/'+activeTable).get();
+  if(s.exists() && s.val().type === 'AI'){
     try {
-      if(AI_KEY.length < 10) return; 
-      const logSnap = await db.ref('tables/'+activeTable+'/log').limitToLast(8).once('value');
-      const msgs = [];
-      logSnap.forEach(s => {
-        const m = s.val();
-        if(!m.isCommand) msgs.push({role: m.uid==='ai'?'assistant':'user', content: m.uid==='ai'?m.txt:`[${m.u}]: ${m.txt}`});
-      });
+      // ensure user is ready
+      const body = {
+        model: "deepseek/deepseek-r1-0528:free",
+        messages: [{role: "user", content: `RPG Mestre: Jogador (${user.uid}) disse: "${t}". Responda como mestre.`}],
+        meta: { uid: user.uid }
+      };
       
-      const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${AI_KEY}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "https://mestre-os.app",
-          "X-Title": "Mestre OS"
+          // 💡 FIX: Adicionado Referer para melhor compatibilidade com APIs externas e CORS.
+          "HTTP-Referer": "https://veecuran-cmyk.github.io/Mestre/" 
         },
-        body: JSON.stringify({
-          model: "tngtech/deepseek-r1t2-chimera",
-          messages: [{role:"system", content:"Mestre de RPG medieval."}, ...msgs]
-        })
+        body: JSON.stringify(body)
       });
+      
+      if(!response.ok){
+        const txt = await response.text();
+        console.error('Erro IA', response.status, txt);
+        // Loga o status e a mensagem de erro do servidor.
+        db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:`Erro IA: ${response.status} - ${txt}`, ts: firebase.database.ServerValue.TIMESTAMP});
+        return;
+      }
+      const j = await response.json();
 
-      if(!resp.ok) throw new Error(resp.status);
-      const j = await resp.json();
-      const txt = j.choices[0].message.content;
-      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:txt, ts:firebase.database.ServerValue.TIMESTAMP});
-    } catch(e){
-      console.error(e);
-      db.ref('tables/'+activeTable+'/log').push({u:'Sys', uid:'ai', txt:'Erro IA: '+e.message, isCommand:true});
+      // parse robusto para diferentes formatos de API
+      let aiText = "O mestre IA não respondeu (formato inesperado).";
+      if(j){
+        if(j.choices && j.choices[0]){
+          if(j.choices[0].message && j.choices[0].message.content) aiText = j.choices[0].message.content;
+          else if(j.choices[0].text) aiText = j.choices[0].text;
+        } else if(j.output && j.output[0] && j.output[0].content && j.output[0].content[0] && j.output[0].content[0].text) {
+          aiText = j.output[0].content[0].text;
+        } else if(j.result && j.result.output_text) {
+          aiText = j.result.output_text;
+        } else if(typeof j === 'string') {
+          aiText = j;
+        } else {
+          aiText = JSON.stringify(j).slice(0,1000);
+        }
+      }
+      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:aiText, ts: firebase.database.ServerValue.TIMESTAMP});
+    } catch(e) {
+      // 💡 FIX: Loga a mensagem de erro técnica (e.message) para identificar a causa da falha de comunicação (ex: CORS, network error).
+      console.error('Erro ao chamar IA', e);
+      const errorDetail = e.message || e.toString(); 
+      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:`**Erro de Conexão**: Não foi possível gerar resposta da IA. Detalhe: ${errorDetail}`, ts: firebase.database.ServerValue.TIMESTAMP});
     }
   }
 }
 
+/* ------------------
+   TRANSFERÊNCIAS
+   ------------------ */
 function transfer(){
-  const k = document.getElementById('pay-key').value.toUpperCase();
-  const t = document.getElementById('pay-type').value;
-  const v = Number(document.getElementById('pay-amt').value);
-  db.ref('users/'+user.uid+'/wallet/'+t).once('value', s=>{
-    if((s.val()||0)>=v){
-      db.ref('users').orderByChild('key').equalTo(k).once('value', u=>{
-        if(u.exists()){
-           const d = Object.keys(u.val())[0];
-           db.ref('users/'+user.uid+'/wallet/'+t).set(s.val()-v);
-           db.ref('users/'+d+'/wallet/'+t).transaction(c=>(c||0)+v);
-        }
-      });
-    }
-  });
-}
-
-function switchStore(m){
-  document.getElementById('store-sys').style.display = m==='sys'?'block':'none';
-  document.getElementById('store-usr').style.display = m==='usr'?'block':'none';
-}
-function buySys(i, p){
-  db.ref('users/'+user.uid+'/wallet/ouro').once('value', s=>{
-    if((s.val()||0)>=p){
-      db.ref('users/'+user.uid+'/wallet/ouro').set(s.val()-p);
-      db.ref('users/'+user.uid+'/char/inv').transaction(c=>(c||'')+'\n'+i);
-    }
-  });
-}
-function postSell(){
-  db.ref('market').push({
-    s: user.uid,
-    u: document.getElementById('u-name').innerText,
-    i: document.getElementById('sell-item-select').value,
-    p: document.getElementById('sell-price').value,
-    ts: firebase.database.ServerValue.TIMESTAMP
-  });
-}
-function loadMarket(){
-  db.ref('market').limitToLast(20).on('value', s=>{
-    const d = document.getElementById('market-list');
-    d.innerHTML='';
-    s.forEach(x=>{
-      const i = x.val();
-      if(i.s!==user.uid) d.innerHTML+=`<div class="card"><span>${i.i} (${i.p} O)</span><button onclick="buyUsr('${x.key}', '${i.i}', ${i.p})">Comprar</button></div>`;
+  const k = (document.getElementById('pay-key').value || '').toUpperCase();
+  const c = document.getElementById('pay-type').value;
+  const a = Number(document.getElementById('pay-amt').value);
+  if(!k || !a) return alert('Preencha chave e valor.');
+  db.ref('users/'+user.uid+'/wallet/'+c).once('value', s=>{
+    if((s.val()||0) < a) return alert('Saldo insuficiente');
+    db.ref('users').orderByChild('key').equalTo(k).once('value', u=>{
+      if(!u.exists()) return alert('Chave inválida');
+      const dest = Object.keys(u.val())[0];
+      db.ref('users/'+user.uid+'/wallet/'+c).set(s.val()-a);
+      db.ref('users/'+dest+'/wallet/'+c).transaction(v => (v||0)+a);
+      alert('Enviado!');
     });
   });
 }
-function buyUsr(k, i, p){
-  db.ref('users/'+user.uid+'/wallet/ouro').once('value', s=>{
-    if((s.val()||0)>=p){
-      db.ref('market/'+k).once('value', mSnap=>{
-         const m = mSnap.val();
-         db.ref('users/'+user.uid+'/wallet/ouro').set(s.val()-p);
-         db.ref('users/'+m.s+'/wallet/ouro').transaction(v=>(v||0)+p);
-         db.ref('users/'+user.uid+'/char/inv').transaction(c=>(c||'')+'\n'+i);
-         db.ref('market/'+k).remove();
-      });
+
+/* ------------------
+   OUTROS (market switch etc.)
+   ------------------ */
+function switchStore(m){
+  document.getElementById('store-sys').style.display = m==='sys'?'block':'none';
+  document.getElementById('store-usr').style.display = m==='usr'?'block':'none';
+  document.getElementById('btn-sys').style.background = m==='sys'?'var(--primary)':'var(--bg-card)';
+  document.getElementById('btn-usr').style.background = m==='usr'?'var(--primary)':'var(--bg-card)';
+}
+
+/* simples helpers de navegação */
+function go(id){ document.getElementById(id).classList.add('active'); if(id==='store') loadMarket(); }
+function back(id){ document.getElementById(id).classList.remove('active'); }
+function setMode(m){ const r = document.documentElement.style; if(m==='light'){ r.setProperty('--bg-main','#ddd'); r.setProperty('--bg-surface','#f5f5f5'); r.setProperty('--bg-card','#ffffff'); r.setProperty('--text-main','#000'); r.setProperty('--border','#ccc'); r.setProperty('--input-bg','#eee'); } else { r.setProperty('--bg-main','#000'); r.setProperty('--bg-surface','#121212'); r.setProperty('--bg-card','#1e1e1e'); r.setProperty('--text-main','#ffffff'); r.setProperty('--border','#333'); r.setProperty('--input-bg','#2c2c2c'); } }
+function setAccent(c){
+  // set primary and some derived variables to change whole interface feel
+  document.documentElement.style.setProperty('--primary', c);
+  const contrast = getContrastColor(c);
+  document.documentElement.style.setProperty('--primary-contrast', contrast);
+  // border slightly darker
+  const darker = shade(c, -0.2);
+  document.documentElement.style.setProperty('--border', darker);
+  // card background tinted slightly
+  const card = shade(c, -0.9);
+  document.documentElement.style.setProperty('--bg-card', card);
+  // input bg slightly darker than card
+  document.documentElement.style.setProperty('--input-bg', shade(card, -0.08));
+  // update buttons color
+  const buttons = document.querySelectorAll('button');
+  buttons.forEach(b => {
+    if(!b.style.background || b.style.background === '' || b.style.background.startsWith('var(')) {
+      b.style.background = c;
+      b.style.color = contrast;
     }
   });
 }
+function resetAccent(){ document.getElementById('color-picker').value = '#6200ea'; setAccent('#6200ea'); }
 
-function hexToRgb(h){const i=parseInt(h.replace('#',''),16);return{r:(i>>16)&255,g:(i>>8)&255,b:i&255};}
-function setAccent(c){
-  document.documentElement.style.setProperty('--primary', c);
-  const rgb=hexToRgb(c);
-  const yiq=((rgb.r*299)+(rgb.g*587)+(rgb.b*114))/1000;
-  document.documentElement.style.setProperty('--primary-contrast', yiq>=128?'#000':'#fff');
-}
-function setMode(m){
-  const r = document.documentElement.style;
-  if(m==='light'){
-    r.setProperty('--bg-main','#e0e0e0'); r.setProperty('--bg-surface','#f5f5f5');
-    r.setProperty('--bg-card','#ffffff'); r.setProperty('--text-main','#000');
-    r.setProperty('--border','#ccc'); r.setProperty('--input-bg','#eee');
-  } else {
-    r.setProperty('--bg-main','#000'); r.setProperty('--bg-surface','#121212');
-    r.setProperty('--bg-card','#1e1e1e'); r.setProperty('--text-main','#fff');
-    r.setProperty('--border','#333'); r.setProperty('--input-bg','#2c2c2c');
-  }
-}
 </script>
 </body>
-</html>
+</html>                                  
