@@ -1,0 +1,15 @@
+// Arquivo: vercel.json (Na raiz do seu projeto)
+{
+  "builds": [
+    {
+      "src": "api/ia_master.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/ia_master",
+      "dest": "api/ia_master.py"
+    }
+  ]
+}
