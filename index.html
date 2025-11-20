@@ -8,7 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
+<script src="api.js"></script>
 <style>
 :root {
   --primary: #6200ea;
@@ -424,13 +424,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
-
-/* ⚠️ CHAVE DA IA: 
-   Esta chave está exposta no código frontend, o que é inseguro para produção. 
-   A melhor prática é movê-la para um backend ou função de nuvem.
-*/
-const AI_KEY = "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";
-
+const API_KEY = CONFIG.AI_KEY
 let user = null;
 let activeChat = null;
 let activeTable = null;
@@ -960,16 +954,45 @@ function loadSessionLog(k){
 /* sendSession: envia a mensagem do jogador e, se for mesa IA, chama a API externa.
    A resposta da IA é tratada de forma robusta (vários formatos de retorno). */
 async function sendSession(){
+  
   const t = document.getElementById('session-in').value;
   if(!t) return;
   if(!activeTable) return alert('Entre em uma mesa.');
   if(!user) return alert('Faça login antes de enviar (aguarde autenticação).');
-
+  
   document.getElementById('session-in').value = '';
   db.ref('tables/'+activeTable+'/log').push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
 
+  const cmdResult = await processCommand(text, userName);
+  if (cmdResult) {
+    db.ref('tables/'+activeTableId+'/log').push({
+      name: 'Sistema', uid: 'system', text: cmdResult, isSystem: true
+    });
+    return;
+  }
+
+  // 2. Salva a mensagem do jogador (ação)
+  db.ref('tables/'+activeTableId+'/log').push({
+    name: userName, uid: currentUser.uid, text: text, isSystem: false
+  });
+  
   const s = await db.ref('tables/'+activeTable).get();
   if(s.exists() && s.val().type === 'AI'){
+    
+      const apiKey = API_KEY; // <--- AQUI USA A CHAVE GLOBALMENTE DEFINIDA
+      
+      if (!apiKey || apiKey.length < 10) {
+        db.ref('tables/'+activeTableId+'/log').push({ name: 'Erro', uid: 'sys', text: '⚠️ Chave API não configurada em api.js!', isSystem: true });
+        return;
+      }
+      
+      // Pegar histórico (mantendo os limites para evitar custos altos)
+      const histSnap = await db.ref('tables/'+activeTableId+'/log').limitToLast(6).get();
+      let messages = [{ role: "system", content: "Você é o Mestre de RPG. Seja breve e criativo." }];
+      histSnap.forEach(child => {
+        const m = child.val();
+        if (!m.isSystem) messages.push({ role: m.uid === 'ai' ? "assistant" : "user", content: m.uid === 'ai' ? m.text : `${m.name}: ${m.text}` });
+      });
     try {
       // ensure user is ready
       const body = {
