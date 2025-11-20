@@ -954,99 +954,153 @@ function loadSessionLog(k){
 /* sendSession: envia a mensagem do jogador e, se for mesa IA, chama a API externa.
    A resposta da IA é tratada de forma robusta (vários formatos de retorno). */
 async function sendSession(){
-  
-  const t = document.getElementById('session-in').value;
-  if(!t) return;
+  // texto do input
+  const text = (document.getElementById('session-in').value || '').trim();
+  if(!text) return;
   if(!activeTable) return alert('Entre em uma mesa.');
-  if(!user) return alert('Faça login antes de enviar (aguarde autenticação).');
-  
-  document.getElementById('session-in').value = '';
-  db.ref('tables/'+activeTable+'/log').push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
+  if(!user || !user.uid) return alert('Faça login antes de enviar (aguarde autenticação).');
 
-  const cmdResult = await processCommand(text, userName);
-  if (cmdResult) {
-    db.ref('tables/'+activeTableId+'/log').push({
-      name: 'Sistema', uid: 'system', text: cmdResult, isSystem: true
+  // limpa input e registra ação do jogador no log (uma vez)
+  document.getElementById('session-in').value = '';
+  const playerName = document.getElementById('u-name').innerText || 'Jogador';
+  await db.ref('tables/'+activeTable+'/log').push({
+    u: playerName,
+    uid: user.uid,
+    txt: text,
+    ts: firebase.database.ServerValue.TIMESTAMP
+  });
+
+  // se houver um processCommand (comandos do sistema), tenta processar
+  try {
+    if (typeof processCommand === 'function') {
+      const cmdResult = await processCommand(text, { uid: user.uid, name: playerName, tableId: activeTable });
+      if (cmdResult) {
+        // registra resultado do comando como mensagem de sistema e retorna
+        await db.ref('tables/'+activeTable+'/log').push({
+          u: 'Sistema',
+          uid: 'sys',
+          txt: String(cmdResult),
+          ts: firebase.database.ServerValue.TIMESTAMP,
+          isSystem: true
+        });
+        return;
+      }
+    }
+  } catch (e) {
+    console.error('processCommand erro:', e);
+    // continua normalmente caso processCommand falhe
+  }
+
+  // verifica se a mesa é IA
+  const tableSnap = await db.ref('tables/'+activeTable).get();
+  if(!tableSnap.exists()) return console.warn('Mesa não existe:', activeTable);
+  const table = tableSnap.val();
+  if(table.type !== 'AI') return; // nada mais a fazer se não for IA
+
+  // prepara chave de API
+  const apiKey = typeof API_KEY !== 'undefined' ? API_KEY : (window.API_KEY || null);
+  if(!apiKey || String(apiKey).length < 10){
+    await db.ref('tables/'+activeTable+'/log').push({
+      u: 'Erro',
+      uid: 'sys',
+      txt: '⚠️ Chave API não configurada (API_KEY). Configure em api.js ou no escopo global.',
+      ts: firebase.database.ServerValue.TIMESTAMP,
+      isSystem: true
     });
     return;
   }
 
-  // 2. Salva a mensagem do jogador (ação)
-  db.ref('tables/'+activeTableId+'/log').push({
-    name: userName, uid: currentUser.uid, text: text, isSystem: false
-  });
-  
-  const s = await db.ref('tables/'+activeTable).get();
-  if(s.exists() && s.val().type === 'AI'){
-    
-      const apiKey = API_KEY; // <--- AQUI USA A CHAVE GLOBALMENTE DEFINIDA
-      
-      if (!apiKey || apiKey.length < 10) {
-        db.ref('tables/'+activeTableId+'/log').push({ name: 'Erro', uid: 'sys', text: '⚠️ Chave API não configurada em api.js!', isSystem: true });
-        return;
-      }
-      
-      // Pegar histórico (mantendo os limites para evitar custos altos)
-      const histSnap = await db.ref('tables/'+activeTableId+'/log').limitToLast(6).get();
-      let messages = [{ role: "system", content: "Você é o Mestre de RPG. Seja breve e criativo." }];
-      histSnap.forEach(child => {
-        const m = child.val();
-        if (!m.isSystem) messages.push({ role: m.uid === 'ai' ? "assistant" : "user", content: m.uid === 'ai' ? m.text : `${m.name}: ${m.text}` });
-      });
-    try {
-      // ensure user is ready
-      const body = {
-        model: "deepseek/deepseek-r1-0528:free",
-        messages: [{role: "user", content: `RPG Mestre: Jogador (${user.uid}) disse: "${t}". Responda como mestre.`}],
-        meta: { uid: user.uid }
-      };
-      
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${AI_KEY}`,
-          "Content-Type": "application/json",
-          // 💡 FIX: Adicionado Referer para melhor compatibilidade com APIs externas e CORS.
-          "HTTP-Referer": "https://veecuran-cmyk.github.io/Mestre/" 
-        },
-        body: JSON.stringify(body)
-      });
-      
-      if(!response.ok){
-        const txt = await response.text();
-        console.error('Erro IA', response.status, txt);
-        // Loga o status e a mensagem de erro do servidor.
-        db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:`Erro IA: ${response.status} - ${txt}`, ts: firebase.database.ServerValue.TIMESTAMP});
-        return;
-      }
-      const j = await response.json();
-
-      // parse robusto para diferentes formatos de API
-      let aiText = "O mestre IA não respondeu (formato inesperado).";
-      if(j){
-        if(j.choices && j.choices[0]){
-          if(j.choices[0].message && j.choices[0].message.content) aiText = j.choices[0].message.content;
-          else if(j.choices[0].text) aiText = j.choices[0].text;
-        } else if(j.output && j.output[0] && j.output[0].content && j.output[0].content[0] && j.output[0].content[0].text) {
-          aiText = j.output[0].content[0].text;
-        } else if(j.result && j.result.output_text) {
-          aiText = j.result.output_text;
-        } else if(typeof j === 'string') {
-          aiText = j;
-        } else {
-          aiText = JSON.stringify(j).slice(0,1000);
-        }
-      }
-      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:aiText, ts: firebase.database.ServerValue.TIMESTAMP});
-    } catch(e) {
-      // 💡 FIX: Loga a mensagem de erro técnica (e.message) para identificar a causa da falha de comunicação (ex: CORS, network error).
-      console.error('Erro ao chamar IA', e);
-      const errorDetail = e.message || e.toString(); 
-      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:`**Erro de Conexão**: Não foi possível gerar resposta da IA. Detalhe: ${errorDetail}`, ts: firebase.database.ServerValue.TIMESTAMP});
+  // monta histórico limitado (últimas N entradas) para contexto
+  const histSnap = await db.ref('tables/'+activeTable+'/log').limitToLast(8).get();
+  const messages = [{ role: 'system', content: 'Você é o Mestre de RPG. Responda de forma curta, imersiva e no tom de mestre.' }];
+  histSnap.forEach(child => {
+    const m = child.val();
+    if(!m) return;
+    // ignora logs de sistema marcados como isSystem true (já temos prompt system)
+    if(m.isSystem) return;
+    // se for mensagem da IA marque como assistant, senão user
+    if(m.uid === 'ai' || m.u === 'Mestre IA' || m.u === 'Mestre') {
+      messages.push({ role: 'assistant', content: String(m.txt) });
+    } else {
+      // inclui nome do jogador para contexto
+      messages.push({ role: 'user', content: `${m.u}: ${m.txt}` });
     }
+  });
+
+  // adiciona a última fala do jogador (garante que está presente)
+  messages.push({ role: 'user', content: `${playerName}: ${text}` });
+
+  // corpo da requisição (ajuste conforme a API que você usa)
+  const body = {
+    model: "deepseek/deepseek-r1-0528:free",
+    messages: messages,
+    meta: { uid: user.uid, table: activeTable }
+  };
+
+  try {
+    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    if(!resp.ok){
+      const txt = await resp.text();
+      console.error('Erro IA', resp.status, txt);
+      await db.ref('tables/'+activeTable+'/log').push({
+        u: 'Mestre IA',
+        uid: 'ai',
+        txt: `Erro IA: ${resp.status} - ${txt}`,
+        ts: firebase.database.ServerValue.TIMESTAMP
+      });
+      return;
+    }
+
+    const j = await resp.json();
+
+    // parse robusto para vários formatos de resposta
+    let aiText = "O mestre IA não respondeu (formato inesperado).";
+    if(j){
+      if(j.choices && j.choices[0]){
+        if(j.choices[0].message && j.choices[0].message.content) aiText = j.choices[0].message.content;
+        else if(j.choices[0].text) aiText = j.choices[0].text;
+      } else if(j.output && Array.isArray(j.output) && j.output[0] && j.output[0].content && j.output[0].content[0] && j.output[0].content[0].text) {
+        aiText = j.output[0].content[0].text;
+      } else if(j.result && j.result.output_text) {
+        aiText = j.result.output_text;
+      } else if(typeof j === 'string') {
+        aiText = j;
+      } else if(j.choices && Array.isArray(j.choices) && j.choices.length && j.choices[0].message && j.choices[0].message.content) {
+        aiText = j.choices[0].message.content;
+      } else {
+        // fallback: tenta converter JSON em string curta
+        try { aiText = JSON.stringify(j).slice(0,1000); } catch(e){ aiText = String(j); }
+      }
+    }
+
+    // grava resposta da IA no log da mesa
+    await db.ref('tables/'+activeTable+'/log').push({
+      u: 'Mestre IA',
+      uid: 'ai',
+      txt: aiText,
+      ts: firebase.database.ServerValue.TIMESTAMP
+    });
+
+  } catch (err) {
+    console.error('Erro ao chamar IA', err);
+    const detail = (err && err.message) ? err.message : String(err);
+    await db.ref('tables/'+activeTable+'/log').push({
+      u: 'Mestre IA',
+      uid: 'ai',
+      txt: `**Erro de Conexão**: Não foi possível gerar resposta da IA. Detalhe: ${detail}`,
+      ts: firebase.database.ServerValue.TIMESTAMP
+    });
   }
 }
-
+  
 /* ------------------
    TRANSFERÊNCIAS
    ------------------ */
