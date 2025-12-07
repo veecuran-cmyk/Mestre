@@ -3,12 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Mestre OS</title>
+<title>Mestre OS - RPG System</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
 <style>
+/* --- VARIÁVEIS E TEMA --- */
 :root {
   --primary: #6200ea;
   --primary-contrast: #ffffff;
@@ -22,79 +24,97 @@
   --danger: #d50000;
   --success: #00c853;
 }
-*{box-sizing:border-box}
+* { box-sizing: border-box; }
 body {
-  margin: 0;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
   background: var(--bg-main);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  user-select: none;
-  transition: background 0.3s;
+  user-select: none; transition: background 0.3s;
 }
+
+/* --- DEVICE & LAYOUT --- */
 .device {
-  width: 375px;
-  height: 780px;
-  background: var(--bg-main);
-  border-radius: 40px;
-  position: relative;
-  box-shadow: 0 0 0 8px var(--border), 0 0 20px rgba(0,0,0,.5);
+  width: 375px; height: 780px; background: var(--bg-main); border-radius: 40px;
+  position: relative; box-shadow: 0 0 0 8px var(--border), 0 0 20px rgba(0,0,0,.5);
   overflow: hidden;
 }
 .screen {
-  width: 100%;
-  height: 100%;
-  background: var(--bg-surface);
-  color: var(--text-main);
-  display: flex;
-  flex-direction: column;
-  transition: background 0.3s, color 0.3s;
+  width: 100%; height: 100%; background: var(--bg-surface); color: var(--text-main);
+  display: flex; flex-direction: column; transition: background 0.3s, color 0.3s;
 }
 .status-bar {
-  height: 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 25px;
-  font-size: 12px;
-  font-weight: 600;
-  z-index: 100;
+  height: 40px; display: flex; justify-content: space-between; align-items: center;
+  padding: 0 25px; font-size: 12px; font-weight: 600; z-index: 100;
 }
+
+/* --- HOME GRID --- */
 .app-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  padding: 20px;
-  align-content: start;
-  flex: 1;
-  overflow-y: auto;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px;
+  align-content: start; flex: 1; overflow-y: auto;
 }
 .app-icon { display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform .12s;}
-.icon-box { width:60px; height:60px; background: var(--bg-card); border-radius:15px; display:flex; justify-content:center; align-items:center; font-size:28px; margin-bottom:8px; box-shadow:0 2px 5px rgba(0,0,0,.2); border:1px solid var(--border); }
+.app-icon:active { transform: scale(0.95); }
+.icon-box { 
+  width:60px; height:60px; background: var(--bg-card); border-radius:15px; 
+  display:flex; justify-content:center; align-items:center; font-size:28px; 
+  margin-bottom:8px; box-shadow:0 2px 5px rgba(0,0,0,.2); border:1px solid var(--border); 
+}
 .app-icon span { font-size:11px; text-align:center; color:var(--text-main); }
-.page { position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg-surface); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); z-index:50; padding-top:55px; }
+
+/* --- PÁGINAS --- */
+.page { 
+  position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg-surface); 
+  display:flex; flex-direction:column; transform:translateX(100%); 
+  transition:transform .3s cubic-bezier(.2,.8,.2,1); z-index:50; padding-top:55px; 
+}
 .page.active { transform:translateX(0); }
-.header { position:absolute; top:0; left:0; right:0; height:55px; display:flex; align-items:center; padding:0 15px; background:var(--bg-card); border-bottom:1px solid var(--border); font-weight:bold; font-size:18px; flex-shrink:0; color:var(--text-main); z-index:60; }
+
+.header { 
+  position:absolute; top:0; left:0; right:0; height:55px; display:flex; align-items:center; 
+  padding:0 15px; background:var(--bg-card); border-bottom:1px solid var(--border); 
+  font-weight:bold; font-size:18px; flex-shrink:0; color:var(--text-main); z-index:60; 
+}
 .back-btn { background:none; border:none; font-size:46px; color:var(--primary); margin-right:15px; cursor:pointer; padding:0; line-height:1; }
 .content { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; }
-.card { background:var(--bg-card); border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,.1); border:1px solid var(--border); }
-input, textarea, select { width:100%; padding:12px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; color:var(--text-main); font-family:inherit; margin-bottom:10px; box-sizing:border-box; }
-button { padding:10px 12px; border-radius:8px; border:none; font-weight:600; cursor:pointer; background:var(--primary); color:var(--primary-contrast); margin-bottom:10px; transition:background .2s; }
-button.small { padding:6px 8px; font-size:13px; width:auto; }
+
+/* --- COMPONENTES --- */
+.card { 
+  background:var(--bg-card); border-radius:12px; padding:15px; margin-bottom:15px; 
+  box-shadow:0 2px 4px rgba(0,0,0,.1); border:1px solid var(--border); 
+}
+input, textarea, select { 
+  width:100%; padding:12px; background:var(--input-bg); border:1px solid var(--border); 
+  border-radius:8px; color:var(--text-main); font-family:inherit; margin-bottom:10px; 
+  box-sizing:border-box; outline:none;
+}
+input:focus, textarea:focus { border-color: var(--primary); }
+button { 
+  padding:10px 12px; border-radius:8px; border:none; font-weight:600; cursor:pointer; 
+  background:var(--primary); color:var(--primary-contrast); margin-bottom:10px; 
+  transition:background .2s; width:100%;
+}
+button:active { opacity: 0.8; }
+button.small { padding:6px 8px; font-size:13px; width:auto; margin:0; }
+
+/* --- CHAT --- */
 .chat-container { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 .chat-list { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px; }
 .msg { max-width:80%; padding:10px 15px; border-radius:18px; font-size:14px; line-height:1.4; word-wrap:break-word; }
 .msg.me { align-self:flex-end; background:var(--primary); color:var(--text-main); border-bottom-right-radius:4px; }
 .msg.other { align-self:flex-start; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); border-bottom-left-radius:4px; }
 .chat-input { padding:10px; background:var(--bg-card); border-top:1px solid var(--border); display:flex; gap:10px; flex-shrink:0; }
+
+/* --- UTIL --- */
 .stat-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; }
-.modal { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99; display:none; justify-content:center; align-items:center; padding:20px; }
-.modal-content { background:var(--bg-surface); padding:20px; border-radius:15px; width:100%; max-width:560px; max-height:80%; overflow-y:auto; border:2px solid var(--primary); }
+.modal { 
+  position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); 
+  z-index:99; display:none; justify-content:center; align-items:center; padding:20px; 
+}
+.modal-content { 
+  background:var(--bg-surface); padding:20px; border-radius:15px; width:100%; 
+  max-width:560px; max-height:80%; overflow-y:auto; border:2px solid var(--primary); 
+}
 small { color:var(--text-sub); }
-/* utility */
-.center { display:flex; justify-content:center; align-items:center; }
 </style>
 </head>
 <body onload="init()">
@@ -165,7 +185,7 @@ small { color:var(--text-sub); }
     <div id="feed" class="page">
       <div class="header"><button class="back-btn" onclick="back('feed')">‹</button> Feed Global</div>
       <div id="feed-list" class="content"></div>
-      <button onclick="showModal('post-modal', true)" style="position:fixed; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; font-size:24px; padding:0;">+</button>
+      <button onclick="showModal('post-modal', true)" style="position:fixed; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; font-size:24px; padding:0; z-index:80;">+</button>
     </div>
 
     <div id="post-modal" class="modal" onclick="modalBackgroundClick(event, 'post-modal')">
@@ -222,11 +242,7 @@ small { color:var(--text-sub); }
         <div class="card">
           <h4>Criar Nova Mesa</h4>
           <input id="table-name" type="text" placeholder="Nome da Aventura">
-          <select id="table-type">
-            <option value="HUMAN">Mestre Humano (Player)</option>
-            <option value="AI">Mestre IA (Automático)</option>
-          </select>
-          <button onclick="createTable()">Iniciar Campanha</button>
+          <button onclick="createTable()">Iniciar Campanha (Mestre)</button>
         </div>
         <h4>Mesas Disponíveis</h4>
         <div id="table-list"></div>
@@ -250,6 +266,9 @@ small { color:var(--text-sub); }
             <button onclick="gmCmd('hp')" style="margin:0; font-size:12px;">Alterar HP</button>
             <button onclick="gmCmd('xp')" style="margin:0; font-size:12px;">Dar XP</button>
             <button onclick="gmCmd('item')" style="margin:0; font-size:12px;">Dar Item</button>
+          </div>
+          <div style="margin-top:5px;">
+             <button onclick="gmCmd('roll')" style="margin:0; font-size:12px; background:var(--text-sub);">🎲 Rolar Dado Público</button>
           </div>
         </div>
         <div id="session-log" class="chat-list"></div>
@@ -320,7 +339,7 @@ small { color:var(--text-sub); }
             <option value="diamante">Diamante</option>
             <option value="esmeralda">Esmeralda</option>
           </select>
-          <input id="pay-amt" type="number" placeholder="Quantidade">
+          <input id="pay-amt" type="number" placeholder="Quantidade" min="1">
           <button onclick="transfer()">Enviar</button>
         </div>
       </div>
@@ -346,6 +365,12 @@ small { color:var(--text-sub); }
               <button onclick="buySys('Escudo', 30)" style="width:auto; margin:0; padding:5px 10px;">30 Ouro</button>
             </div>
           </div>
+           <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span>🧪 Poção de Cura</span>
+              <button onclick="buySys('Poção de Cura', 10)" style="width:auto; margin:0; padding:5px 10px;">10 Ouro</button>
+            </div>
+          </div>
         </div>
         <div id="store-usr" style="display:none;">
           <div class="card">
@@ -361,14 +386,6 @@ small { color:var(--text-sub); }
     </div>
 
     <div id="notes" class="page">
-      <div class="header"><button class="back-btn" onclick="back('notes')">‹</button> Bloco de Notas</div>
-      <div class="content">
-        <textarea id="note-pad" style="flex:1; resize:none;" placeholder="Suas anotações..."></textarea>
-        <button onclick="saveNote()" style="background:var(--success)">Salvar Notas</button>
-      </div>
-    </div>
-
-    <div id="settings" class="page">
       <div class="header"><button class="back-btn" onclick="back('notes')">‹</button> Bloco de Notas</div>
       <div class="content">
         <textarea id="note-pad" style="flex:1; resize:none;" placeholder="Suas anotações..."></textarea>
@@ -410,20 +427,27 @@ small { color:var(--text-sub); }
 <script>
 /* ------------------
    CONFIGURAÇÕES FIREBASE
+   ⚠️ COLOQUE SUAS CHAVES ABAIXO ⚠️
    ------------------ */
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyBykDF5TNKQHejUJTp-ue7s5CKfpJp1HV0",
   authDomain: "mestre-471a0.firebaseapp.com",
   databaseURL: "https://mestre-471a0-default-rtdb.firebaseio.com",
   projectId: "mestre-471a0",
-  storageBucket: "mestre-471a0.appspot.com",
+  storageBucket: "mestre-471a0.firebasestorage.app",
   messagingSenderId: "142996111628",
-  appId: "1:142996111628:web:c3785e54588632f468c929"
+  appId: "1:142996111628:web:c3785e54588632f468c929",
+  measurementId: "G-XWSF04WNVW"
 };
-firebase.initializeApp(firebaseConfig);
+
+// Inicialização segura
+if (firebase.apps.length === 0) {
+  firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
 const auth = firebase.auth();
-const BACKEND_URL = 'https://mestre-backend-nvts294sp-curans-projects.vercel.app/'; // Mantenha o caminho relativo se usar Vercel/Render com seu Front-end.
+
 let user = null;
 let activeChat = null;
 let activeTable = null;
@@ -463,6 +487,14 @@ function getContrastColor(hex){
   const c = hexToRgb(hex);
   const yiq = ((c.r*299)+(c.g*587)+(c.b*114))/1000;
   return (yiq >= 128) ? '#000000' : '#ffffff';
+}
+function escapeHtml(unsafe) {
+  return (unsafe || '')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
 }
 
 /* ------------------
@@ -509,7 +541,7 @@ function init() {
 async function actionLogin(){
   try{
     await auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value);
-  } catch(e){ alert(e.message); }
+  } catch(e){ alert('Erro no login: ' + e.message); }
 }
 async function actionRegister(){
   try{
@@ -524,7 +556,7 @@ async function actionRegister(){
       wallet: {ouro:100, prata:50, cobre:20, bronze:0, diamante:0, esmeralda:0},
       char: {name:'Herói', inv:'Poção de Cura\nEspada Curta', str:10, dex:10, con:10, int:10}
     });
-  } catch(e){ alert(e.message); }
+  } catch(e){ alert('Erro ao registrar: ' + e.message); }
 }
 function actionLogout(){ auth.signOut(); }
 
@@ -622,7 +654,7 @@ function saveSheet(){
     int: Number(document.getElementById('c-int').value) || 0
   };
   if(!user) return alert('Faça login.');
-  db.ref('users/'+user.uid+'/char').set(data);
+  db.ref('users/'+user.uid+'/char').update(data);
   showModal('sheet-edit-modal', false);
 }
 
@@ -649,17 +681,13 @@ function addPost(){
     ts: firebase.database.ServerValue.TIMESTAMP
   };
 
-  // push and handle result explicitly
   db.ref('feed').push(payload)
     .then(()=> {
       document.getElementById('post-txt').value = '';
       document.getElementById('post-img').value = '';
       showModal('post-modal', false);
-      // ensure feed reload (should be realtime but force a quick refresh)
-      setTimeout(()=> loadFeed(), 300);
     })
     .catch(err => {
-      console.error('Erro ao postar', err);
       alert('Erro ao postar: ' + err.message);
     });
 }
@@ -667,25 +695,16 @@ function addPost(){
 function renderPost(p){
   const time = p.ts ? new Date(p.ts).toLocaleString() : '';
   return `<div class="card" style="border-left:4px solid ${p.color || 'var(--primary)'};">
-    <small style="color:${p.color || 'var(--primary)'}">${p.u} · ${time}</small>
+    <small style="color:${p.color || 'var(--primary)'}">${escapeHtml(p.u)} · ${time}</small>
     <div style="margin-top:5px">${escapeHtml(p.txt)}</div>
-    ${p.img ? `<img src="${p.img}" style="width:100%; border-radius:8px; margin-top:10px">` : ''}
+    ${p.img ? `<img src="${p.img}" style="width:100%; border-radius:8px; margin-top:10px; max-height:300px; object-fit:cover;">` : ''}
   </div>`;
-}
-
-function escapeHtml(unsafe) {
-  return (unsafe || '')
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'","&#039;");
 }
 
 function loadFeed(){
   const feedListElement = document.getElementById('feed-list');
   if(!feedListElement) return;
-  db.ref('feed').limitToLast(200).on('value', async snapshot=>{
+  db.ref('feed').limitToLast(100).on('value', async snapshot=>{
     feedListElement.innerHTML = '';
     const posts = [];
     snapshot.forEach(child => {
@@ -694,28 +713,13 @@ function loadFeed(){
       posts.push(v);
     });
     posts.sort((a,b)=> (b.ts||0)-(a.ts||0)); // newest first
-    const uidCache = {};
+    
+    // Simplificação: usar dados do post, mas tentar buscar user atualizado é ideal
+    // (Mantido a lógica original para performance, mas com fallback)
     for(const post of posts){
-      let userName = post.u || 'Anônimo';
-      let userColor = 'var(--primary)';
-      try {
-        if(post.uid && !uidCache[post.uid]){
-          const userSnapshot = await db.ref('users/' + post.uid).once('value');
-          uidCache[post.uid] = userSnapshot.val() || {};
-        }
-        const ud = uidCache[post.uid];
-        if(ud){
-          userName = ud.name || userName;
-          userColor = ud.color || userColor;
-        }
-      } catch(e) { console.warn('Erro ao obter usuário do post', e); }
-      const fullPost = {...post, u: userName, color: userColor};
-      feedListElement.innerHTML += renderPost(fullPost);
+        feedListElement.innerHTML += renderPost(post);
     }
     if(posts.length === 0) feedListElement.innerHTML = 'Nenhuma postagem ainda.';
-  }, err => {
-    console.error('Erro loadFeed', err);
-    feedListElement.innerHTML = 'Erro ao carregar feed.';
   });
 }
 
@@ -726,7 +730,7 @@ function loadProfileFeed(){
     profileFeedListElement.innerHTML = 'Faça login para ver suas postagens.';
     return;
   }
-  db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(50).on('value', async snapshot=>{
+  db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(50).on('value', snapshot=>{
     profileFeedListElement.innerHTML = '';
     const posts = [];
     snapshot.forEach(c => {
@@ -743,7 +747,7 @@ function loadProfileFeed(){
 }
 
 /* ------------------
-   CHATS (GLOBAL / DMS) - unchanged majorly
+   CHATS
    ------------------ */
 function openChat(id, recipientKey = null){
   activeChat = id;
@@ -780,17 +784,10 @@ async function openPrivateChat(){
   if(!recipientKey) return alert('Insira a Chave do Destinatário');
   const myKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
   if(recipientKey === myKey) return alert('Você não pode conversar consigo mesmo!');
+  
   const recipientSnap = await db.ref('users').orderByChild('key').equalTo(recipientKey).once('value');
   if(!recipientSnap.exists()) return alert('Chave de destinatário inválida.');
-  const recipientObj = recipientSnap.val();
-  const recipientUid = Object.keys(recipientObj)[0];
-
-  const sortedKeys = [myKey, recipientKey].sort();
-  const dmId = sortedKeys[0] + '_' + sortedKeys[1];
-
-  const participantsRef = db.ref('dms/' + dmId + '/participants');
-  participantsRef.update({ [user.uid]: true, [recipientUid]: true });
-
+  
   openChat('private', recipientKey);
   showModal('chat-private-setup', false);
 }
@@ -823,18 +820,20 @@ function loadMarket(){
     d.innerHTML = '';
     s.forEach(x => {
       const i = x.val();
-      if(i.s !== user.uid) d.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><span>${escapeHtml(i.i)}</span><button onclick="buyUsr('${x.key}', '${i.i}')" style="width:auto; margin:0; padding:5px;">${i.p} ${i.c}</button></div><small>Vendedor: ${escapeHtml(i.u)}</small></div>`;
+      if(i.s !== user.uid) d.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><span>${escapeHtml(i.i)}</span><button onclick="buyUsr('${x.key}', '${escapeHtml(i.i)}')" style="width:auto; margin:0; padding:5px;">${i.p} ${i.c}</button></div><small>Vendedor: ${escapeHtml(i.u)}</small></div>`;
     });
   });
 }
 
 function buySys(i, p){
+  if(!user) return alert('Faça login');
   db.ref('users/'+user.uid+'/wallet/ouro').once('value', s=>{
-    if((s.val()||0) >= p) {
-      db.ref('users/'+user.uid+'/wallet/ouro').set(s.val()-p);
-      db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\n' + i);
+    const currentGold = s.val() || 0;
+    if(currentGold >= p) {
+      db.ref('users/'+user.uid+'/wallet/ouro').set(currentGold - p);
+      db.ref('users/'+user.uid+'/char/inv').transaction(current => (current ? current + '\n' + i : i));
       alert('Comprado!');
-    } else alert('Sem ouro');
+    } else alert('Ouro insuficiente.');
   });
 }
 
@@ -842,11 +841,13 @@ function postSell(){
   const item = document.getElementById('sell-item-select').value;
   const price = Number(document.getElementById('sell-price').value);
   const curr = document.getElementById('sell-curr').value;
-  if(!item || !price) return alert('Selecione um item e um preço.');
+  if(!item || !price || price <= 0) return alert('Selecione um item e um preço válido.');
+  
   db.ref('users/'+user.uid+'/char/inv').once('value', s=>{
     let inventory = (s.val() || '').split('\n').filter(i => i.trim() !== '');
     const itemIndex = inventory.findIndex(i => i.trim() === item.trim());
     if (itemIndex === -1) return alert('Item não encontrado no inventário.');
+    
     inventory.splice(itemIndex, 1);
     db.ref('users/'+user.uid+'/char/inv').set(inventory.join('\n'));
     db.ref('market').push({
@@ -860,63 +861,86 @@ function postSell(){
   });
 }
 
-function buyUsr(k, itemName){
-  db.ref('market/'+k).once('value', s=>{
+function buyUsr(marketId, itemName){
+  if(!user) return alert('Faça login');
+  db.ref('market/'+marketId).once('value', s=>{
+    if(!s.exists()) return alert('Item já foi vendido.');
     const i = s.val();
+    
     db.ref('users/'+user.uid+'/wallet/'+i.c).once('value', w=>{
-      if((w.val()||0) >= i.p) {
-        db.ref('users/'+user.uid+'/wallet/'+i.c).set(w.val()-i.p);
+      const buyerFunds = w.val() || 0;
+      if(buyerFunds >= i.p) {
+        // Transação
+        db.ref('users/'+user.uid+'/wallet/'+i.c).set(buyerFunds - i.p);
         db.ref('users/'+i.s+'/wallet/'+i.c).transaction(v=>(v||0)+i.p);
-        db.ref('market/'+k).remove();
-        db.ref('users/'+user.uid+'/char/inv').transaction(current => (current || '') + '\n' + itemName);
-        alert('Comprado!');
-      } else alert('Sem saldo');
+        
+        // Remove do mercado e dá ao comprador
+        db.ref('market/'+marketId).remove();
+        db.ref('users/'+user.uid+'/char/inv').transaction(current => (current ? current + '\n' + itemName : itemName));
+        
+        alert('Comprado com sucesso!');
+      } else alert('Saldo insuficiente');
     });
   });
 }
 
 /* ------------------
-   SESSÕES / MESTRE IA
+   SESSÕES DE RPG (SOMENTE HUMANOS)
    ------------------ */
-  function createTable(){
+function createTable(){
   const n = document.getElementById('table-name').value;
-  const t = document.getElementById('table-type').value;
   if(!n) return alert('Informe nome da aventura.');
+  if(!user) return alert('Faça login.');
+  
   const k = db.ref('tables').push().key;
-  db.ref('tables/'+k).set({name:n, type:t, master:user.uid, users:{[user.uid]:document.getElementById('u-name').innerText}});
+  // Type removido, assumimos padrão humano
+  db.ref('tables/'+k).set({
+      name:n, 
+      master:user.uid, 
+      users:{[user.uid]:document.getElementById('u-name').innerText},
+      createdAt: firebase.database.ServerValue.TIMESTAMP
+  });
+  
+  document.getElementById('table-name').value = '';
   joinTable(k);
 }
 
 function loadTables(){
   db.ref('tables').off();
-  db.ref('tables').on('value', s=>{
+  db.ref('tables').limitToLast(50).on('value', s=>{
     const d = document.getElementById('table-list');
     d.innerHTML = '';
     s.forEach(x=>{
       const t = x.val();
-      d.innerHTML += `<div class="card" onclick="joinTable('${x.key}')" style="cursor:pointer; border-left: 4px solid ${t.type==='AI'?'cyan':'orange'}"><b>${escapeHtml(t.name)}</b><br><small>${t.type === 'AI' ? '🤖 IA' : '👤 Humano'}</small></div>`;
+ d.innerHTML += `<div class="card" onclick="joinTable('${x.key}')" style="cursor:pointer; border-left: 4px solid orange"><b>${escapeHtml(t.name)}</b><br><small>Mestre Humano</small></div>`;
     });
+    if(!d.innerHTML) d.innerHTML = "<p>Nenhuma mesa ativa.</p>";
   });
 }
 
 function joinTable(k){
+  if(!user) return alert('Faça login');
   activeTable = k;
+  // Entrar na mesa
   db.ref('tables/'+k+'/users/'+user.uid).set(document.getElementById('u-name').innerText);
+  
   go('active-session');
+  
   db.ref('tables/'+k).once('value', s=>{
     const t = s.val();
     document.getElementById('session-name').innerText = t.name;
-    const isGm = t.master === user.uid && t.type === 'HUMAN';
+    const isGm = t.master === user.uid;
     document.getElementById('gm-btn').style.display = isGm ? 'block' : 'none';
     if(isGm) loadGmUsers(k);
   });
+  
   loadSessionLog(k);
 }
 
 function exitTable(){
   activeTable = null;
   back('active-session');
-  db.ref('tables').off();
+  // Opcional: remover listener da mesa para economizar dados
 }
 
 function toggleGmTools(){
@@ -928,14 +952,30 @@ function loadGmUsers(k){
   db.ref('tables/'+k+'/users').on('value', s=>{
     const sel = document.getElementById('gm-target');
     sel.innerHTML = '';
-    s.forEach(u => sel.innerHTML += `<option value="${u.key}">${escapeHtml(u.val())}</option>`);
+    s.forEach(u => sel.innerHTML += `<option value="${escapeHtml(u.key)}">${escapeHtml(u.val())}</option>`);
   });
 }
 
 function gmCmd(act){
-  const u = document.getElementById('gm-target').value;
+  if(!activeTable) return;
+  const u = document.getElementById('gm-target').options[document.getElementById('gm-target').selectedIndex]?.text || 'Alguém';
   const v = document.getElementById('gm-val').value;
-  db.ref('tables/'+activeTable+'/log').push({u:'Mestre', uid:'sys', txt:`Mestre aplicou ${act.toUpperCase()} ${v} em ${u}.`, ts: firebase.database.ServerValue.TIMESTAMP});
+  
+  let txt = '';
+  if(act === 'roll') {
+      const roll = Math.floor(Math.random() * 20) + 1;
+      txt = `Mestre rolou D20: 🎲 **${roll}**`;
+  } else {
+      if(!v) return alert('Preencha o valor');
+      txt = `Mestre aplicou ${act.toUpperCase()} ${v} em ${u}.`;
+  }
+  
+  db.ref('tables/'+activeTable+'/log').push({
+      u:'Mestre (Sistema)', 
+      uid:'sys', 
+      txt: txt, 
+      ts: firebase.database.ServerValue.TIMESTAMP
+  });
 }
 
 function loadSessionLog(k){
@@ -944,73 +984,38 @@ function loadSessionLog(k){
   db.ref('tables/'+k+'/log').limitToLast(100).off();
   db.ref('tables/'+k+'/log').limitToLast(100).on('child_added', s=>{
     const m = s.val();
-    d.innerHTML += `<div class="msg ${m.uid===user.uid?'me':'other'}"><b>${escapeHtml(m.u)}</b><br>${escapeHtml(m.txt)}</div>`;
+    const me = m.uid===user.uid;
+    const sys = m.uid === 'sys';
+    let styleClass = me ? 'me' : 'other';
+    if(sys) styleClass = 'other'; // System msgs look like others but maybe different color logic if needed
+    
+    // Simple render
+    let html = `<div class="msg ${styleClass}" ${sys ? 'style="background:#333; width:100%; border:none; text-align:center; color:#aaa;"' : ''}>`;
+    if(!sys) html += `<b>${escapeHtml(m.u)}</b><br>`;
+    html += `${escapeHtml(m.txt)}</div>`;
+    
+    d.innerHTML += html;
     d.scrollTop = d.scrollHeight;
   });
 }
 
-/* sendSession: envia a mensagem do jogador e, se for mesa IA, chama o Backend Python. */
-async function sendSession(){
+function sendSession(){
   const t = document.getElementById('session-in').value;
   if(!t) return;
   if(!activeTable) return alert('Entre em uma mesa.');
-  if(!user) return alert('Faça login antes de enviar (aguarde autenticação).');
+  if(!user) return alert('Faça login.');
 
   document.getElementById('session-in').value = '';
-  // 1. Salva a mensagem do jogador no log
-  db.ref('tables/'+activeTable+'/log').push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
-
-  const s = await db.ref('tables/'+activeTable).get();
-  if(s.exists() && s.val().type === 'AI'){
-    try {
-      // --- Lógica para preparar o histórico e chamar o Backend Python ---
-
-      // 2. Recupera o histórico de mensagens (incluindo a última enviada pelo jogador)
-      const histSnap = await db.ref('tables/'+activeTable+'/log').limitToLast(12).get(); // Limita a 12 mensagens para o contexto
-      let messages = [{ role: "system", content: "Você é o Mestre de RPG. Seja breve e criativo. Responda à última mensagem do jogador." }];
-      
-      // 3. Converte o histórico para o formato da API (User/Assistant)
-      histSnap.forEach(child => {
-        const m = child.val();
-        // Garante que apenas mensagens de chat (não sistema) entrem no histórico
-        if (m.uid && m.uid !== 'sys' && m.txt) {
-            const role = m.uid === 'ai' ? "assistant" : "user";
-            // Adiciona o nome do usuário para contexto, exceto para a IA
-            const content = m.uid === 'ai' ? m.txt : `${m.u}: ${m.txt}`;
-            messages.push({ role: role, content: content });
-        }
-      });
-      
-      // 4. Faz a requisição para o Backend Python
-      const response = await fetch(BACKEND_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: messages }) // Envia o histórico completo
-      });
-      
-      if(!response.ok){
-        const errJson = await response.json().catch(() => ({error: `Erro HTTP: ${response.status}`}));
-        throw new Error(errJson.error || `Erro de rede/servidor: ${response.status}`);
-      }
-      
-      const j = await response.json();
-
-      if (j.error) {
-          throw new Error(j.error);
-      }
-      
-      const aiText = j.text || "O servidor não devolveu o texto esperado.";
-
-      // 5. Salva a resposta da IA no log
-      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'ai', txt:aiText, ts: firebase.database.ServerValue.TIMESTAMP});
-    } catch(e) {
-      console.error('Erro ao chamar Backend IA', e);
-      db.ref('tables/'+activeTable+'/log').push({u:'Mestre IA', uid:'sys', txt:`Falha na comunicação com o Backend Python: ${e.message}`, ts: firebase.database.ServerValue.TIMESTAMP});
-    }
-  }
-          }
-      
   
+  // Apenas envia a mensagem para o log da mesa. Sem IA.
+  db.ref('tables/'+activeTable+'/log').push({
+      u:document.getElementById('u-name').innerText, 
+      uid:user.uid, 
+      txt:t, 
+      ts: firebase.database.ServerValue.TIMESTAMP
+  });
+}
+
 /* ------------------
    TRANSFERÊNCIAS
    ------------------ */
@@ -1018,57 +1023,93 @@ function transfer(){
   const k = (document.getElementById('pay-key').value || '').toUpperCase();
   const c = document.getElementById('pay-type').value;
   const a = Number(document.getElementById('pay-amt').value);
-  if(!k || !a) return alert('Preencha chave e valor.');
+  
+  if(!k || !a || a <= 0) return alert('Preencha chave e valor positivo.');
+  if(!user) return alert('Faça login');
+
   db.ref('users/'+user.uid+'/wallet/'+c).once('value', s=>{
     if((s.val()||0) < a) return alert('Saldo insuficiente');
+    
     db.ref('users').orderByChild('key').equalTo(k).once('value', u=>{
       if(!u.exists()) return alert('Chave inválida');
+      
       const dest = Object.keys(u.val())[0];
+      if(dest === user.uid) return alert('Não pode transferir para si mesmo.');
+
       db.ref('users/'+user.uid+'/wallet/'+c).set(s.val()-a);
       db.ref('users/'+dest+'/wallet/'+c).transaction(v => (v||0)+a);
-      alert('Enviado!');
+      alert('Enviado com sucesso!');
     });
   });
 }
 
 /* ------------------
-   OUTROS (market switch etc.)
+   NAVEGAÇÃO E ESTILO
    ------------------ */
 function switchStore(m){
   document.getElementById('store-sys').style.display = m==='sys'?'block':'none';
   document.getElementById('store-usr').style.display = m==='usr'?'block':'none';
   document.getElementById('btn-sys').style.background = m==='sys'?'var(--primary)':'var(--bg-card)';
   document.getElementById('btn-usr').style.background = m==='usr'?'var(--primary)':'var(--bg-card)';
+  
+  // Reset colors of inactive button
+  if(m==='sys') document.getElementById('btn-usr').style.color = 'var(--text-main)';
+  if(m==='usr') document.getElementById('btn-sys').style.color = 'var(--text-main)';
 }
 
-/* simples helpers de navegação */
-function go(id){ document.getElementById(id).classList.add('active'); if(id==='store') loadMarket(); }
-function back(id){ document.getElementById(id).classList.remove('active'); }
-function setMode(m){ const r = document.documentElement.style; if(m==='light'){ r.setProperty('--bg-main','#ddd'); r.setProperty('--bg-surface','#f5f5f5'); r.setProperty('--bg-card','#ffffff'); r.setProperty('--text-main','#000'); r.setProperty('--border','#ccc'); r.setProperty('--input-bg','#eee'); } else { r.setProperty('--bg-main','#000'); r.setProperty('--bg-surface','#121212'); r.setProperty('--bg-card','#1e1e1e'); r.setProperty('--text-main','#ffffff'); r.setProperty('--border','#333'); r.setProperty('--input-bg','#2c2c2c'); } }
+function go(id){ 
+  document.getElementById(id).classList.add('active'); 
+  if(id==='store') loadMarket(); 
+}
+function back(id){ 
+  document.getElementById(id).classList.remove('active'); 
+}
+
+function setMode(m){ 
+  const r = document.documentElement.style; 
+  if(m==='light'){ 
+    r.setProperty('--bg-main','#e0e0e0'); 
+    r.setProperty('--bg-surface','#f5f5f5'); 
+    r.setProperty('--bg-card','#ffffff'); 
+    r.setProperty('--text-main','#000000'); 
+    r.setProperty('--border','#cccccc'); 
+    r.setProperty('--input-bg','#eeeeee'); 
+    r.setProperty('--text-sub','#666666');
+  } else { 
+    r.setProperty('--bg-main','#000000'); 
+    r.setProperty('--bg-surface','#121212'); 
+    r.setProperty('--bg-card','#1e1e1e'); 
+    r.setProperty('--text-main','#ffffff'); 
+    r.setProperty('--border','#333333'); 
+    r.setProperty('--input-bg','#2c2c2c'); 
+    r.setProperty('--text-sub','#b0b0b0');
+  } 
+}
+
 function setAccent(c){
-  // set primary and some derived variables to change whole interface feel
   document.documentElement.style.setProperty('--primary', c);
   const contrast = getContrastColor(c);
   document.documentElement.style.setProperty('--primary-contrast', contrast);
-  // border slightly darker
-  const darker = shade(c, -0.2);
-  document.documentElement.style.setProperty('--border', darker);
-  // card background tinted slightly
-  const card = shade(c, -0.9);
-  document.documentElement.style.setProperty('--bg-card', card);
-  // input bg slightly darker than card
-  document.documentElement.style.setProperty('--input-bg', shade(card, -0.08));
-  // update buttons color
+  
+  // Update borders and card tints slightly based on primary color
+  const darker = shade(c, -0.4);
+  document.documentElement.style.setProperty('--border', '#333'); // Keep border neutral or mix
+  
+  // Force update buttons manually if needed, but CSS var handles mostly
   const buttons = document.querySelectorAll('button');
   buttons.forEach(b => {
-    if(!b.style.background || b.style.background === '' || b.style.background.startsWith('var(')) {
-      b.style.background = c;
-      b.style.color = contrast;
-    }
+      // Apply only to main action buttons, logic here can be refined
+      if(b.parentElement.classList.contains('header') || b.classList.contains('back-btn')) {
+          b.style.color = c;
+          b.style.background = 'transparent';
+      }
   });
 }
-function resetAccent(){ document.getElementById('color-picker').value = '#6200ea'; setAccent('#6200ea'); }
+function resetAccent(){ 
+  document.getElementById('color-picker').value = '#6200ea'; 
+  setAccent('#6200ea'); 
+}
 
 </script>
 </body>
-</html>                                  
+</html>
