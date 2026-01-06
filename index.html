@@ -2,8 +2,8 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Mestre OS - RPG System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Mestre</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -21,30 +21,39 @@
   --text-sub: #b0b0b0;
   --border: #333333;
   --input-bg: #2c2c2c;
-  --danger: #d50000;
-  --success: #00c853;
+  --danger: #cf6679;
+  --success: #03dac6;
+  --cmd-bg: #2a2a2a;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
   background: var(--bg-main);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  user-select: none; transition: background 0.3s;
+  user-select: none; transition: background 0.3s; overflow: hidden;
 }
 
 /* --- DEVICE & LAYOUT --- */
 .device {
-  width: 375px; height: 780px; background: var(--bg-main); border-radius: 40px;
-  position: relative; box-shadow: 0 0 0 8px var(--border), 0 0 20px rgba(0,0,0,.5);
-  overflow: hidden;
+  width: 100%; max-width: 400px; height: 100%; max-height: 850px;
+  background: var(--bg-main); border-radius: 0;
+  position: relative; 
+  display: flex; flex-direction: column; overflow: hidden;
 }
+@media (min-width: 450px) {
+  .device { 
+    height: 800px; border-radius: 40px; 
+    box-shadow: 0 0 0 8px var(--border), 0 0 30px rgba(0,0,0,.7); 
+  }
+}
+
 .screen {
   width: 100%; height: 100%; background: var(--bg-surface); color: var(--text-main);
-  display: flex; flex-direction: column; transition: background 0.3s, color 0.3s;
+  display: flex; flex-direction: column; position: relative;
 }
 .status-bar {
-  height: 40px; display: flex; justify-content: space-between; align-items: center;
-  padding: 0 25px; font-size: 12px; font-weight: 600; z-index: 100;
+  height: 30px; display: flex; justify-content: space-between; align-items: center;
+  padding: 0 20px; font-size: 12px; font-weight: 600; z-index: 100; opacity: 0.7;
 }
 
 /* --- HOME GRID --- */
@@ -55,9 +64,9 @@ body {
 .app-icon { display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform .12s;}
 .app-icon:active { transform: scale(0.95); }
 .icon-box { 
-  width:60px; height:60px; background: var(--bg-card); border-radius:15px; 
-  display:flex; justify-content:center; align-items:center; font-size:28px; 
-  margin-bottom:8px; box-shadow:0 2px 5px rgba(0,0,0,.2); border:1px solid var(--border); 
+  width:55px; height:55px; background: var(--bg-card); border-radius:14px; 
+  display:flex; justify-content:center; align-items:center; font-size:26px; 
+  margin-bottom:6px; box-shadow:0 2px 5px rgba(0,0,0,.3); border:1px solid var(--border); 
 }
 .app-icon span { font-size:11px; text-align:center; color:var(--text-main); }
 
@@ -65,56 +74,79 @@ body {
 .page { 
   position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg-surface); 
   display:flex; flex-direction:column; transform:translateX(100%); 
-  transition:transform .3s cubic-bezier(.2,.8,.2,1); z-index:50; padding-top:90px; 
+  transition:transform .3s cubic-bezier(.25, 1, .5, 1); z-index:50; padding-top:80px; 
 }
 .page.active { transform:translateX(0); }
 
 .header { 
-  position:absolute; top:0; left:0; right:0; height:90px; display:flex; align-items:center; 
+  position:absolute; top:0; left:0; right:0; height:80px; display:flex; align-items:center; 
   padding:0 15px; background:var(--bg-card); border-bottom:1px solid var(--border); 
-  font-weight:bold; font-size:18px; flex-shrink:0; color:var(--text-main); z-index:60; 
+  font-weight:bold; font-size:18px; flex-shrink:0; color:var(--text-main); z-index:60;
+  padding-top: 20px; /* Status bar space */
 }
-.back-btn { background:none; border:none; font-size:46px; color:var(--primary); margin-right:15px; cursor:pointer; padding:0; line-height:1; }
+.back-btn { background:none; border:none; font-size:32px; color:var(--primary); margin-right:15px; cursor:pointer; padding:0; line-height:1; }
 .content { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; }
 
 /* --- COMPONENTES --- */
 .card { 
   background:var(--bg-card); border-radius:12px; padding:15px; margin-bottom:15px; 
-  box-shadow:0 2px 4px rgba(0,0,0,.1); border:1px solid var(--border); 
+  box-shadow:0 2px 4px rgba(0,0,0,.2); border:1px solid var(--border); 
 }
 input, textarea, select { 
   width:100%; padding:12px; background:var(--input-bg); border:1px solid var(--border); 
   border-radius:8px; color:var(--text-main); font-family:inherit; margin-bottom:10px; 
-  box-sizing:border-box; outline:none;
+  box-sizing:border-box; outline:none; font-size: 16px; /* Evita zoom no iOS */
 }
 input:focus, textarea:focus { border-color: var(--primary); }
 button { 
-  padding:10px 12px; border-radius:8px; border:none; font-weight:600; cursor:pointer; 
+  padding:12px; border-radius:8px; border:none; font-weight:600; cursor:pointer; 
   background:var(--primary); color:var(--primary-contrast); margin-bottom:10px; 
-  transition:background .2s; width:100%;
+  transition:filter .2s; width:100%; font-size: 14px;
 }
-button:active { opacity: 0.8; }
-button.small { padding:6px 8px; font-size:13px; width:auto; margin:0; }
+button:active { filter: brightness(0.8); }
+button.small { padding:6px 10px; font-size:12px; width:auto; margin:0; }
 
 /* --- CHAT --- */
-.chat-container { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.chat-list { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px; }
-.msg { max-width:80%; padding:10px 15px; border-radius:18px; font-size:14px; line-height:1.4; word-wrap:break-word; }
+.chat-container { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
+.chat-list { 
+  flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:12px; 
+  scroll-behavior: smooth;
+}
+.msg { 
+  max-width:85%; padding:10px 14px; border-radius:18px; font-size:14px; line-height:1.4; word-wrap:break-word; 
+  position: relative;
+}
 .msg.me { align-self:flex-end; background:var(--primary); color:var(--text-main); border-bottom-right-radius:4px; }
 .msg.other { align-self:flex-start; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); border-bottom-left-radius:4px; }
-.chat-input { padding:10px; background:var(--bg-card); border-top:1px solid var(--border); display:flex; gap:10px; flex-shrink:0; }
+
+/* Tipos especiais de msg */
+.msg.system { align-self: center; background: transparent; border: 1px dashed var(--border); color: var(--text-sub); font-size: 12px; width: 100%; text-align: center; }
+.msg.action { font-style: italic; border-left: 3px solid var(--success); }
+.msg.roll { border-color: #ff9800; background: #2a1c05; }
+.msg.narrate { background: #1a237e; border: 1px solid #3949ab; color: #fff; width: 100%; text-align: center; font-family: 'Georgia', serif; }
+
+.chat-input { padding:10px; background:var(--bg-card); border-top:1px solid var(--border); display:flex; gap:10px; flex-shrink:0; align-items: center;}
 
 /* --- UTIL --- */
 .stat-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; }
+.stat-row:last-child { border-bottom: none; }
+
 .modal { 
-  position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); 
-  z-index:99; display:none; justify-content:center; align-items:center; padding:20px; 
+  position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); 
+  z-index:99; display:none; justify-content:center; align-items:center; padding:20px; backdrop-filter: blur(2px);
 }
 .modal-content { 
   background:var(--bg-surface); padding:20px; border-radius:15px; width:100%; 
-  max-width:560px; max-height:80%; overflow-y:auto; border:2px solid var(--primary); 
+  max-width:400px; max-height:90%; overflow-y:auto; border:1px solid var(--primary); 
+  box-shadow: 0 0 20px rgba(98, 0, 234, 0.3);
 }
-small { color:var(--text-sub); }
+small { color:var(--text-sub); font-size: 0.85em; }
+.tag { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 10px; vertical-align: middle; }
+
+/* Scrollbar bonito */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 </style>
 </head>
 <body onload="init()">
@@ -127,7 +159,7 @@ small { color:var(--text-sub); }
     </div>
 
     <div id="home" class="content" style="padding-top:40px;">
-      <h1 style="margin:0 0 20px 20px; font-family:'Brush Script MT', cursive; color:var(--primary);">Mestre OS</h1>
+      <h1 style="margin:0 0 20px 20px; font-family:'Brush Script MT', cursive; color:var(--primary); font-size: 2.5rem;">Mestre</h1>
       <div class="app-grid">
         <div class="app-icon" onclick="go('profile')"><div class="icon-box" style="color:#2196f3">👤</div><span>Perfil</span></div>
         <div class="app-icon" onclick="go('feed')"><div class="icon-box" style="color:#e91e63">📰</div><span>Feed</span></div>
@@ -155,14 +187,11 @@ small { color:var(--text-sub); }
         </div>
         <div id="view-user" style="display:none">
           <div class="card" style="text-align:center">
-            <img id="u-pic" src="" style="width:80px; height:80px; border-radius:50%; background:var(--border); object-fit:cover; margin:0 auto 10px; display:none;">
-            <h3 id="u-name" style="color:var(--primary)">Nome</h3>
-            <p id="u-bio" style="font-size:12px; color:var(--text-sub);">Descrição</p>
+            <img id="u-pic" src="" style="width:90px; height:90px; border-radius:50%; background:var(--border); object-fit:cover; margin:0 auto 10px; display:none; border: 2px solid var(--primary);">
+            <h3 id="u-name" style="color:var(--primary); margin: 5px 0;">Nome</h3>
+            <p id="u-bio" style="font-size:13px; color:var(--text-sub); margin-bottom: 15px;">Descrição</p>
             <button onclick="showModal('profile-edit-modal', true)">Editar Perfil</button>
-          </div>
-          <div class="card">
-            <h4>Minhas Postagens</h4>
-            <div id="profile-feed-list">Nenhuma postagem ainda.</div>
+            <button onclick="actionLogout()" style="background:var(--danger); margin-top:5px;">Sair</button>
           </div>
         </div>
       </div>
@@ -171,26 +200,30 @@ small { color:var(--text-sub); }
     <div id="profile-edit-modal" class="modal" onclick="modalBackgroundClick(event, 'profile-edit-modal')">
       <div class="modal-content" onclick="event.stopPropagation()">
         <h4>Editar Dados</h4>
-        <input type="text" id="u-name-edit" placeholder="Nome de Usuário">
-        <input type="text" id="u-key-edit" placeholder="Chave de Transação (Editável)">
-        <input type="text" id="u-color-edit" placeholder="Cor Hex do Nome (Ex: #FF0000)">
-        <input type="text" id="u-img-edit" placeholder="Link da Imagem de Perfil (URL)">
-        <textarea id="u-bio-edit" placeholder="Descrição/Bio"></textarea>
+        <label><small>Nome de Usuário</small></label>
+        <input type="text" id="u-name-edit">
+        <label><small>Chave (ID Único)</small></label>
+        <input type="text" id="u-key-edit" readonly style="opacity:0.5">
+        <label><small>Cor Hex</small></label>
+        <input type="text" id="u-color-edit">
+        <label><small>URL Imagem</small></label>
+        <input type="text" id="u-img-edit">
+        <label><small>Biografia</small></label>
+        <textarea id="u-bio-edit"></textarea>
         <button onclick="saveProfile()" style="background:var(--success)">Salvar Alterações</button>
-        <button onclick="showModal('profile-edit-modal', false)" style="background:var(--danger)">Cancelar</button>
-        <button onclick="actionLogout()" style="background:var(--text-sub); margin-top:10px;">Sair da Conta</button>
+        <button onclick="showModal('profile-edit-modal', false)" style="background:var(--bg-card); color:var(--text-main)">Cancelar</button>
       </div>
     </div>
 
     <div id="feed" class="page">
       <div class="header"><button class="back-btn" onclick="back('feed')">‹</button> Feed Global</div>
       <div id="feed-list" class="content"></div>
-      <button onclick="showModal('post-modal', true)" style="position:fixed; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; font-size:24px; padding:0; z-index:80;">+</button>
+      <button onclick="showModal('post-modal', true)" style="position:absolute; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; font-size:24px; padding:0; z-index:80; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">+</button>
     </div>
 
     <div id="post-modal" class="modal" onclick="modalBackgroundClick(event, 'post-modal')">
       <div class="modal-content" onclick="event.stopPropagation()">
-        <h4>Criar Nova Postagem</h4>
+        <h4>Nova Postagem</h4>
         <textarea id="post-txt" rows="5" placeholder="No que está pensando?" style="resize:none;"></textarea>
         <input id="post-img" type="text" placeholder="Link da imagem (Opcional)">
         <button onclick="addPost()">Publicar</button>
@@ -203,15 +236,11 @@ small { color:var(--text-sub); }
       <div class="content">
         <div class="card" onclick="openChat('global')" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #4caf50;">
           <div style="width:40px; height:40px; background:#4caf50; border-radius:50%; display:flex; justify-content:center; align-items:center;">🌍</div>
-          <div><b>Chat Global</b><br><small>Público para todos</small></div>
+          <div><b>Chat Global</b><br><small>Comandos: /ajuda</small></div>
         </div>
         <div class="card" onclick="openPrivateSetup()" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #2196f3;">
           <div style="width:40px; height:40px; background:#2196f3; border-radius:50%; display:flex; justify-content:center; align-items:center;">🔒</div>
           <div><b>Chat Privado</b><br><small>Mensagens diretas por Chave</small></div>
-        </div>
-        <div class="card" onclick="alert('Entre em uma sessão para acessar o Chat da Mesa.')" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #9c27b0;">
-          <div style="width:40px; height:40px; background:#9c27b0; border-radius:50%; display:flex; justify-content:center; align-items:center;">🎲</div>
-          <div><b>Chat da Mesa</b><br><small>Acessível na Sessão</small></div>
         </div>
       </div>
     </div>
@@ -219,7 +248,7 @@ small { color:var(--text-sub); }
     <div id="chat-private-setup" class="modal" onclick="modalBackgroundClick(event, 'chat-private-setup')">
       <div class="modal-content" onclick="event.stopPropagation()">
         <h4>Iniciar Chat Privado</h4>
-        <input type="text" id="dm-key" placeholder="Chave do Destinatário">
+        <input type="text" id="dm-key" placeholder="Chave do Destinatário (Ex: JOGADOR1)">
         <button onclick="openPrivateChat()">Abrir Chat</button>
         <button onclick="showModal('chat-private-setup', false)" style="background:var(--danger)">Cancelar</button>
       </div>
@@ -228,21 +257,21 @@ small { color:var(--text-sub); }
     <div id="chat-view" class="page">
       <div class="header"><button class="back-btn" onclick="back('chat-view')">‹</button> <span id="chat-title">Chat</span></div>
       <div class="chat-container">
-        <div id="chat-msgs" class="chat-list"></div>
+        <div class="chat-list" id="chat-msgs"></div>
         <div class="chat-input">
-          <input id="chat-msg-in" type="text" placeholder="Digite..." style="margin:0">
+          <input id="chat-msg-in" type="text" placeholder="Digite /ajuda para comandos..." style="margin:0" onkeydown="if(event.key==='Enter') sendChat()">
           <button onclick="sendChat()" style="width:50px; margin:0">➤</button>
         </div>
       </div>
     </div>
 
     <div id="sessions" class="page">
-      <div class="header"><button class="back-btn" onclick="back('sessions')">‹</button> Sessões RPG</div>
+      <div class="header"><button class="back-btn" onclick="back('sessions')">‹</button> Mesas de RPG</div>
       <div class="content">
         <div class="card">
           <h4>Criar Nova Mesa</h4>
           <input id="table-name" type="text" placeholder="Nome da Aventura">
-          <button onclick="createTable()">Iniciar Campanha (Mestre)</button>
+          <button onclick="createTable()">Iniciar Campanha</button>
         </div>
         <h4>Mesas Disponíveis</h4>
         <div id="table-list"></div>
@@ -252,9 +281,12 @@ small { color:var(--text-sub); }
     <div id="active-session" class="page">
       <div class="header">
         <button class="back-btn" onclick="exitTable()">‹</button>
-        <span id="session-name" style="font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Mesa</span>
-        <button onclick="toggleGmTools()" id="gm-btn" style="width:auto; background:none; color:var(--primary); display:none; margin:0 0 0 auto; padding:0;">🛠️</button>
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right: 10px;">
+            <span id="session-name">Mesa</span>
+        </div>
+        <button onclick="toggleGmTools()" id="gm-btn" style="width:auto; background:none; color:var(--primary); display:none; margin:0 0 0 auto; padding:0; font-size:24px;">🛠️</button>
       </div>
+      
       <div class="chat-container">
         <div id="gm-panel" style="display:none; background:var(--bg-card); padding:10px; border-bottom:1px solid var(--border); flex-shrink:0;">
           <small>Painel do Mestre</small>
@@ -263,28 +295,27 @@ small { color:var(--text-sub); }
             <input id="gm-val" type="text" placeholder="Valor/Item" style="margin:0; flex:1;">
           </div>
           <div style="display:flex; gap:5px; margin-top:5px;">
-            <button onclick="gmCmd('hp')" style="margin:0; font-size:12px;">Alterar HP</button>
-            <button onclick="gmCmd('xp')" style="margin:0; font-size:12px;">Dar XP</button>
-            <button onclick="gmCmd('item')" style="margin:0; font-size:12px;">Dar Item</button>
-          </div>
-          <div style="margin-top:5px;">
-             <button onclick="gmCmd('roll')" style="margin:0; font-size:12px; background:var(--text-sub);">🎲 Rolar Dado Público</button>
+            <button onclick="gmCmd('hp')" style="margin:0;">HP</button>
+            <button onclick="gmCmd('xp')" style="margin:0;">XP</button>
+            <button onclick="gmCmd('item')" style="margin:0;">Item</button>
           </div>
         </div>
+
         <div id="session-log" class="chat-list"></div>
+        
         <div class="chat-input">
-          <input id="session-in" type="text" placeholder="Ação ou fala..." style="margin:0">
+          <input id="session-in" type="text" placeholder="Fale ou use /ajuda..." style="margin:0" onkeydown="if(event.key==='Enter') sendSession()">
           <button onclick="sendSession()" style="width:50px; margin:0">➤</button>
         </div>
       </div>
     </div>
 
     <div id="sheet" class="page">
-      <div class="header"><button class="back-btn" onclick="back('sheet')">‹</button> Ficha do Personagem</div>
+      <div class="header"><button class="back-btn" onclick="back('sheet')">‹</button> Ficha</div>
       <div class="content">
         <div class="card" style="text-align:center;">
           <img id="char-pic" src="" style="width:100px; height:100px; border-radius:50%; background:#333; object-fit:cover; margin-bottom:10px; display:none;">
-          <h3 id="sheet-name-display">Nome</h3>
+          <h3 id="sheet-name-display">Nome do Herói</h3>
           <p id="sheet-bio-display" style="font-size:12px; color:var(--text-sub)"></p>
         </div>
         <div class="card">
@@ -293,7 +324,7 @@ small { color:var(--text-sub); }
         </div>
         <div class="card">
           <h4>Inventário</h4>
-          <div id="sheet-inv-display" style="white-space:pre-wrap;"></div>
+          <div id="sheet-inv-display" style="white-space:pre-wrap; font-size:14px; color:var(--text-sub);"></div>
         </div>
         <button onclick="showModal('sheet-edit-modal', true)">Editar Ficha</button>
       </div>
@@ -304,11 +335,13 @@ small { color:var(--text-sub); }
         <h4>Editar Ficha</h4>
         <input id="c-name" type="text" placeholder="Nome do Personagem">
         <input id="c-img" type="text" placeholder="URL da Imagem">
-        <textarea id="c-bio" placeholder="Biografia" rows="3"></textarea>
-        <input id="c-str" type="number" placeholder="Força">
-        <input id="c-dex" type="number" placeholder="Destreza">
-        <input id="c-con" type="number" placeholder="Constituição">
-        <input id="c-int" type="number" placeholder="Inteligência">
+        <textarea id="c-bio" placeholder="Biografia" rows="2"></textarea>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+            <input id="c-str" type="number" placeholder="FOR">
+            <input id="c-dex" type="number" placeholder="DES">
+            <input id="c-con" type="number" placeholder="CON">
+            <input id="c-int" type="number" placeholder="INT">
+        </div>
         <textarea id="c-inv" rows="5" placeholder="Inventário (Um item por linha)"></textarea>
         <button onclick="saveSheet()" style="background:var(--success)">Salvar</button>
         <button onclick="showModal('sheet-edit-modal', false)" style="background:var(--danger)">Cancelar</button>
@@ -325,7 +358,7 @@ small { color:var(--text-sub); }
           </div>
         </div>
         <div class="card">
-          <h4>Carteira (Todos os Saldo)</h4>
+          <h4>Sua Carteira</h4>
           <div id="wallet-div"></div>
         </div>
         <div class="card">
@@ -334,10 +367,6 @@ small { color:var(--text-sub); }
           <select id="pay-type">
             <option value="ouro">Ouro</option>
             <option value="prata">Prata</option>
-            <option value="cobre">Cobre</option>
-            <option value="bronze">Bronze</option>
-            <option value="diamante">Diamante</option>
-            <option value="esmeralda">Esmeralda</option>
           </select>
           <input id="pay-amt" type="number" placeholder="Quantidade" min="1">
           <button onclick="transfer()">Enviar</button>
@@ -360,24 +389,23 @@ small { color:var(--text-sub); }
             </div>
           </div>
           <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span>🛡️ Escudo de Ferro</span>
-              <button onclick="buySys('Escudo', 30)" style="width:auto; margin:0; padding:5px 10px;">30 Ouro</button>
-            </div>
-          </div>
-           <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
+             <div style="display:flex; justify-content:space-between; align-items:center;">
               <span>🧪 Poção de Cura</span>
               <button onclick="buySys('Poção de Cura', 10)" style="width:auto; margin:0; padding:5px 10px;">10 Ouro</button>
+            </div>
+          </div>
+          <div class="card">
+             <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span>📜 Pergaminho</span>
+              <button onclick="buySys('Pergaminho', 25)" style="width:auto; margin:0; padding:5px 10px;">25 Ouro</button>
             </div>
           </div>
         </div>
         <div id="store-usr" style="display:none;">
           <div class="card">
-            <small>Vender Item do Inventário</small>
+            <small>Vender Item</small>
             <select id="sell-item-select"></select>
-            <input id="sell-price" type="number" placeholder="Preço">
-            <select id="sell-curr"><option value="ouro">Ouro</option><option value="diamante">Diamante</option></select>
+            <input id="sell-price" type="number" placeholder="Preço (Ouro)">
             <button onclick="postSell()">Anunciar</button>
           </div>
           <div id="market-list"></div>
@@ -388,7 +416,7 @@ small { color:var(--text-sub); }
     <div id="notes" class="page">
       <div class="header"><button class="back-btn" onclick="back('notes')">‹</button> Bloco de Notas</div>
       <div class="content">
-        <textarea id="note-pad" style="flex:1; resize:none;" placeholder="Suas anotações..."></textarea>
+        <textarea id="note-pad" style="flex:1; resize:none;" placeholder="Suas anotações pessoais..."></textarea>
         <button onclick="saveNote()" style="background:var(--success)">Salvar Notas</button>
       </div>
     </div>
@@ -397,26 +425,14 @@ small { color:var(--text-sub); }
       <div class="header"><button class="back-btn" onclick="back('settings')">‹</button> Ajustes</div>
       <div class="content">
         <div class="card">
-          <h4>Tema do Sistema</h4>
+          <h4>Tema</h4>
           <div style="display:flex; gap:10px; margin-bottom:15px;">
             <button onclick="setMode('dark')" style="flex:1; background:var(--bg-main);">Escuro</button>
             <button onclick="setMode('light')" style="flex:1; background:#eee; color:#000;">Claro</button>
           </div>
           <h4>Cor de Destaque</h4>
-          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
-            <button onclick="setAccent('#6200ea')" style="background:#6200ea; width:30px; height:30px; padding:0;"></button>
-            <button onclick="setAccent('#d50000')" style="background:#d50000; width:30px; height:30px; padding:0;"></button>
-            <button onclick="setAccent('#00c853')" style="background:#00c853; width:30px; height:30px; padding:0;"></button>
-            <button onclick="setAccent('#2962ff')" style="background:#2962ff; width:30px; height:30px; padding:0;"></button>
-            <button onclick="setAccent('#ffab00')" style="background:#ffab00; width:30px; height:30px; padding:0;"></button>
-            <button onclick="setAccent('#800080')" style="background:#800080; width:30px; height:30px; padding:0;"></button>
-            <button onclick="setAccent('#ff4081')" style="background:#ff4081; width:30px; height:30px; padding:0;"></button>
-          </div>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <input id="color-picker" type="color" value="#6200ea" style="width:48px; height:36px; padding:0; border-radius:6px; border:1px solid var(--border);">
-            <button class="small" onclick="setAccent(document.getElementById('color-picker').value)">Aplicar Cor</button>
-            <button class="small" onclick="resetAccent()">Resetar</button>
-          </div>
+          <input id="color-picker" type="color" value="#6200ea" style="width:100%; height:40px; border:none; border-radius:8px;">
+          <button onclick="setAccent(document.getElementById('color-picker').value)" style="margin-top:10px;">Aplicar</button>
         </div>
       </div>
     </div>
@@ -425,11 +441,7 @@ small { color:var(--text-sub); }
 </div>
 
 <script>
-/* ------------------
-   CONFIGURAÇÕES FIREBASE
-   ⚠️ COLOQUE SUAS CHAVES ABAIXO ⚠️
-   ------------------ */
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+/* ------------------ CONFIGURAÇÕES FIREBASE ------------------ */
 const firebaseConfig = {
   apiKey: "AIzaSyBykDF5TNKQHejUJTp-ue7s5CKfpJp1HV0",
   authDomain: "mestre-471a0.firebaseapp.com",
@@ -437,82 +449,79 @@ const firebaseConfig = {
   projectId: "mestre-471a0",
   storageBucket: "mestre-471a0.firebasestorage.app",
   messagingSenderId: "142996111628",
-  appId: "1:142996111628:web:c3785e54588632f468c929",
-  measurementId: "G-XWSF04WNVW"
+  appId: "1:142996111628:web:c3785e54588632f468c929"
 };
 
-// Inicialização segura
-if (firebase.apps.length === 0) {
-  firebase.initializeApp(firebaseConfig);
-}
+if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
 let user = null;
 let activeChat = null;
 let activeTable = null;
+let userDataCache = {};
 
-/* ------------------ HELPERS ------------------ */
+/* ------------------ UTILITÁRIOS ------------------ */
 function showModal(id, show) {
   const el = document.getElementById(id);
   if(!el) return;
   el.style.display = show ? 'flex' : 'none';
 }
 function modalBackgroundClick(e, id) {
-  if(e.target && e.target.id === id) {
-    showModal(id, false);
-  }
-}
-
-/* Color utils */
-function hexToRgb(hex){
-  hex = hex.replace('#','');
-  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
-  const bigint = parseInt(hex,16);
-  return {r:(bigint>>16)&255, g:(bigint>>8)&255, b:bigint&255};
-}
-function rgbToHex(r,g,b){
-  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
-}
-function shade(hex, percent){
-  const c = hexToRgb(hex);
-  const t = percent < 0 ? 0 : 255;
-  const p = Math.abs(percent);
-  const R = Math.round((t - c.r)*p) + c.r;
-  const G = Math.round((t - c.g)*p) + c.g;
-  const B = Math.round((t - c.b)*p) + c.b;
-  return rgbToHex(R,G,B);
-}
-function getContrastColor(hex){
-  const c = hexToRgb(hex);
-  const yiq = ((c.r*299)+(c.g*587)+(c.b*114))/1000;
-  return (yiq >= 128) ? '#000000' : '#ffffff';
+  if(e.target.id === id) showModal(id, false);
 }
 function escapeHtml(unsafe) {
-  return (unsafe || '')
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'","&#039;");
+  if(typeof unsafe !== 'string') return '';
+  return unsafe.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;");
+}
+function scrollToBottom(id) {
+    setTimeout(() => {
+        const el = document.getElementById(id);
+        if(el) el.scrollTop = el.scrollHeight;
+    }, 100);
+}
+function rollDice(notation) {
+    try {
+        const parts = notation.toLowerCase().split('d');
+        if(parts.length !== 2) return null;
+        let count = parseInt(parts[0]) || 1;
+        let rest = parts[1];
+        let sides = 0;
+        let modifier = 0;
+
+        if(rest.includes('+')) {
+            const sp = rest.split('+');
+            sides = parseInt(sp[0]);
+            modifier = parseInt(sp[1]);
+        } else if(rest.includes('-')) {
+            const sp = rest.split('-');
+            sides = parseInt(sp[0]);
+            modifier = -parseInt(sp[1]);
+        } else {
+            sides = parseInt(rest);
+        }
+
+        if(isNaN(count) || isNaN(sides)) return null;
+        if(count > 20) count = 20; // Cap para segurança
+        
+        let total = 0;
+        let rolls = [];
+        for(let i=0; i<count; i++) {
+            const r = Math.floor(Math.random() * sides) + 1;
+            rolls.push(r);
+            total += r;
+        }
+        total += modifier;
+        return { total, rolls, modifier, sides, count };
+    } catch(e) { return null; }
 }
 
-/* ------------------
-   INICIALIZAÇÃO
-   ------------------ */
+/* ------------------ INIT & AUTH ------------------ */
 function init() {
-  // relógio
   setInterval(()=>{
     const d = new Date();
     document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
   }, 1000);
-
-  // Bateria (se suportado)
-  if (navigator.getBattery) {
-    navigator.getBattery().then(b => {
-      document.getElementById('battery').innerText = Math.round(b.level*100)+'%';
-    }).catch(()=>{});
-  }
 
   auth.onAuthStateChanged(u=>{
     user = u;
@@ -526,544 +535,569 @@ function init() {
     }
   });
 
-  // load initial data
   loadFeed();
   loadTables();
-
-  // apply initial accent from color-picker
-  const cp = document.getElementById('color-picker');
-  if(cp) setAccent(cp.value);
 }
 
-/* ------------------
-   AUTENTICAÇÃO
-   ------------------ */
 async function actionLogin(){
   try{
     await auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value);
-  } catch(e){ alert('Erro no login: ' + e.message); }
+  } catch(e){ alert('Erro: ' + e.message); }
 }
+
 async function actionRegister(){
   try{
     await auth.createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value);
     const uid = auth.currentUser.uid;
-    const defaultName = uid.substring(0,6);
+    const defaultName = "User_" + uid.substring(0,4);
     db.ref('users/'+uid).set({
       name: defaultName,
       key: defaultName.toUpperCase(),
       color: '#ffffff',
-      bio: 'Novo aventureiro!',
-      wallet: {ouro:100, prata:50, cobre:20, bronze:0, diamante:0, esmeralda:0},
-      char: {name:'Herói', inv:'Poção de Cura\nEspada Curta', str:10, dex:10, con:10, int:10}
+      bio: 'Novo aventureiro.',
+      wallet: {ouro:100, prata:0},
+      char: {name:'Desconhecido', inv:'', str:10, dex:10, con:10, int:10}
     });
-  } catch(e){ alert('Erro ao registrar: ' + e.message); }
+  } catch(e){ alert('Erro: ' + e.message); }
 }
 function actionLogout(){ auth.signOut(); }
 
-/* ------------------
-   USUÁRIO / PERFIL
-   ------------------ */
+/* ------------------ PERFIL ------------------ */
 function loadUser(){
   if(!user) return;
   db.ref('users/'+user.uid).on('value', s=>{
     const d = s.val() || {};
-    const defaultName = user.uid.substring(0,6);
-    const uName = d.name || defaultName;
+    userDataCache = d; // Cache local para comandos
+    const uName = d.name || 'Sem Nome';
 
     document.getElementById('u-name').innerText = uName;
     document.getElementById('u-name').style.color = d.color || 'var(--primary)';
-    document.getElementById('u-bio').innerText = d.bio || 'Sem descrição.';
+    document.getElementById('u-bio').innerText = d.bio || '';
     if(d.img) {
       document.getElementById('u-pic').src = d.img;
       document.getElementById('u-pic').style.display = 'block';
-    } else {
-      document.getElementById('u-pic').style.display = 'none';
     }
 
-    document.getElementById('note-pad').value = d.note || '';
-
+    // Edit fields
     document.getElementById('u-name-edit').value = uName;
-    document.getElementById('u-key-edit').value = d.key || defaultName.toUpperCase();
+    document.getElementById('u-key-edit').value = d.key || '';
     document.getElementById('u-color-edit').value = d.color || '#ffffff';
     document.getElementById('u-img-edit').value = d.img || '';
     document.getElementById('u-bio-edit').value = d.bio || '';
+    document.getElementById('note-pad').value = d.note || '';
 
+    // Wallet
     if(d.wallet) {
       document.getElementById('gold-val').innerText = d.wallet.ouro || 0;
       let h = '';
-      for(let k in d.wallet) h += `<div class="stat-row"><span>${k.toUpperCase()}</span><span>${d.wallet[k]}</span></div>`;
+      for(let k in d.wallet) h += `<div class="stat-row"><span>${k.charAt(0).toUpperCase()+k.slice(1)}</span><span>${d.wallet[k]}</span></div>`;
       document.getElementById('wallet-div').innerHTML = h;
     }
 
+    // Char
     if(d.char) {
       document.getElementById('sheet-name-display').innerText = d.char.name || 'Sem Nome';
       document.getElementById('sheet-bio-display').innerText = d.char.bio || '';
       document.getElementById('sheet-attr-display').innerHTML = `
-        <div class="stat-row"><span>Força</span><span>${d.char.str || 0}</span></div>
-        <div class="stat-row"><span>Destreza</span><span>${d.char.dex || 0}</span></div>
-        <div class="stat-row"><span>Constituição</span><span>${d.char.con || 0}</span></div>
-        <div class="stat-row"><span>Inteligência</span><span>${d.char.int || 0}</span></div>
+        <div class="stat-row"><span>FOR</span><span>${d.char.str||0}</span></div>
+        <div class="stat-row"><span>DES</span><span>${d.char.dex||0}</span></div>
+        <div class="stat-row"><span>CON</span><span>${d.char.con||0}</span></div>
+        <div class="stat-row"><span>INT</span><span>${d.char.int||0}</span></div>
       `;
-      document.getElementById('sheet-inv-display').innerText = d.char.inv || 'Inventário Vazio';
+      document.getElementById('sheet-inv-display').innerText = d.char.inv || 'Vazio';
 
+      // Edit fields char
       document.getElementById('c-name').value = d.char.name || '';
       document.getElementById('c-img').value = d.char.img || '';
       document.getElementById('c-bio').value = d.char.bio || '';
       document.getElementById('c-inv').value = d.char.inv || '';
-      document.getElementById('c-str').value = d.char.str || '';
-      document.getElementById('c-dex').value = d.char.dex || '';
-      document.getElementById('c-con').value = d.char.con || '';
-      document.getElementById('c-int').value = d.char.int || '';
-
-      const invItems = (d.char.inv || '').split('\n').filter(i => i.trim() !== '');
-      const sel = document.getElementById('sell-item-select');
-      if(sel) sel.innerHTML = invItems.map(item => `<option value="${item}">${item}</option>`).join('');
-      if (invItems.length === 0 && sel) sel.innerHTML = '<option value="">Inventário Vazio</option>';
+      document.getElementById('c-str').value = d.char.str || 0;
+      document.getElementById('c-dex').value = d.char.dex || 0;
+      document.getElementById('c-con').value = d.char.con || 0;
+      document.getElementById('c-int').value = d.char.int || 0;
 
       if(d.char.img) {
         document.getElementById('char-pic').src = d.char.img;
         document.getElementById('char-pic').style.display = 'block';
       }
+
+      // Populate sell select
+      const invItems = (d.char.inv || '').split('\n').filter(i => i.trim() !== '');
+      const sel = document.getElementById('sell-item-select');
+      sel.innerHTML = invItems.length ? invItems.map(i => `<option value="${i}">${i}</option>`).join('') : '<option value="">Vazio</option>';
     }
-    loadProfileFeed();
   });
 }
 
 function saveProfile(){
-  const data = {
+  if(!user) return;
+  db.ref('users/'+user.uid).update({
     name: document.getElementById('u-name-edit').value,
-    key: document.getElementById('u-key-edit').value.toUpperCase(),
     color: document.getElementById('u-color-edit').value,
     img: document.getElementById('u-img-edit').value,
     bio: document.getElementById('u-bio-edit').value
-  };
-  if(!user) return alert('Faça login.');
-  db.ref('users/'+user.uid).update(data);
+  });
   showModal('profile-edit-modal', false);
 }
 
 function saveSheet(){
-  const data = {
+  if(!user) return;
+  db.ref('users/'+user.uid+'/char').update({
     name: document.getElementById('c-name').value,
     img: document.getElementById('c-img').value,
     bio: document.getElementById('c-bio').value,
     inv: document.getElementById('c-inv').value,
-    str: Number(document.getElementById('c-str').value) || 0,
-    dex: Number(document.getElementById('c-dex').value) || 0,
-    con: Number(document.getElementById('c-con').value) || 0,
-    int: Number(document.getElementById('c-int').value) || 0
-  };
-  if(!user) return alert('Faça login.');
-  db.ref('users/'+user.uid+'/char').update(data);
+    str: Number(document.getElementById('c-str').value),
+    dex: Number(document.getElementById('c-dex').value),
+    con: Number(document.getElementById('c-con').value),
+    int: Number(document.getElementById('c-int').value)
+  });
   showModal('sheet-edit-modal', false);
 }
 
 function saveNote(){
-  if(!user) return alert('Faça login.');
-  db.ref('users/'+user.uid+'/note').set(document.getElementById('note-pad').value);
-  alert('Notas Salvas');
+  if(user) db.ref('users/'+user.uid+'/note').set(document.getElementById('note-pad').value);
+  alert('Notas salvas!');
 }
 
-/* ------------------
-   FEED
-   ------------------ */
+/* ------------------ FEED ------------------ */
 function addPost(){
   const t = document.getElementById('post-txt').value;
   const i = document.getElementById('post-img').value;
-  if(!t) return alert('Digite algo para postar.');
-  if(!user) return alert('Faça login para postar.');
-
-  const payload = {
-    u: document.getElementById('u-name').innerText,
+  if(!t) return;
+  db.ref('feed').push({
+    u: userDataCache.name || 'User',
     uid: user.uid,
-    txt: t,
-    img: i || '',
+    color: userDataCache.color || '#fff',
+    txt: t, img: i,
     ts: firebase.database.ServerValue.TIMESTAMP
-  };
-
-  db.ref('feed').push(payload)
-    .then(()=> {
-      document.getElementById('post-txt').value = '';
-      document.getElementById('post-img').value = '';
-      showModal('post-modal', false);
-    })
-    .catch(err => {
-      alert('Erro ao postar: ' + err.message);
-    });
-}
-
-function renderPost(p){
-  const time = p.ts ? new Date(p.ts).toLocaleString() : '';
-  return `<div class="card" style="border-left:4px solid ${p.color || 'var(--primary)'};">
-    <small style="color:${p.color || 'var(--primary)'}">${escapeHtml(p.u)} · ${time}</small>
-    <div style="margin-top:5px">${escapeHtml(p.txt)}</div>
-    ${p.img ? `<img src="${p.img}" style="width:100%; border-radius:8px; margin-top:10px; max-height:300px; object-fit:cover;">` : ''}
-  </div>`;
+  });
+  document.getElementById('post-txt').value = '';
+  document.getElementById('post-img').value = '';
+  showModal('post-modal', false);
 }
 
 function loadFeed(){
-  const feedListElement = document.getElementById('feed-list');
-  if(!feedListElement) return;
-  db.ref('feed').limitToLast(100).on('value', async snapshot=>{
-    feedListElement.innerHTML = '';
-    const posts = [];
-    snapshot.forEach(child => {
-      const v = child.val();
-      v._id = child.key;
-      posts.push(v);
+  db.ref('feed').limitToLast(50).on('value', s=>{
+    const el = document.getElementById('feed-list');
+    el.innerHTML = '';
+    const arr = [];
+    s.forEach(c=>arr.push(c.val()));
+    arr.reverse().forEach(p=>{
+        const time = p.ts ? new Date(p.ts).toLocaleString() : '';
+        el.innerHTML += `
+        <div class="card" style="border-left:4px solid ${p.color}">
+          <div style="display:flex; justify-content:space-between;">
+             <b style="color:${p.color}">${escapeHtml(p.u)}</b>
+             <small>${time}</small>
+          </div>
+          <p style="margin:5px 0;">${escapeHtml(p.txt)}</p>
+          ${p.img ? `<img src="${escapeHtml(p.img)}" style="width:100%; border-radius:8px; margin-top:5px; max-height:200px; object-fit:cover;">` : ''}
+        </div>`;
     });
-    posts.sort((a,b)=> (b.ts||0)-(a.ts||0)); // newest first
-    
-    // Simplificação: usar dados do post, mas tentar buscar user atualizado é ideal
-    // (Mantido a lógica original para performance, mas com fallback)
-    for(const post of posts){
-        feedListElement.innerHTML += renderPost(post);
-    }
-    if(posts.length === 0) feedListElement.innerHTML = 'Nenhuma postagem ainda.';
+    if(!arr.length) el.innerHTML = '<p style="text-align:center; color:#666">Sem postagens.</p>';
   });
 }
 
-function loadProfileFeed(){
-  const profileFeedListElement = document.getElementById('profile-feed-list');
-  if(!profileFeedListElement) return;
-  if(!user || !user.uid){
-    profileFeedListElement.innerHTML = 'Faça login para ver suas postagens.';
-    return;
-  }
-  db.ref('feed').orderByChild('uid').equalTo(user.uid).limitToLast(50).on('value', snapshot=>{
-    profileFeedListElement.innerHTML = '';
-    const posts = [];
-    snapshot.forEach(c => {
-      const v = c.val();
-      v._id = c.key;
-      posts.push(v);
-    });
-    posts.sort((a,b)=> (b.ts||0)-(a.ts||0));
-    for(const post of posts){
-      profileFeedListElement.innerHTML += renderPost(post);
+/* ------------------ CHAT & COMANDOS ------------------ */
+
+// --- LISTA DE COMANDOS GLOBAIS (10) ---
+function handleGlobalCommand(msg, pushFunction) {
+    const parts = msg.split(' ');
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+
+    switch(cmd) {
+        case '/ajuda':
+            alert("COMANDOS GLOBAIS:\n/d [x] - Rolar dado\n/eu [ação] - Emote\n/moeda - Cara ou Coroa\n/gritar [msg] - Texto destaque\n/sussurro [msg] - Texto discreto\n/mat [conta] - Calculadora\n/data - Hora atual\n/limpar - Limpa tela local\n/status [txt] - Define status\n/r - Atalho para dado");
+            return true;
+        case '/d':
+        case '/r':
+            const roll = rollDice(args || '1d20');
+            if(roll) {
+                pushFunction(`🎲 Rolou ${args||'1d20'}: [${roll.rolls.join('+')}]${roll.modifier? (roll.modifier>0?'+'+roll.modifier:roll.modifier) : ''} = **${roll.total}**`, 'roll');
+            } else {
+                alert('Use formato: /d 1d20+5');
+            }
+            return true;
+        case '/eu':
+            pushFunction(`* ${userDataCache.name} ${args} *`, 'action');
+            return true;
+        case '/moeda':
+            const res = Math.random() > 0.5 ? '👑 Cara' : '🪙 Coroa';
+            pushFunction(`jogou uma moeda e deu: **${res}**`, 'action');
+            return true;
+        case '/gritar':
+            pushFunction(args.toUpperCase(), 'system'); // Reusing system style for boldness logic could be better, but simple push
+            return true;
+        case '/sussurro':
+             pushFunction(`(Sussurro) ${args}`, 'action');
+             return true;
+        case '/mat':
+            try { pushFunction(`🧮 ${args} = ${eval(args.replace(/[^-()\d/*+.]/g, ''))}`, 'system'); } 
+            catch { alert('Cálculo inválido'); }
+            return true;
+        case '/data':
+            pushFunction(`🕒 ${new Date().toLocaleString()}`, 'system');
+            return true;
+        case '/limpar':
+            document.getElementById('chat-msgs').innerHTML = '';
+            return true;
+        case '/status':
+             pushFunction(`está se sentindo: ${args}`, 'action');
+             return true;
+        default:
+            return false;
     }
-    if(posts.length === 0) profileFeedListElement.innerHTML = 'Nenhuma postagem ainda.';
-  });
 }
 
-/* ------------------
-   CHATS
-   ------------------ */
-function openChat(id, recipientKey = null){
+// --- LISTA DE COMANDOS DE MESA (10) ---
+function handleTableCommand(msg, pushFunction) {
+    const parts = msg.split(' ');
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+
+    switch(cmd) {
+        case '/ajuda':
+            alert("COMANDOS DE MESA:\n/r [x] - Rolar dado\n/atacar [alvo] - Ação de ataque\n/fuga - Tentar fugir\n/inv - Mostrar inventário\n/ouro - Mostrar ouro\n/vida [valor] - Anunciar HP\n/off [txt] - Falar fora do personagem\n/sacar [item] - Empunhar item\n/narrar [txt] - (Destaque)\n/gm [txt] - Falar como Mestre");
+            return true;
+        case '/r':
+            const roll = rollDice(args || '1d20');
+            if(roll) {
+                pushFunction(`🎲 Rolou ${args||'1d20'}: **${roll.total}**`, 'roll');
+            }
+            return true;
+        case '/atacar':
+            pushFunction(`⚔️ ataca ${args || 'o ar'} com ferocidade!`, 'action');
+            return true;
+        case '/fuga':
+            pushFunction(`🏃 tenta fugir da batalha!`, 'action');
+            return true;
+        case '/inv':
+            pushFunction(`🎒 Inventário: ${userDataCache.char ? userDataCache.char.inv.replace(/\n/g, ', ') : 'Vazio'}`, 'system');
+            return true;
+        case '/ouro':
+            pushFunction(`💰 Possui ${userDataCache.wallet ? userDataCache.wallet.ouro : 0} peças de ouro.`, 'system');
+            return true;
+        case '/vida':
+            pushFunction(`❤️ anuncia que seu HP está em: ${args}`, 'action');
+            return true;
+        case '/off':
+            pushFunction(`(( ${args} ))`, 'system');
+            return true;
+        case '/sacar':
+            pushFunction(`🗡️ saca ${args}!`, 'action');
+            return true;
+        case '/narrar':
+            pushFunction(args, 'narrate');
+            return true;
+        case '/gm': // Alias visual
+             pushFunction(`👑 GM: ${args}`, 'narrate');
+             return true;
+        default:
+            return false;
+    }
+}
+
+function openChat(id, key = null){
   activeChat = id;
-  let dbPath = 'chats/'+id;
-  if(id === 'private' && recipientKey){
-    const userKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
-    const sortedKeys = [userKey, recipientKey].sort();
-    dbPath = 'dms/'+sortedKeys[0]+'_'+sortedKeys[1] + '/messages';
-    document.getElementById('chat-title').innerText = 'DM: ' + recipientKey;
-  } else if(id === 'global'){
-    document.getElementById('chat-title').innerText = 'Global';
-    dbPath = 'chats/global';
-  } else {
-    document.getElementById('chat-title').innerText = 'Chat';
+  let path = 'chats/'+id;
+  let title = 'Chat Global';
+  
+  if(id === 'private' && key) {
+      const myKey = userDataCache.key;
+      const sorted = [myKey, key].sort().join('_');
+      path = 'dms/'+sorted;
+      title = 'DM: ' + key;
   }
-
+  
+  document.getElementById('chat-title').innerText = title;
   go('chat-view');
-  const chatRef = db.ref(dbPath).limitToLast(200);
+  
+  const ref = db.ref(path).limitToLast(100);
   document.getElementById('chat-msgs').innerHTML = '';
-  chatRef.off();
-  chatRef.on('child_added', s=>{
+  ref.off();
+  ref.on('child_added', s=>{
     const m = s.val();
-    const me = m.uid === (user && user.uid);
-    document.getElementById('chat-msgs').innerHTML += `<div class="msg ${me?'me':'other'}"><b>${escapeHtml(m.u)}</b><br>${escapeHtml(m.txt)}</div>`;
+    const me = m.uid === user.uid;
+    const isSys = m.type === 'system' || m.type === 'narrate';
+    
+    let cls = me ? 'me' : 'other';
+    if(m.type) cls += ' ' + m.type;
+
+    let content = escapeHtml(m.txt);
+    // Replace markdown-like bold
+    content = content.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+
+    let html = `<div class="msg ${cls}">`;
+    if(!isSys) html += `<b style="font-size:10px; opacity:0.7; display:block; margin-bottom:2px;">${escapeHtml(m.u)}</b>`;
+    html += `${content}</div>`;
+    
     const list = document.getElementById('chat-msgs');
-    list.scrollTop = list.scrollHeight;
+    list.innerHTML += html;
+    scrollToBottom('chat-msgs');
   });
 }
 
 function openPrivateSetup(){ showModal('chat-private-setup', true); }
-
-async function openPrivateChat(){
-  const recipientKey = (document.getElementById('dm-key').value || '').toUpperCase();
-  if(!recipientKey) return alert('Insira a Chave do Destinatário');
-  const myKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
-  if(recipientKey === myKey) return alert('Você não pode conversar consigo mesmo!');
-  
-  const recipientSnap = await db.ref('users').orderByChild('key').equalTo(recipientKey).once('value');
-  if(!recipientSnap.exists()) return alert('Chave de destinatário inválida.');
-  
-  openChat('private', recipientKey);
-  showModal('chat-private-setup', false);
+function openPrivateChat(){
+    const k = document.getElementById('dm-key').value.toUpperCase();
+    if(k) openChat('private', k);
+    showModal('chat-private-setup', false);
 }
 
 function sendChat(){
-  const t = document.getElementById('chat-msg-in').value;
-  if(!t) return;
-  if(!user) return alert('Faça login para enviar mensagens.');
-  document.getElementById('chat-msg-in').value = '';
-  let dbPath = 'chats/'+activeChat;
-  if(activeChat === 'private'){
-    const recipientKey = document.getElementById('chat-title').innerText.replace('DM: ','');
-    const myKey = (document.getElementById('u-key-edit').value || '').toUpperCase();
-    const sortedKeys = [myKey, recipientKey].sort();
-    dbPath = 'dms/'+sortedKeys[0]+'_'+sortedKeys[1] + '/messages';
-  } else {
-    dbPath = 'chats/' + (activeChat || 'global');
+  const inp = document.getElementById('chat-msg-in');
+  const txt = inp.value.trim();
+  if(!txt || !user) return;
+  
+  inp.value = '';
+  
+  // Define push logic to simplify command handler
+  const pushMsg = (text, type = null) => {
+      let path = 'chats/'+activeChat;
+      if(activeChat === 'private') {
+           const k = document.getElementById('chat-title').innerText.replace('DM: ','');
+           path = 'dms/'+[userDataCache.key, k].sort().join('_');
+      }
+      db.ref(path).push({
+          u: userDataCache.name,
+          uid: user.uid,
+          txt: text,
+          type: type,
+          ts: firebase.database.ServerValue.TIMESTAMP
+      });
+  };
+
+  if(!handleGlobalCommand(txt, pushMsg)) {
+      pushMsg(txt);
   }
-  db.ref(dbPath).push({u:document.getElementById('u-name').innerText, uid:user.uid, txt:t, ts: firebase.database.ServerValue.TIMESTAMP});
 }
 
-/* ------------------
-   LOJA / MARKET
-   ------------------ */
-function loadMarket(){
-  const d = document.getElementById('market-list');
-  if(!d) return;
-  db.ref('market').off();
-  db.ref('market').on('value', s=>{
-    d.innerHTML = '';
-    s.forEach(x => {
-      const i = x.val();
-      if(i.s !== user.uid) d.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><span>${escapeHtml(i.i)}</span><button onclick="buyUsr('${x.key}', '${escapeHtml(i.i)}')" style="width:auto; margin:0; padding:5px;">${i.p} ${i.c}</button></div><small>Vendedor: ${escapeHtml(i.u)}</small></div>`;
-    });
-  });
-}
-
-function buySys(i, p){
-  if(!user) return alert('Faça login');
-  db.ref('users/'+user.uid+'/wallet/ouro').once('value', s=>{
-    const currentGold = s.val() || 0;
-    if(currentGold >= p) {
-      db.ref('users/'+user.uid+'/wallet/ouro').set(currentGold - p);
-      db.ref('users/'+user.uid+'/char/inv').transaction(current => (current ? current + '\n' + i : i));
-      alert('Comprado!');
-    } else alert('Ouro insuficiente.');
-  });
-}
-
-function postSell(){
-  const item = document.getElementById('sell-item-select').value;
-  const price = Number(document.getElementById('sell-price').value);
-  const curr = document.getElementById('sell-curr').value;
-  if(!item || !price || price <= 0) return alert('Selecione um item e um preço válido.');
-  
-  db.ref('users/'+user.uid+'/char/inv').once('value', s=>{
-    let inventory = (s.val() || '').split('\n').filter(i => i.trim() !== '');
-    const itemIndex = inventory.findIndex(i => i.trim() === item.trim());
-    if (itemIndex === -1) return alert('Item não encontrado no inventário.');
-    
-    inventory.splice(itemIndex, 1);
-    db.ref('users/'+user.uid+'/char/inv').set(inventory.join('\n'));
-    db.ref('market').push({
-      s: user.uid,
-      u: document.getElementById('u-name').innerText,
-      i: item,
-      p: price,
-      c: curr
-    });
-    alert('Item anunciado!');
-  });
-}
-
-function buyUsr(marketId, itemName){
-  if(!user) return alert('Faça login');
-  db.ref('market/'+marketId).once('value', s=>{
-    if(!s.exists()) return alert('Item já foi vendido.');
-    const i = s.val();
-    
-    db.ref('users/'+user.uid+'/wallet/'+i.c).once('value', w=>{
-      const buyerFunds = w.val() || 0;
-      if(buyerFunds >= i.p) {
-        // Transação
-        db.ref('users/'+user.uid+'/wallet/'+i.c).set(buyerFunds - i.p);
-        db.ref('users/'+i.s+'/wallet/'+i.c).transaction(v=>(v||0)+i.p);
-        
-        // Remove do mercado e dá ao comprador
-        db.ref('market/'+marketId).remove();
-        db.ref('users/'+user.uid+'/char/inv').transaction(current => (current ? current + '\n' + itemName : itemName));
-        
-        alert('Comprado com sucesso!');
-      } else alert('Saldo insuficiente');
-    });
-  });
-}
-
-/* ------------------
-   SESSÕES DE RPG (SOMENTE HUMANOS)
-   ------------------ */
+/* ------------------ SESSÃO DE RPG ------------------ */
 function createTable(){
-  const n = document.getElementById('table-name').value;
-  if(!n) return alert('Informe nome da aventura.');
-  if(!user) return alert('Faça login.');
-  
-  const k = db.ref('tables').push().key;
-  // Type removido, assumimos padrão humano
-  db.ref('tables/'+k).set({
-      name:n, 
-      master:user.uid, 
-      users:{[user.uid]:document.getElementById('u-name').innerText},
-      createdAt: firebase.database.ServerValue.TIMESTAMP
-  });
-  
-  document.getElementById('table-name').value = '';
-  joinTable(k);
+    const n = document.getElementById('table-name').value;
+    if(!n) return;
+    const k = db.ref('tables').push().key;
+    db.ref('tables/'+k).set({
+        name: n,
+        master: user.uid,
+        users: { [user.uid]: userDataCache.name },
+        created: firebase.database.ServerValue.TIMESTAMP
+    });
+    document.getElementById('table-name').value = '';
+    joinTable(k);
 }
 
 function loadTables(){
-  db.ref('tables').off();
-  db.ref('tables').limitToLast(50).on('value', s=>{
-    const d = document.getElementById('table-list');
-    d.innerHTML = '';
-    s.forEach(x=>{
-      const t = x.val();
- d.innerHTML += `<div class="card" onclick="joinTable('${x.key}')" style="cursor:pointer; border-left: 4px solid orange"><b>${escapeHtml(t.name)}</b><br><small>Mestre Humano</small></div>`;
+    db.ref('tables').limitToLast(20).on('value', s=>{
+        const el = document.getElementById('table-list');
+        el.innerHTML = '';
+        s.forEach(c=>{
+            const t = c.val();
+            el.innerHTML += `<div class="card" onclick="joinTable('${c.key}')" style="cursor:pointer; border-left:4px solid orange"><b>${escapeHtml(t.name)}</b><br><small>Mestre: Humano</small></div>`;
+        });
+        if(!el.innerHTML) el.innerHTML = '<p>Nenhuma mesa ativa.</p>';
     });
-    if(!d.innerHTML) d.innerHTML = "<p>Nenhuma mesa ativa.</p>";
-  });
 }
 
 function joinTable(k){
-  if(!user) return alert('Faça login');
-  activeTable = k;
-  // Entrar na mesa
-  db.ref('tables/'+k+'/users/'+user.uid).set(document.getElementById('u-name').innerText);
-  
-  go('active-session');
-  
-  db.ref('tables/'+k).once('value', s=>{
-    const t = s.val();
-    document.getElementById('session-name').innerText = t.name;
-    const isGm = t.master === user.uid;
-    document.getElementById('gm-btn').style.display = isGm ? 'block' : 'none';
-    if(isGm) loadGmUsers(k);
-  });
-  
-  loadSessionLog(k);
+    activeTable = k;
+    db.ref('tables/'+k).once('value', s=>{
+       const t = s.val();
+       document.getElementById('session-name').innerText = t.name;
+       const isGm = t.master === user.uid;
+       document.getElementById('gm-btn').style.display = isGm ? 'block' : 'none';
+       if(isGm) loadGmTargets(k);
+       go('active-session');
+       loadSessionLog(k);
+    });
 }
 
 function exitTable(){
-  activeTable = null;
-  back('active-session');
-  // Opcional: remover listener da mesa para economizar dados
+    activeTable = null;
+    back('active-session');
+}
+
+function loadGmTargets(k){
+    db.ref('tables/'+k+'/users').on('value', s=>{
+        const sel = document.getElementById('gm-target');
+        sel.innerHTML = '';
+        s.forEach(u=> sel.innerHTML += `<option value="${escapeHtml(u.val())}">${escapeHtml(u.val())}</option>`);
+    });
 }
 
 function toggleGmTools(){
-  const p = document.getElementById('gm-panel');
-  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    const p = document.getElementById('gm-panel');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
 }
 
-function loadGmUsers(k){
-  db.ref('tables/'+k+'/users').on('value', s=>{
-    const sel = document.getElementById('gm-target');
-    sel.innerHTML = '';
-    s.forEach(u => sel.innerHTML += `<option value="${escapeHtml(u.key)}">${escapeHtml(u.val())}</option>`);
-  });
-}
+function gmCmd(type){
+    if(!activeTable) return;
+    const target = document.getElementById('gm-target').value;
+    const val = document.getElementById('gm-val').value;
+    let txt = '';
+    
+    if(type==='hp') txt = `❤️ alterou HP de ${target} em ${val}`;
+    if(type==='xp') txt = `✨ concedeu ${val} XP para ${target}`;
+    if(type==='item') txt = `🎁 entregou [${val}] para ${target}`;
 
-function gmCmd(act){
-  if(!activeTable) return;
-  const u = document.getElementById('gm-target').options[document.getElementById('gm-target').selectedIndex]?.text || 'Alguém';
-  const v = document.getElementById('gm-val').value;
-  
-  let txt = '';
-  if(act === 'roll') {
-      const roll = Math.floor(Math.random() * 20) + 1;
-      txt = `Mestre rolou D20: 🎲 **${roll}**`;
-  } else {
-      if(!v) return alert('Preencha o valor');
-      txt = `Mestre aplicou ${act.toUpperCase()} ${v} em ${u}.`;
-  }
-  
-  db.ref('tables/'+activeTable+'/log').push({
-      u:'Mestre (Sistema)', 
-      uid:'sys', 
-      txt: txt, 
-      ts: firebase.database.ServerValue.TIMESTAMP
-  });
+    db.ref('tables/'+activeTable+'/log').push({
+        u: 'Mestre',
+        uid: user.uid,
+        txt: txt,
+        type: 'narrate',
+        ts: firebase.database.ServerValue.TIMESTAMP
+    });
 }
 
 function loadSessionLog(k){
-  const d = document.getElementById('session-log');
-  d.innerHTML = '';
-  db.ref('tables/'+k+'/log').limitToLast(100).off();
-  db.ref('tables/'+k+'/log').limitToLast(100).on('child_added', s=>{
-    const m = s.val();
-    const me = m.uid===user.uid;
-    const sys = m.uid === 'sys';
-    let styleClass = me ? 'me' : 'other';
-    if(sys) styleClass = 'other'; // System msgs look like others but maybe different color logic if needed
-    
-    // Simple render
-    let html = `<div class="msg ${styleClass}" ${sys ? 'style="background:#333; width:100%; border:none; text-align:center; color:#aaa;"' : ''}>`;
-    if(!sys) html += `<b>${escapeHtml(m.u)}</b><br>`;
-    html += `${escapeHtml(m.txt)}</div>`;
-    
-    d.innerHTML += html;
-    d.scrollTop = d.scrollHeight;
-  });
+    const list = document.getElementById('session-log');
+    list.innerHTML = '';
+    db.ref('tables/'+k+'/log').limitToLast(100).on('child_added', s=>{
+        const m = s.val();
+        const me = m.uid === user.uid;
+        let content = escapeHtml(m.txt);
+        // Markdown bold
+        content = content.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+
+        let cls = me ? 'me' : 'other';
+        if(m.type) cls += ' ' + m.type;
+
+        let html = `<div class="msg ${cls}">`;
+        if(m.type !== 'narrate' && m.type !== 'system') html += `<b style="font-size:10px; opacity:0.7; display:block;">${escapeHtml(m.u)}</b>`;
+        html += `${content}</div>`;
+        
+        list.innerHTML += html;
+        scrollToBottom('session-log');
+    });
 }
 
 function sendSession(){
-  const t = document.getElementById('session-in').value;
-  if(!t) return;
-  if(!activeTable) return alert('Entre em uma mesa.');
-  if(!user) return alert('Faça login.');
-
-  document.getElementById('session-in').value = '';
-  
-  // Apenas envia a mensagem para o log da mesa. Sem IA.
-  db.ref('tables/'+activeTable+'/log').push({
-      u:document.getElementById('u-name').innerText, 
-      uid:user.uid, 
-      txt:t, 
-      ts: firebase.database.ServerValue.TIMESTAMP
-  });
-}
-
-/* ------------------
-   TRANSFERÊNCIAS
-   ------------------ */
-function transfer(){
-  const k = (document.getElementById('pay-key').value || '').toUpperCase();
-  const c = document.getElementById('pay-type').value;
-  const a = Number(document.getElementById('pay-amt').value);
-  
-  if(!k || !a || a <= 0) return alert('Preencha chave e valor positivo.');
-  if(!user) return alert('Faça login');
-
-  db.ref('users/'+user.uid+'/wallet/'+c).once('value', s=>{
-    if((s.val()||0) < a) return alert('Saldo insuficiente');
+    const inp = document.getElementById('session-in');
+    const txt = inp.value.trim();
+    if(!txt || !activeTable) return;
     
-    db.ref('users').orderByChild('key').equalTo(k).once('value', u=>{
-      if(!u.exists()) return alert('Chave inválida');
-      
-      const dest = Object.keys(u.val())[0];
-      if(dest === user.uid) return alert('Não pode transferir para si mesmo.');
+    inp.value = '';
 
-      db.ref('users/'+user.uid+'/wallet/'+c).set(s.val()-a);
-      db.ref('users/'+dest+'/wallet/'+c).transaction(v => (v||0)+a);
-      alert('Enviado com sucesso!');
-    });
-  });
+    const pushMsg = (text, type=null) => {
+        db.ref('tables/'+activeTable+'/log').push({
+            u: userDataCache.name,
+            uid: user.uid,
+            txt: text,
+            type: type,
+            ts: firebase.database.ServerValue.TIMESTAMP
+        });
+    };
+
+    if(!handleTableCommand(txt, pushMsg)) {
+        pushMsg(txt);
+    }
 }
 
-/* ------------------
-   NAVEGAÇÃO E ESTILO
-   ------------------ */
+/* ------------------ LOJA & BANCO ------------------ */
+function transfer(){
+    const key = document.getElementById('pay-key').value.toUpperCase();
+    const amt = Number(document.getElementById('pay-amt').value);
+    const type = document.getElementById('pay-type').value;
+
+    if(!key || amt <= 0) return alert('Dados inválidos');
+
+    db.ref('users/'+user.uid+'/wallet/'+type).once('value', s=>{
+        const curr = s.val() || 0;
+        if(curr < amt) return alert('Saldo insuficiente');
+        
+        db.ref('users').orderByChild('key').equalTo(key).once('value', r=>{
+            if(!r.exists()) return alert('Destinatário não encontrado');
+            const destId = Object.keys(r.val())[0];
+            
+            db.ref('users/'+user.uid+'/wallet/'+type).set(curr - amt);
+            db.ref('users/'+destId+'/wallet/'+type).transaction(v=>(v||0)+amt);
+            alert('Transferência realizada!');
+        });
+    });
+}
+
 function switchStore(m){
   document.getElementById('store-sys').style.display = m==='sys'?'block':'none';
   document.getElementById('store-usr').style.display = m==='usr'?'block':'none';
   document.getElementById('btn-sys').style.background = m==='sys'?'var(--primary)':'var(--bg-card)';
   document.getElementById('btn-usr').style.background = m==='usr'?'var(--primary)':'var(--bg-card)';
   
-  // Reset colors of inactive button
   if(m==='sys') document.getElementById('btn-usr').style.color = 'var(--text-main)';
   if(m==='usr') document.getElementById('btn-sys').style.color = 'var(--text-main)';
+  
+  if(m==='usr') loadMarket();
 }
 
-function go(id){ 
-  document.getElementById(id).classList.add('active'); 
-  if(id==='store') loadMarket(); 
+function buySys(item, price){
+    db.ref('users/'+user.uid+'/wallet/ouro').once('value', s=>{
+        const gold = s.val() || 0;
+        if(gold >= price){
+            db.ref('users/'+user.uid+'/wallet/ouro').set(gold - price);
+            db.ref('users/'+user.uid+'/char/inv').transaction(i => (i ? i+'\n'+item : item));
+            alert('Comprado!');
+        } else alert('Sem ouro.');
+    });
 }
-function back(id){ 
-  document.getElementById(id).classList.remove('active'); 
+
+function postSell(){
+    const item = document.getElementById('sell-item-select').value;
+    const price = Number(document.getElementById('sell-price').value);
+    if(!item || price<=0) return;
+
+    db.ref('users/'+user.uid+'/char/inv').once('value', s=>{
+        let inv = (s.val()||'').split('\n');
+        const idx = inv.indexOf(item);
+        if(idx > -1){
+            inv.splice(idx,1);
+            db.ref('users/'+user.uid+'/char/inv').set(inv.join('\n'));
+            db.ref('market').push({
+                s: user.uid,
+                u: userDataCache.name,
+                i: item,
+                p: price
+            });
+            alert('Anunciado!');
+            document.getElementById('sell-item-select').value = '';
+        }
+    });
 }
+
+function loadMarket(){
+    db.ref('market').on('value', s=>{
+        const d = document.getElementById('market-list');
+        d.innerHTML = '';
+        s.forEach(c=>{
+            const i = c.val();
+            if(i.s !== user.uid){
+                d.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><span>${escapeHtml(i.i)}</span><button onclick="buyUsr('${c.key}')" style="width:auto; margin:0; padding:5px;">${i.p} Ouro</button></div><small>Vendedor: ${escapeHtml(i.u)}</small></div>`;
+            }
+        });
+        if(!d.innerHTML) d.innerHTML = '<p>Nenhum item à venda.</p>';
+    });
+}
+
+function buyUsr(key){
+    db.ref('market/'+key).once('value', s=>{
+        if(!s.exists()) return alert('Vendido.');
+        const i = s.val();
+        db.ref('users/'+user.uid+'/wallet/ouro').once('value', w=>{
+            const gold = w.val() || 0;
+            if(gold >= i.p){
+                db.ref('users/'+user.uid+'/wallet/ouro').set(gold - i.p);
+                db.ref('users/'+i.s+'/wallet/ouro').transaction(v=>(v||0)+i.p);
+                db.ref('market/'+key).remove();
+                db.ref('users/'+user.uid+'/char/inv').transaction(curr => (curr ? curr+'\n'+i.i : i.i));
+                alert('Item comprado!');
+            } else alert('Falta Ouro');
+        });
+    });
+}
+
+/* ------------------ NAVEGAÇÃO ------------------ */
+function go(id){ document.getElementById(id).classList.add('active'); }
+function back(id){ document.getElementById(id).classList.remove('active'); }
 
 function setMode(m){ 
   const r = document.documentElement.style; 
@@ -1088,28 +1122,14 @@ function setMode(m){
 
 function setAccent(c){
   document.documentElement.style.setProperty('--primary', c);
-  const contrast = getContrastColor(c);
-  document.documentElement.style.setProperty('--primary-contrast', contrast);
-  
-  // Update borders and card tints slightly based on primary color
-  const darker = shade(c, -0.4);
-  document.documentElement.style.setProperty('--border', '#333'); // Keep border neutral or mix
-  
-  // Force update buttons manually if needed, but CSS var handles mostly
-  const buttons = document.querySelectorAll('button');
-  buttons.forEach(b => {
-      // Apply only to main action buttons, logic here can be refined
-      if(b.parentElement.classList.contains('header') || b.classList.contains('back-btn')) {
-          b.style.color = c;
-          b.style.background = 'transparent';
-      }
-  });
+  // Calcula contraste simples
+  const hex = c.replace('#','');
+  const r = parseInt(hex.substr(0,2),16);
+  const g = parseInt(hex.substr(2,2),16);
+  const b = parseInt(hex.substr(4,2),16);
+  const yiq = ((r*299)+(g*587)+(b*114))/1000;
+  document.documentElement.style.setProperty('--primary-contrast', (yiq >= 128) ? 'black' : 'white');
 }
-function resetAccent(){ 
-  document.getElementById('color-picker').value = '#6200ea'; 
-  setAccent('#6200ea'); 
-}
-
 </script>
 </body>
 </html>
