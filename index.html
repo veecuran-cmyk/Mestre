@@ -10,438 +10,386 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <style>
-/* --- VARIÁVEIS E TEMA --- */
+/* --- TEMA E VARIÁVEIS --- */
 :root {
   --primary: #6200ea;
   --primary-contrast: #ffffff;
-  --bg-main: #000000;
+  --bg-main: #050505;
   --bg-surface: #121212;
   --bg-card: #1e1e1e;
-  --text-main: #ffffff;
-  --text-sub: #b0b0b0;
+  --text-main: #e0e0e0;
+  --text-sub: #a0a0a0;
   --border: #333333;
-  --input-bg: #2c2c2c;
+  --input-bg: #252525;
   --danger: #cf6679;
   --success: #03dac6;
-  --cmd-bg: #2a2a2a;
+  --warn: #ffb74d;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
   background: var(--bg-main);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  user-select: none; transition: background 0.3s; overflow: hidden;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  user-select: none; overflow: hidden;
 }
 
-/* --- DEVICE & LAYOUT --- */
+/* --- LAYOUT DO DISPOSITIVO --- */
 .device {
-  width: 100%; max-width: 400px; height: 100%; max-height: 850px;
-  background: var(--bg-main); border-radius: 0;
-  position: relative; 
+  width: 100%; max-width: 420px; height: 100%; max-height: 880px;
+  background: var(--bg-main); position: relative; 
   display: flex; flex-direction: column; overflow: hidden;
 }
 @media (min-width: 450px) {
   .device { 
-    height: 800px; border-radius: 40px; 
-    box-shadow: 0 0 0 8px var(--border), 0 0 30px rgba(0,0,0,.7); 
+    height: 85vh; border-radius: 30px; 
+    box-shadow: 0 0 0 10px #1a1a1a, 0 0 30px rgba(0,0,0,0.8); 
   }
 }
 
+/* --- ESTRUTURA --- */
 .screen {
   width: 100%; height: 100%; background: var(--bg-surface); color: var(--text-main);
   display: flex; flex-direction: column; position: relative;
 }
-.status-bar {
-  height: 30px; display: flex; justify-content: space-between; align-items: center;
-  padding: 0 20px; font-size: 12px; font-weight: 600; z-index: 100; opacity: 0.7;
-}
-
-/* --- HOME GRID --- */
-.app-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px;
-  align-content: start; flex: 1; overflow-y: auto;
-}
-.app-icon { display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform .12s;}
-.app-icon:active { transform: scale(0.95); }
-.icon-box { 
-  width:55px; height:55px; background: var(--bg-card); border-radius:14px; 
-  display:flex; justify-content:center; align-items:center; font-size:26px; 
-  margin-bottom:6px; box-shadow:0 2px 5px rgba(0,0,0,.3); border:1px solid var(--border); 
-}
-.app-icon span { font-size:11px; text-align:center; color:var(--text-main); }
-
-/* --- PÁGINAS --- */
-.page { 
-  position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg-surface); 
-  display:flex; flex-direction:column; transform:translateX(100%); 
-  transition:transform .3s cubic-bezier(.25, 1, .5, 1); z-index:50; padding-top:80px; 
-}
-.page.active { transform:translateX(0); }
-
 .header { 
-  position:absolute; top:0; left:0; right:0; height:80px; display:flex; align-items:center; 
-  padding:0 15px; background:var(--bg-card); border-bottom:1px solid var(--border); 
-  font-weight:bold; font-size:18px; flex-shrink:0; color:var(--text-main); z-index:60;
-  padding-top: 20px; /* Status bar space */
+  height: 60px; display: flex; align-items: center; padding: 0 15px; 
+  background: var(--bg-card); border-bottom: 1px solid var(--border); 
+  font-weight: bold; font-size: 18px; flex-shrink: 0; z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
-.back-btn { background:none; border:none; font-size:32px; color:var(--primary); margin-right:15px; cursor:pointer; padding:0; line-height:1; }
-.content { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; }
+.content { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+
+/* --- PÁGINAS (Transições) --- */
+.page { 
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+  background: var(--bg-surface); display: flex; flex-direction: column; 
+  transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+  z-index: 20; 
+}
+.page.active { transform: translateX(0); }
 
 /* --- COMPONENTES --- */
 .card { 
-  background:var(--bg-card); border-radius:12px; padding:15px; margin-bottom:15px; 
-  box-shadow:0 2px 4px rgba(0,0,0,.2); border:1px solid var(--border); 
+  background: var(--bg-card); border-radius: 12px; padding: 15px; 
+  border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
+.app-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px;
+}
+.app-icon { 
+  display: flex; flex-direction: column; align-items: center; gap: 5px; 
+  cursor: pointer; transition: 0.2s;
+}
+.app-icon:active { transform: scale(0.9); }
+.icon-box { 
+  width: 60px; height: 60px; background: var(--bg-card); border-radius: 18px; 
+  display: flex; justify-content: center; align-items: center; font-size: 28px;
+  border: 1px solid var(--border);
+}
+
+/* --- FORMULÁRIOS --- */
 input, textarea, select { 
-  width:100%; padding:12px; background:var(--input-bg); border:1px solid var(--border); 
-  border-radius:8px; color:var(--text-main); font-family:inherit; margin-bottom:10px; 
-  box-sizing:border-box; outline:none; font-size: 16px; /* Evita zoom no iOS */
+  width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--border); 
+  border-radius: 8px; color: var(--text-main); margin-bottom: 10px; outline: none; font-size: 14px;
 }
-input:focus, textarea:focus { border-color: var(--primary); }
+input:focus { border-color: var(--primary); }
 button { 
-  padding:12px; border-radius:8px; border:none; font-weight:600; cursor:pointer; 
-  background:var(--primary); color:var(--primary-contrast); margin-bottom:10px; 
-  transition:filter .2s; width:100%; font-size: 14px;
+  width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; 
+  background: var(--primary); color: var(--primary-contrast); cursor: pointer; 
+  transition: 0.2s; font-size: 14px;
 }
 button:active { filter: brightness(0.8); }
-button.small { padding:6px 10px; font-size:12px; width:auto; margin:0; }
+.back-btn { width: auto; background: transparent; color: var(--primary); font-size: 24px; padding: 0 15px 0 0; margin: 0; }
 
 /* --- CHAT --- */
-.chat-container { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
-.chat-list { 
-  flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:12px; 
-  scroll-behavior: smooth;
-}
+.chat-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.chat-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
 .msg { 
-  max-width:85%; padding:10px 14px; border-radius:18px; font-size:14px; line-height:1.4; word-wrap:break-word; 
-  position: relative;
+  max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; 
+  position: relative; word-wrap: break-word;
 }
-.msg.me { align-self:flex-end; background:var(--primary); color:var(--text-main); border-bottom-right-radius:4px; }
-.msg.other { align-self:flex-start; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); border-bottom-left-radius:4px; }
+.msg.me { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 2px; }
+.msg.other { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
+.msg.system { align-self: center; font-size: 11px; color: var(--text-sub); border: 1px dashed var(--border); background: transparent; width: 100%; text-align: center; }
+.msg.narrate { width: 100%; background: #1a237e; border: 1px solid #3949ab; text-align: center; font-style: italic; color: #fff; }
 
-/* Tipos especiais de msg */
-.msg.system { align-self: center; background: transparent; border: 1px dashed var(--border); color: var(--text-sub); font-size: 12px; width: 100%; text-align: center; }
-.msg.action { font-style: italic; border-left: 3px solid var(--success); }
-.msg.roll { border-color: #ff9800; background: #2a1c05; }
-.msg.narrate { background: #1a237e; border: 1px solid #3949ab; color: #fff; width: 100%; text-align: center; font-family: 'Georgia', serif; }
-
-.chat-input { padding:10px; background:var(--bg-card); border-top:1px solid var(--border); display:flex; gap:10px; flex-shrink:0; align-items: center;}
-
-/* --- UTIL --- */
-.stat-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:14px; }
-.stat-row:last-child { border-bottom: none; }
-
+/* --- MODAL --- */
 .modal { 
-  position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); 
-  z-index:99; display:none; justify-content:center; align-items:center; padding:20px; backdrop-filter: blur(2px);
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+  background: rgba(0,0,0,0.85); z-index: 100; display: none; 
+  justify-content: center; align-items: center; backdrop-filter: blur(4px);
 }
 .modal-content { 
-  background:var(--bg-surface); padding:20px; border-radius:15px; width:100%; 
-  max-width:400px; max-height:90%; overflow-y:auto; border:1px solid var(--primary); 
-  box-shadow: 0 0 20px rgba(98, 0, 234, 0.3);
+  background: var(--bg-surface); width: 90%; max-width: 400px; max-height: 90vh; 
+  overflow-y: auto; padding: 20px; border-radius: 16px; border: 1px solid var(--border);
 }
-small { color:var(--text-sub); font-size: 0.85em; }
-.tag { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 10px; vertical-align: middle; }
 
-/* Scrollbar bonito */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* --- UTILITÁRIOS --- */
+.stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.gm-toolbar { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
+.gm-toolbar button { white-space: nowrap; font-size: 12px; padding: 8px; }
+.tag { font-size: 10px; padding: 2px 4px; border-radius: 4px; background: #333; margin-left: 5px; vertical-align: middle; }
+
+/* --- BARRAS DE VIDA --- */
+.hp-bar-bg { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+.hp-bar-fill { height: 100%; background: #d32f2f; transition: width 0.3s; }
+
 </style>
 </head>
 <body onload="init()">
 
 <div class="device">
-  <div class="screen">
-    <div class="status-bar">
-      <span id="clock">10:00</span>
-      <span><span id="battery">100%</span> 🔋</span>
+  
+  <div id="home" class="screen" style="padding: 20px;">
+    <h2 style="color:var(--primary); text-align: center; margin-bottom: 30px; font-size: 32px;">Mestre<small style="font-size:12px; color:var(--text-sub)">v3.0</small></h2>
+    
+    <div class="app-grid">
+      <div class="app-icon" onclick="go('profile')"><div class="icon-box" style="color:#42a5f5">👤</div><span>Perfil</span></div>
+      <div class="app-icon" onclick="go('sessions')"><div class="icon-box" style="color:#ab47bc">🎲</div><span>Mesas</span></div>
+      <div class="app-icon" onclick="go('chats')"><div class="icon-box" style="color:#66bb6a">💬</div><span>Chats</span></div>
+      <div class="app-icon" onclick="go('sheet')"><div class="icon-box" style="color:#ffa726">📜</div><span>Ficha</span></div>
+      <div class="app-icon" onclick="go('store')"><div class="icon-box" style="color:#8d6e63">🛒</div><span>Loja</span></div>
+      <div class="app-icon" onclick="go('bank')"><div class="icon-box" style="color:#fdd835">🏦</div><span>Banco</span></div>
+      <div class="app-icon" onclick="go('feed')"><div class="icon-box" style="color:#ef5350">📰</div><span>Feed</span></div>
+      <div class="app-icon" onclick="go('notes')"><div class="icon-box" style="color:#78909c">📝</div><span>Notas</span></div>
+      <div class="app-icon" onclick="go('settings')"><div class="icon-box" style="color:#bdbdbd">⚙️</div><span>Config</span></div>
     </div>
+  </div>
 
-    <div id="home" class="content" style="padding-top:40px;">
-      <h1 style="margin:0 0 20px 20px; font-family:'Brush Script MT', cursive; color:var(--primary); font-size: 2.5rem;">Mestre</h1>
-      <div class="app-grid">
-        <div class="app-icon" onclick="go('profile')"><div class="icon-box" style="color:#2196f3">👤</div><span>Perfil</span></div>
-        <div class="app-icon" onclick="go('feed')"><div class="icon-box" style="color:#e91e63">📰</div><span>Feed</span></div>
-        <div class="app-icon" onclick="go('chats')"><div class="icon-box" style="color:#4caf50">💬</div><span>Chats</span></div>
-        <div class="app-icon" onclick="go('sessions')"><div class="icon-box" style="color:#9c27b0">🎲</div><span>Sessões</span></div>
-        <div class="app-icon" onclick="go('sheet')"><div class="icon-box" style="color:#ff9800">📜</div><span>Ficha</span></div>
-        <div class="app-icon" onclick="go('bank')"><div class="icon-box" style="color:#ffeb3b">🏦</div><span>Banco</span></div>
-        <div class="app-icon" onclick="go('store')"><div class="icon-box" style="color:#795548">🛒</div><span>Loja</span></div>
-        <div class="app-icon" onclick="go('notes')"><div class="icon-box" style="color:#607d8b">📝</div><span>Notas</span></div>
-        <div class="app-icon" onclick="go('settings')"><div class="icon-box" style="color:var(--text-sub)">⚙️</div><span>Ajustes</span></div>
-      </div>
-    </div>
-
-    <div id="profile" class="page">
-      <div class="header"><button class="back-btn" onclick="back('profile')">‹</button> Perfil</div>
-      <div class="content">
-        <div id="view-login">
-          <div class="card">
-            <h3>Acesso</h3>
-            <input type="email" id="email" placeholder="E-mail">
-            <input type="password" id="pass" placeholder="Senha">
-            <button onclick="actionLogin()">Entrar</button>
-            <button onclick="actionRegister()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text-main)">Criar Conta</button>
-          </div>
-        </div>
-        <div id="view-user" style="display:none">
-          <div class="card" style="text-align:center">
-            <img id="u-pic" src="" style="width:90px; height:90px; border-radius:50%; background:var(--border); object-fit:cover; margin:0 auto 10px; display:none; border: 2px solid var(--primary);">
-            <h3 id="u-name" style="color:var(--primary); margin: 5px 0;">Nome</h3>
-            <p id="u-bio" style="font-size:13px; color:var(--text-sub); margin-bottom: 15px;">Descrição</p>
-            <button onclick="showModal('profile-edit-modal', true)">Editar Perfil</button>
-            <button onclick="actionLogout()" style="background:var(--danger); margin-top:5px;">Sair</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="profile-edit-modal" class="modal" onclick="modalBackgroundClick(event, 'profile-edit-modal')">
-      <div class="modal-content" onclick="event.stopPropagation()">
-        <h4>Editar Dados</h4>
-        <label><small>Nome de Usuário</small></label>
-        <input type="text" id="u-name-edit">
-        <label><small>Chave (ID Único)</small></label>
-        <input type="text" id="u-key-edit" readonly style="opacity:0.5">
-        <label><small>Cor Hex</small></label>
-        <input type="text" id="u-color-edit">
-        <label><small>URL Imagem</small></label>
-        <input type="text" id="u-img-edit">
-        <label><small>Biografia</small></label>
-        <textarea id="u-bio-edit"></textarea>
-        <button onclick="saveProfile()" style="background:var(--success)">Salvar Alterações</button>
-        <button onclick="showModal('profile-edit-modal', false)" style="background:var(--bg-card); color:var(--text-main)">Cancelar</button>
-      </div>
-    </div>
-
-    <div id="feed" class="page">
-      <div class="header"><button class="back-btn" onclick="back('feed')">‹</button> Feed Global</div>
-      <div id="feed-list" class="content"></div>
-      <button onclick="showModal('post-modal', true)" style="position:absolute; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; font-size:24px; padding:0; z-index:80; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">+</button>
-    </div>
-
-    <div id="post-modal" class="modal" onclick="modalBackgroundClick(event, 'post-modal')">
-      <div class="modal-content" onclick="event.stopPropagation()">
-        <h4>Nova Postagem</h4>
-        <textarea id="post-txt" rows="5" placeholder="No que está pensando?" style="resize:none;"></textarea>
-        <input id="post-img" type="text" placeholder="Link da imagem (Opcional)">
-        <button onclick="addPost()">Publicar</button>
-        <button onclick="showModal('post-modal', false)" style="background:var(--danger)">Cancelar</button>
-      </div>
-    </div>
-
-    <div id="chats" class="page">
-      <div class="header"><button class="back-btn" onclick="back('chats')">‹</button> Mensagens</div>
-      <div class="content">
-        <div class="card" onclick="openChat('global')" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #4caf50;">
-          <div style="width:40px; height:40px; background:#4caf50; border-radius:50%; display:flex; justify-content:center; align-items:center;">🌍</div>
-          <div><b>Chat Global</b><br><small>Comandos: /ajuda</small></div>
-        </div>
-        <div class="card" onclick="openPrivateSetup()" style="cursor:pointer; display:flex; align-items:center; gap:15px; border-left:4px solid #2196f3;">
-          <div style="width:40px; height:40px; background:#2196f3; border-radius:50%; display:flex; justify-content:center; align-items:center;">🔒</div>
-          <div><b>Chat Privado</b><br><small>Mensagens diretas por Chave</small></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="chat-private-setup" class="modal" onclick="modalBackgroundClick(event, 'chat-private-setup')">
-      <div class="modal-content" onclick="event.stopPropagation()">
-        <h4>Iniciar Chat Privado</h4>
-        <input type="text" id="dm-key" placeholder="Chave do Destinatário (Ex: JOGADOR1)">
-        <button onclick="openPrivateChat()">Abrir Chat</button>
-        <button onclick="showModal('chat-private-setup', false)" style="background:var(--danger)">Cancelar</button>
-      </div>
-    </div>
-
-    <div id="chat-view" class="page">
-      <div class="header"><button class="back-btn" onclick="back('chat-view')">‹</button> <span id="chat-title">Chat</span></div>
-      <div class="chat-container">
-        <div class="chat-list" id="chat-msgs"></div>
-        <div class="chat-input">
-          <input id="chat-msg-in" type="text" placeholder="Digite /ajuda para comandos..." style="margin:0" onkeydown="if(event.key==='Enter') sendChat()">
-          <button onclick="sendChat()" style="width:50px; margin:0">➤</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="sessions" class="page">
-      <div class="header"><button class="back-btn" onclick="back('sessions')">‹</button> Mesas de RPG</div>
-      <div class="content">
+  <div id="profile" class="page">
+    <div class="header"><button class="back-btn" onclick="back('profile')">‹</button> Perfil</div>
+    <div class="content">
+      <div id="view-login">
         <div class="card">
-          <h4>Criar Nova Mesa</h4>
-          <input id="table-name" type="text" placeholder="Nome da Aventura">
-          <button onclick="createTable()">Iniciar Campanha</button>
+          <h3>Bem-vindo</h3>
+          <input type="email" id="login-email" placeholder="E-mail">
+          <input type="password" id="login-pass" placeholder="Senha">
+          <button onclick="doLogin()">Entrar</button>
+          <button onclick="doRegister()" style="background:transparent; border:1px solid var(--border); margin-top:5px;">Criar Conta</button>
         </div>
-        <h4>Mesas Disponíveis</h4>
-        <div id="table-list"></div>
+      </div>
+      <div id="view-user" style="display:none">
+        <div class="card" style="text-align:center">
+          <img id="u-img" src="" style="width:80px;height:80px;border-radius:50%;background:#333;object-fit:cover;margin:0 auto 10px; border: 2px solid var(--primary);">
+          <h3 id="u-name" style="margin:5px 0; color:var(--primary)">Usuário</h3>
+          <p id="u-key" style="font-family:monospace; background:#000; padding:4px; display:inline-block; border-radius:4px; font-size:12px;">KEY</p>
+          <div style="margin-top:10px;">
+             <button onclick="openEditProfile()" class="small">Editar Perfil</button>
+             <button onclick="auth.signOut()" style="background:var(--danger)">Sair</button>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div id="active-session" class="page">
-      <div class="header">
-        <button class="back-btn" onclick="exitTable()">‹</button>
-        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right: 10px;">
-            <span id="session-name">Mesa</span>
+  <div id="modal-profile" class="modal" onclick="closeModal(event, 'modal-profile')">
+    <div class="modal-content">
+      <h4>Editar Perfil</h4>
+      <input id="edit-name" placeholder="Nome de Exibição">
+      <input id="edit-img" placeholder="URL da Imagem">
+      <textarea id="edit-bio" placeholder="Biografia curta"></textarea>
+      <button onclick="saveProfile()">Salvar</button>
+    </div>
+  </div>
+
+  <div id="sessions" class="page">
+    <div class="header"><button class="back-btn" onclick="back('sessions')">‹</button> Mesas de RPG</div>
+    <div class="content">
+      <div class="card">
+        <h4>Criar Nova Mesa</h4>
+        <input id="new-table-name" placeholder="Nome da Campanha">
+        <input id="new-table-pass" type="password" placeholder="Senha da Mesa (Opcional)">
+        <button onclick="createTable()">Criar Mesa</button>
+      </div>
+      <hr style="border:0; border-top:1px solid var(--border); width:100%;">
+      <h4>Mesas Disponíveis</h4>
+      <div id="tables-list"></div>
+    </div>
+  </div>
+
+  <div id="modal-table-pass" class="modal" onclick="closeModal(event, 'modal-table-pass')">
+    <div class="modal-content">
+      <h4>Mesa Privada 🔒</h4>
+      <p>Esta mesa requer senha para entrar.</p>
+      <input id="join-pass" type="password" placeholder="Digite a senha">
+      <button onclick="confirmJoinTable()">Entrar</button>
+    </div>
+  </div>
+
+  <div id="active-session" class="page">
+    <div class="header">
+      <button class="back-btn" onclick="leaveTable()">‹</button> 
+      <span id="session-title" style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Mesa</span>
+      <button id="gm-tools-btn" onclick="toggleGmPanel()" style="width:auto; padding:5px 10px; font-size:12px; display:none;">👑 GM</button>
+    </div>
+    
+    <div class="chat-container">
+      <div id="gm-panel" style="display:none; background:var(--bg-card); padding:10px; border-bottom:1px solid var(--primary);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+           <small style="color:var(--primary); font-weight:bold;">FERRAMENTAS DO MESTRE</small>
+           <button onclick="toggleGmPanel()" style="width:auto; padding:2px 8px; font-size:10px; background:var(--danger)">X</button>
         </div>
-        <button onclick="toggleGmTools()" id="gm-btn" style="width:auto; background:none; color:var(--primary); display:none; margin:0 0 0 auto; padding:0; font-size:24px;">🛠️</button>
+        
+        <select id="gm-target-select" style="margin-bottom:5px; background:#000;"></select>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px; margin-bottom:5px;">
+           <input id="gm-val-hp" type="number" placeholder="HP (+/-)">
+           <input id="gm-val-xp" type="number" placeholder="XP (+)">
+           <input id="gm-val-item" type="text" placeholder="Nome Item">
+        </div>
+        
+        <div class="gm-toolbar">
+          <button onclick="gmAction('hp')" style="background:var(--danger)">Mod HP</button>
+          <button onclick="gmAction('xp')" style="background:var(--warn); color:#000;">Dar XP</button>
+          <button onclick="gmAction('item')" style="background:var(--success); color:#000;">Dar Item</button>
+          <button onclick="openGmInspect()" style="background:#42a5f5;">🔍 Inspecionar</button>
+        </div>
+      </div>
+
+      <div id="session-log" class="chat-list"></div>
+      
+      <div class="chat-input">
+        <input id="session-msg" placeholder="Mensagem ou /ajuda..." onkeydown="if(event.key==='Enter') sendSessionMsg()">
+        <button onclick="sendSessionMsg()" style="width:50px;">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-gm-inspect" class="modal" onclick="closeModal(event, 'modal-gm-inspect')">
+    <div class="modal-content">
+      <h4>Editor de Personagem (GM)</h4>
+      <input type="hidden" id="gm-edit-uid">
+      <label><small>Nome do Personagem</small></label>
+      <input id="gm-edit-name">
+      <div style="display:flex; gap:5px;">
+        <div><small>HP Atual</small><input id="gm-edit-hp" type="number"></div>
+        <div><small>HP Max</small><input id="gm-edit-maxhp" type="number"></div>
+      </div>
+      <label><small>Inventário (Texto)</small></label>
+      <textarea id="gm-edit-inv" rows="5"></textarea>
+      <button onclick="gmSavePlayer()" style="background:var(--success)">Salvar Alterações</button>
+    </div>
+  </div>
+
+  <div id="sheet" class="page">
+    <div class="header"><button class="back-btn" onclick="back('sheet')">‹</button> Ficha</div>
+    <div class="content">
+      <div class="card">
+        <div style="display:flex; gap:15px; align-items:center;">
+           <img id="char-img-display" src="" style="width:60px; height:60px; border-radius:10px; background:#333; object-fit:cover;">
+           <div style="flex:1;">
+             <h3 id="char-name-display" style="margin:0;">Sem Nome</h3>
+             <small id="char-lvl-display" style="color:var(--warn)">Nível 1</small>
+           </div>
+        </div>
+        <div style="margin-top:10px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px;">
+            <span>HP</span>
+            <span id="hp-text">10/10</span>
+          </div>
+          <div class="hp-bar-bg"><div id="hp-bar" class="hp-bar-fill" style="width:100%"></div></div>
+        </div>
+        <div style="margin-top:10px; display:flex; justify-content:space-between; font-size:12px; color:var(--warn);">
+            <span>XP</span>
+            <span id="xp-text">0</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4>Atributos</h4>
+        <div id="attrs-list"></div>
+      </div>
+
+      <div class="card">
+        <h4>Inventário</h4>
+        <pre id="inv-display" style="white-space:pre-wrap; font-family:inherit; color:var(--text-sub); margin:0;">Vazio</pre>
+      </div>
+      <button onclick="openEditSheet()">Editar Detalhes</button>
+    </div>
+  </div>
+
+  <div id="modal-sheet-edit" class="modal" onclick="closeModal(event, 'modal-sheet-edit')">
+    <div class="modal-content">
+      <h4>Editar Ficha</h4>
+      <input id="p-char-name" placeholder="Nome do Herói">
+      <input id="p-char-img" placeholder="URL Imagem">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+        <input id="p-attr-str" type="number" placeholder="FOR">
+        <input id="p-attr-dex" type="number" placeholder="DES">
+        <input id="p-attr-con" type="number" placeholder="CON">
+        <input id="p-attr-int" type="number" placeholder="INT">
+      </div>
+      <small>Jogadores não editam HP/XP/Inventário diretamente (Peça ao Mestre).</small>
+      <button onclick="saveSheetPlayer()" style="margin-top:10px;">Salvar</button>
+    </div>
+  </div>
+
+  <div id="store" class="page">
+    <div class="header"><button class="back-btn" onclick="back('store')">‹</button> Loja & Mercado</div>
+    <div class="content">
+      <div style="display:flex; gap:10px; margin-bottom:10px;">
+         <button onclick="toggleStoreTab('sys')" id="tab-sys" style="flex:1;">Sistema</button>
+         <button onclick="toggleStoreTab('usr')" id="tab-usr" style="flex:1; background:var(--bg-card); color:var(--text-sub);">Jogadores</button>
       </div>
       
-      <div class="chat-container">
-        <div id="gm-panel" style="display:none; background:var(--bg-card); padding:10px; border-bottom:1px solid var(--border); flex-shrink:0;">
-          <small>Painel do Mestre</small>
-          <div style="display:flex; gap:5px; margin-top:5px;">
-            <select id="gm-target" style="margin:0; flex:1;"></select>
-            <input id="gm-val" type="text" placeholder="Valor/Item" style="margin:0; flex:1;">
-          </div>
-          <div style="display:flex; gap:5px; margin-top:5px;">
-            <button onclick="gmCmd('hp')" style="margin:0;">HP</button>
-            <button onclick="gmCmd('xp')" style="margin:0;">XP</button>
-            <button onclick="gmCmd('item')" style="margin:0;">Item</button>
-          </div>
-        </div>
-
-        <div id="session-log" class="chat-list"></div>
-        
-        <div class="chat-input">
-          <input id="session-in" type="text" placeholder="Fale ou use /ajuda..." style="margin:0" onkeydown="if(event.key==='Enter') sendSession()">
-          <button onclick="sendSession()" style="width:50px; margin:0">➤</button>
-        </div>
+      <div id="store-sys">
+         </div>
+      
+      <div id="store-usr" style="display:none;">
+         <div class="card">
+           <small>Vender item do seu inventário</small>
+           <select id="sell-select"></select>
+           <input id="sell-price" type="number" placeholder="Preço (Ouro)">
+           <button onclick="postSellItem()">Anunciar Venda</button>
+         </div>
+         <div id="market-list"></div>
       </div>
     </div>
-
-    <div id="sheet" class="page">
-      <div class="header"><button class="back-btn" onclick="back('sheet')">‹</button> Ficha</div>
-      <div class="content">
-        <div class="card" style="text-align:center;">
-          <img id="char-pic" src="" style="width:100px; height:100px; border-radius:50%; background:#333; object-fit:cover; margin-bottom:10px; display:none;">
-          <h3 id="sheet-name-display">Nome do Herói</h3>
-          <p id="sheet-bio-display" style="font-size:12px; color:var(--text-sub)"></p>
-        </div>
-        <div class="card">
-          <h4>Atributos</h4>
-          <div id="sheet-attr-display"></div>
-        </div>
-        <div class="card">
-          <h4>Inventário</h4>
-          <div id="sheet-inv-display" style="white-space:pre-wrap; font-size:14px; color:var(--text-sub);"></div>
-        </div>
-        <button onclick="showModal('sheet-edit-modal', true)">Editar Ficha</button>
-      </div>
-    </div>
-
-    <div id="sheet-edit-modal" class="modal" onclick="modalBackgroundClick(event, 'sheet-edit-modal')">
-      <div class="modal-content" onclick="event.stopPropagation()">
-        <h4>Editar Ficha</h4>
-        <input id="c-name" type="text" placeholder="Nome do Personagem">
-        <input id="c-img" type="text" placeholder="URL da Imagem">
-        <textarea id="c-bio" placeholder="Biografia" rows="2"></textarea>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
-            <input id="c-str" type="number" placeholder="FOR">
-            <input id="c-dex" type="number" placeholder="DES">
-            <input id="c-con" type="number" placeholder="CON">
-            <input id="c-int" type="number" placeholder="INT">
-        </div>
-        <textarea id="c-inv" rows="5" placeholder="Inventário (Um item por linha)"></textarea>
-        <button onclick="saveSheet()" style="background:var(--success)">Salvar</button>
-        <button onclick="showModal('sheet-edit-modal', false)" style="background:var(--danger)">Cancelar</button>
-      </div>
-    </div>
-
-    <div id="bank" class="page">
-      <div class="header"><button class="back-btn" onclick="back('bank')">‹</button> Banco</div>
-      <div class="content">
-        <div class="card" style="background: linear-gradient(45deg, #FFD700, #B8860B); color:black; font-weight:bold;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Saldo Ouro</span>
-            <span id="gold-val" style="font-size:24px;">0</span>
-          </div>
-        </div>
-        <div class="card">
-          <h4>Sua Carteira</h4>
-          <div id="wallet-div"></div>
-        </div>
-        <div class="card">
-          <h4>Transferir</h4>
-          <input id="pay-key" type="text" placeholder="Chave do Jogador Destino">
-          <select id="pay-type">
-            <option value="ouro">Ouro</option>
-            <option value="prata">Prata</option>
-          </select>
-          <input id="pay-amt" type="number" placeholder="Quantidade" min="1">
-          <button onclick="transfer()">Enviar</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="store" class="page">
-      <div class="header"><button class="back-btn" onclick="back('store')">‹</button> Loja</div>
-      <div class="content">
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-          <button onclick="switchStore('sys')" id="btn-sys" style="flex:1;">Sistema</button>
-          <button onclick="switchStore('usr')" id="btn-usr" style="flex:1; background:var(--bg-card); color:var(--text-main);">Jogadores</button>
-        </div>
-        <div id="store-sys">
-          <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span>⚔️ Espada Longa</span>
-              <button onclick="buySys('Espada Longa', 50)" style="width:auto; margin:0; padding:5px 10px;">50 Ouro</button>
-            </div>
-          </div>
-          <div class="card">
-             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span>🧪 Poção de Cura</span>
-              <button onclick="buySys('Poção de Cura', 10)" style="width:auto; margin:0; padding:5px 10px;">10 Ouro</button>
-            </div>
-          </div>
-          <div class="card">
-             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span>📜 Pergaminho</span>
-              <button onclick="buySys('Pergaminho', 25)" style="width:auto; margin:0; padding:5px 10px;">25 Ouro</button>
-            </div>
-          </div>
-        </div>
-        <div id="store-usr" style="display:none;">
-          <div class="card">
-            <small>Vender Item</small>
-            <select id="sell-item-select"></select>
-            <input id="sell-price" type="number" placeholder="Preço (Ouro)">
-            <button onclick="postSell()">Anunciar</button>
-          </div>
-          <div id="market-list"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="notes" class="page">
-      <div class="header"><button class="back-btn" onclick="back('notes')">‹</button> Bloco de Notas</div>
-      <div class="content">
-        <textarea id="note-pad" style="flex:1; resize:none;" placeholder="Suas anotações pessoais..."></textarea>
-        <button onclick="saveNote()" style="background:var(--success)">Salvar Notas</button>
-      </div>
-    </div>
-
-    <div id="settings" class="page">
-      <div class="header"><button class="back-btn" onclick="back('settings')">‹</button> Ajustes</div>
-      <div class="content">
-        <div class="card">
-          <h4>Tema</h4>
-          <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <button onclick="setMode('dark')" style="flex:1; background:var(--bg-main);">Escuro</button>
-            <button onclick="setMode('light')" style="flex:1; background:#eee; color:#000;">Claro</button>
-          </div>
-          <h4>Cor de Destaque</h4>
-          <input id="color-picker" type="color" value="#6200ea" style="width:100%; height:40px; border:none; border-radius:8px;">
-          <button onclick="setAccent(document.getElementById('color-picker').value)" style="margin-top:10px;">Aplicar</button>
-        </div>
-      </div>
-    </div>
-
   </div>
+
+  <div id="bank" class="page">
+    <div class="header"><button class="back-btn" onclick="back('bank')">‹</button> Banco</div>
+    <div class="content">
+      <div class="card" style="background: linear-gradient(135deg, #fdd835, #f57f17); color:#000;">
+        <h2 id="wallet-gold" style="margin:0; font-size:36px;">0</h2>
+        <small style="color:#000; font-weight:bold;">OURO</small>
+      </div>
+      <div class="card">
+        <h4>Transferência</h4>
+        <input id="transf-key" placeholder="Chave (Key) do Destinatário">
+        <input id="transf-amount" type="number" placeholder="Quantidade">
+        <button onclick="transferGold()">Enviar Ouro</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="chats" class="page">
+    <div class="header"><button class="back-btn" onclick="back('chats')">‹</button> Chats</div>
+    <div class="content">
+       <div class="card" onclick="openGlobalChat()">
+         <b>🌍 Global</b><br><small>Público para todos</small>
+       </div>
+    </div>
+  </div>
+  
+  <div id="global-chat-view" class="page">
+    <div class="header"><button class="back-btn" onclick="back('global-chat-view')">‹</button> Global</div>
+    <div class="chat-container">
+       <div id="global-log" class="chat-list"></div>
+       <div class="chat-input">
+         <input id="global-msg" placeholder="Mensagem..." onkeydown="if(event.key==='Enter') sendGlobalMsg()">
+         <button onclick="sendGlobalMsg()">➤</button>
+       </div>
+    </div>
+  </div>
+
+  <div id="notes" class="page"><div class="header"><button class="back-btn" onclick="back('notes')">‹</button> Notas</div><div class="content"><textarea id="notepad" style="flex:1; resize:none;" placeholder="Anotações salvas automaticamente..."></textarea><button onclick="saveNote()">Salvar</button></div></div>
+  <div id="feed" class="page"><div class="header"><button class="back-btn" onclick="back('feed')">‹</button> Feed</div><div class="content" id="feed-list"></div></div>
+
 </div>
 
 <script>
-/* ------------------ CONFIGURAÇÕES FIREBASE ------------------ */
+// --- CONFIG FIREBASE (Coloque suas credenciais reais aqui se necessário) ---
 const firebaseConfig = {
   apiKey: "AIzaSyBykDF5TNKQHejUJTp-ue7s5CKfpJp1HV0",
   authDomain: "mestre-471a0.firebaseapp.com",
@@ -451,685 +399,556 @@ const firebaseConfig = {
   messagingSenderId: "142996111628",
   appId: "1:142996111628:web:c3785e54588632f468c929"
 };
-
-if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-let user = null;
-let activeChat = null;
-let activeTable = null;
-let userDataCache = {};
+// --- ESTADO GLOBAL ---
+let currentUser = null;
+let userData = {};
+let currentTableId = null;
+let currentTableData = null;
+let pendingJoinId = null;
 
-/* ------------------ UTILITÁRIOS ------------------ */
-function showModal(id, show) {
-  const el = document.getElementById(id);
-  if(!el) return;
-  el.style.display = show ? 'flex' : 'none';
-}
-function modalBackgroundClick(e, id) {
-  if(e.target.id === id) showModal(id, false);
-}
-function escapeHtml(unsafe) {
-  if(typeof unsafe !== 'string') return '';
-  return unsafe.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;");
-}
-function scrollToBottom(id) {
-    setTimeout(() => {
-        const el = document.getElementById(id);
-        if(el) el.scrollTop = el.scrollHeight;
-    }, 100);
-}
-function rollDice(notation) {
-    try {
-        const parts = notation.toLowerCase().split('d');
-        if(parts.length !== 2) return null;
-        let count = parseInt(parts[0]) || 1;
-        let rest = parts[1];
-        let sides = 0;
-        let modifier = 0;
+// --- ITENS DO SISTEMA (Expandido) ---
+const SYSTEM_STORE = [
+  { cat: "Armas", items: [
+      { name: "Adaga", price: 15, desc: "Dano leve, fácil de esconder." },
+      { name: "Espada Curta", price: 30, desc: "Lâmina padrão." },
+      { name: "Espada Longa", price: 50, desc: "Exige duas mãos ou força." },
+      { name: "Arco Curto", price: 25, desc: "Alcance médio." },
+      { name: "Machado de Batalha", price: 55, desc: "Dano pesado." }
+  ]},
+  { cat: "Armaduras", items: [
+      { name: "Roupas de Viajante", price: 5, desc: "Sem proteção." },
+      { name: "Couro Batido", price: 40, desc: "Proteção leve." },
+      { name: "Cota de Malha", price: 100, desc: "Proteção média, barulhenta." },
+      { name: "Escudo de Madeira", price: 15, desc: "Bloqueio básico." }
+  ]},
+  { cat: "Consumíveis", items: [
+      { name: "Poção de Cura (P)", price: 20, desc: "Recupera 1d6 HP." },
+      { name: "Poção de Cura (M)", price: 50, desc: "Recupera 2d6+2 HP." },
+      { name: "Antídoto", price: 25, desc: "Cura venenos comuns." },
+      { name: "Ração de Viagem", price: 2, desc: "Comida para 1 dia." }
+  ]},
+  { cat: "Utilitários", items: [
+     { name: "Corda (15m)", price: 5, desc: "Essencial." },
+      { name: "Tocha", price: 1, desc: "Ilumina por 1 hora." },
+      { name: "Mochila", price: 10, desc: "Carrega itens." },
+      { name: "Kit de Primeiros Socorros", price: 25, desc: "Estabiliza aliados." }
+  ]}
+];
 
-        if(rest.includes('+')) {
-            const sp = rest.split('+');
-            sides = parseInt(sp[0]);
-            modifier = parseInt(sp[1]);
-        } else if(rest.includes('-')) {
-            const sp = rest.split('-');
-            sides = parseInt(sp[0]);
-            modifier = -parseInt(sp[1]);
-        } else {
-            sides = parseInt(rest);
-        }
-
-        if(isNaN(count) || isNaN(sides)) return null;
-        if(count > 20) count = 20; // Cap para segurança
-        
-        let total = 0;
-        let rolls = [];
-        for(let i=0; i<count; i++) {
-            const r = Math.floor(Math.random() * sides) + 1;
-            rolls.push(r);
-            total += r;
-        }
-        total += modifier;
-        return { total, rolls, modifier, sides, count };
-    } catch(e) { return null; }
-}
-
-/* ------------------ INIT & AUTH ------------------ */
+// --- INICIALIZAÇÃO ---
 function init() {
-  setInterval(()=>{
-    const d = new Date();
-    document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-  }, 1000);
-
-  auth.onAuthStateChanged(u=>{
-    user = u;
-    if(u) {
+  auth.onAuthStateChanged(u => {
+    currentUser = u;
+    if (u) {
       document.getElementById('view-login').style.display = 'none';
       document.getElementById('view-user').style.display = 'block';
-      loadUser();
+      loadUserProfile();
+      loadTables();
+      loadFeed();
+      renderSystemStore();
     } else {
       document.getElementById('view-login').style.display = 'block';
       document.getElementById('view-user').style.display = 'none';
     }
   });
-
-  loadFeed();
-  loadTables();
 }
 
-async function actionLogin(){
-  try{
-    await auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value);
-  } catch(e){ alert('Erro: ' + e.message); }
+// --- AUTH & PERFIL ---
+async function doLogin() {
+  try {
+    await auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-pass').value);
+  } catch(e) { alert("Erro: " + e.message); }
 }
-
-async function actionRegister(){
-  try{
-    await auth.createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value);
-    const uid = auth.currentUser.uid;
-    const defaultName = "User_" + uid.substring(0,4);
-    db.ref('users/'+uid).set({
-      name: defaultName,
-      key: defaultName.toUpperCase(),
-      color: '#ffffff',
-      bio: 'Novo aventureiro.',
-      wallet: {ouro:100, prata:0},
-      char: {name:'Desconhecido', inv:'', str:10, dex:10, con:10, int:10}
-    });
-  } catch(e){ alert('Erro: ' + e.message); }
-}
-function actionLogout(){ auth.signOut(); }
-
-/* ------------------ PERFIL ------------------ */
-function loadUser(){
-  if(!user) return;
-  db.ref('users/'+user.uid).on('value', s=>{
-    const d = s.val() || {};
-    userDataCache = d; // Cache local para comandos
-    const uName = d.name || 'Sem Nome';
-
-    document.getElementById('u-name').innerText = uName;
-    document.getElementById('u-name').style.color = d.color || 'var(--primary)';
-    document.getElementById('u-bio').innerText = d.bio || '';
-    if(d.img) {
-      document.getElementById('u-pic').src = d.img;
-      document.getElementById('u-pic').style.display = 'block';
-    }
-
-    // Edit fields
-    document.getElementById('u-name-edit').value = uName;
-    document.getElementById('u-key-edit').value = d.key || '';
-    document.getElementById('u-color-edit').value = d.color || '#ffffff';
-    document.getElementById('u-img-edit').value = d.img || '';
-    document.getElementById('u-bio-edit').value = d.bio || '';
-    document.getElementById('note-pad').value = d.note || '';
-
-    // Wallet
-    if(d.wallet) {
-      document.getElementById('gold-val').innerText = d.wallet.ouro || 0;
-      let h = '';
-      for(let k in d.wallet) h += `<div class="stat-row"><span>${k.charAt(0).toUpperCase()+k.slice(1)}</span><span>${d.wallet[k]}</span></div>`;
-      document.getElementById('wallet-div').innerHTML = h;
-    }
-
-    // Char
-    if(d.char) {
-      document.getElementById('sheet-name-display').innerText = d.char.name || 'Sem Nome';
-      document.getElementById('sheet-bio-display').innerText = d.char.bio || '';
-      document.getElementById('sheet-attr-display').innerHTML = `
-        <div class="stat-row"><span>FOR</span><span>${d.char.str||0}</span></div>
-        <div class="stat-row"><span>DES</span><span>${d.char.dex||0}</span></div>
-        <div class="stat-row"><span>CON</span><span>${d.char.con||0}</span></div>
-        <div class="stat-row"><span>INT</span><span>${d.char.int||0}</span></div>
-      `;
-      document.getElementById('sheet-inv-display').innerText = d.char.inv || 'Vazio';
-
-      // Edit fields char
-      document.getElementById('c-name').value = d.char.name || '';
-      document.getElementById('c-img').value = d.char.img || '';
-      document.getElementById('c-bio').value = d.char.bio || '';
-      document.getElementById('c-inv').value = d.char.inv || '';
-      document.getElementById('c-str').value = d.char.str || 0;
-      document.getElementById('c-dex').value = d.char.dex || 0;
-      document.getElementById('c-con').value = d.char.con || 0;
-      document.getElementById('c-int').value = d.char.int || 0;
-
-      if(d.char.img) {
-        document.getElementById('char-pic').src = d.char.img;
-        document.getElementById('char-pic').style.display = 'block';
+async function doRegister() {
+  try {
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-pass').value;
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    
+    // Schema Inicial do Usuário
+    const uid = cred.user.uid;
+    const key = uid.substring(0, 6).toUpperCase();
+    await db.ref('users/' + uid).set({
+      name: "Aventureiro " + key,
+      key: key,
+      email: email,
+      bio: "Novo no sistema.",
+      wallet: { gold: 100 },
+      char: {
+        name: "Sem Nome",
+        hp: 20, maxHp: 20, xp: 0,
+        str: 10, dex: 10, con: 10, int: 10,
+        inv: "Roupas Simples\nAdaga Enferrujada",
+        img: ""
       }
+    });
+  } catch(e) { alert("Erro ao criar: " + e.message); }
+}
 
-      // Populate sell select
-      const invItems = (d.char.inv || '').split('\n').filter(i => i.trim() !== '');
-      const sel = document.getElementById('sell-item-select');
-      sel.innerHTML = invItems.length ? invItems.map(i => `<option value="${i}">${i}</option>`).join('') : '<option value="">Vazio</option>';
-    }
+function loadUserProfile() {
+  db.ref('users/' + currentUser.uid).on('value', s => {
+    userData = s.val() || {};
+    // Header UI
+    document.getElementById('u-name').innerText = userData.name;
+    document.getElementById('u-key').innerText = userData.key;
+    if(userData.img) document.getElementById('u-img').src = userData.img;
+    
+    // Wallet
+    const gold = userData.wallet ? userData.wallet.gold : 0;
+    document.getElementById('wallet-gold').innerText = gold;
+
+    // Sheet UI
+    const char = userData.char || {};
+    document.getElementById('char-name-display').innerText = char.name;
+    document.getElementById('char-img-display').src = char.img || "";
+    document.getElementById('hp-text').innerText = `${char.hp}/${char.maxHp}`;
+    const hpPct = Math.min(100, Math.max(0, (char.hp / char.maxHp) * 100));
+    document.getElementById('hp-bar').style.width = hpPct + "%";
+    document.getElementById('xp-text').innerText = char.xp;
+    document.getElementById('inv-display').innerText = char.inv || "";
+    
+    document.getElementById('attrs-list').innerHTML = `
+      <div class="stat-row"><span>FOR</span><b>${char.str}</b></div>
+      <div class="stat-row"><span>DES</span><b>${char.dex}</b></div>
+      <div class="stat-row"><span>CON</span><b>${char.con}</b></div>
+      <div class="stat-row"><span>INT</span><b>${char.int}</b></div>
+    `;
+
+    // Populate Sell Select
+    const invList = (char.inv || "").split('\n').filter(i => i.trim().length > 0);
+    const sel = document.getElementById('sell-select');
+    sel.innerHTML = invList.length ? invList.map(i => `<option>${i}</option>`).join('') : '<option>Vazio</option>';
+
+    // Edit Modal Prefill
+    document.getElementById('p-char-name').value = char.name;
+    document.getElementById('p-char-img').value = char.img || "";
+    document.getElementById('p-attr-str').value = char.str;
+    document.getElementById('p-attr-dex').value = char.dex;
+    document.getElementById('p-attr-con').value = char.con;
+    document.getElementById('p-attr-int').value = char.int;
   });
 }
 
-function saveProfile(){
-  if(!user) return;
-  db.ref('users/'+user.uid).update({
-    name: document.getElementById('u-name-edit').value,
-    color: document.getElementById('u-color-edit').value,
-    img: document.getElementById('u-img-edit').value,
-    bio: document.getElementById('u-bio-edit').value
+// --- FUNÇÕES DE MESA ---
+function createTable() {
+  const name = document.getElementById('new-table-name').value;
+  const pass = document.getElementById('new-table-pass').value;
+  if (!name) return alert("Nome obrigatório");
+  
+  const newRef = db.ref('tables').push();
+  newRef.set({
+    name: name,
+    master: currentUser.uid,
+    password: pass, // Simples, em app real usaria hash
+    members: { [currentUser.uid]: { name: userData.name, role: 'GM' } },
+    created: firebase.database.ServerValue.TIMESTAMP
   });
-  showModal('profile-edit-modal', false);
+  document.getElementById('new-table-name').value = "";
+  document.getElementById('new-table-pass').value = "";
 }
 
-function saveSheet(){
-  if(!user) return;
-  db.ref('users/'+user.uid+'/char').update({
-    name: document.getElementById('c-name').value,
-    img: document.getElementById('c-img').value,
-    bio: document.getElementById('c-bio').value,
-    inv: document.getElementById('c-inv').value,
-    str: Number(document.getElementById('c-str').value),
-    dex: Number(document.getElementById('c-dex').value),
-    con: Number(document.getElementById('c-con').value),
-    int: Number(document.getElementById('c-int').value)
-  });
-  showModal('sheet-edit-modal', false);
-}
-
-function saveNote(){
-  if(user) db.ref('users/'+user.uid+'/note').set(document.getElementById('note-pad').value);
-  alert('Notas salvas!');
-}
-
-/* ------------------ FEED ------------------ */
-function addPost(){
-  const t = document.getElementById('post-txt').value;
-  const i = document.getElementById('post-img').value;
-  if(!t) return;
-  db.ref('feed').push({
-    u: userDataCache.name || 'User',
-    uid: user.uid,
-    color: userDataCache.color || '#fff',
-    txt: t, img: i,
-    ts: firebase.database.ServerValue.TIMESTAMP
-  });
-  document.getElementById('post-txt').value = '';
-  document.getElementById('post-img').value = '';
-  showModal('post-modal', false);
-}
-
-function loadFeed(){
-  db.ref('feed').limitToLast(50).on('value', s=>{
-    const el = document.getElementById('feed-list');
-    el.innerHTML = '';
-    const arr = [];
-    s.forEach(c=>arr.push(c.val()));
-    arr.reverse().forEach(p=>{
-        const time = p.ts ? new Date(p.ts).toLocaleString() : '';
-        el.innerHTML += `
-        <div class="card" style="border-left:4px solid ${p.color}">
-          <div style="display:flex; justify-content:space-between;">
-             <b style="color:${p.color}">${escapeHtml(p.u)}</b>
-             <small>${time}</small>
-          </div>
-          <p style="margin:5px 0;">${escapeHtml(p.txt)}</p>
-          ${p.img ? `<img src="${escapeHtml(p.img)}" style="width:100%; border-radius:8px; margin-top:5px; max-height:200px; object-fit:cover;">` : ''}
+function loadTables() {
+  db.ref('tables').limitToLast(20).on('value', s => {
+    const div = document.getElementById('tables-list');
+    div.innerHTML = "";
+    s.forEach(child => {
+      const t = child.val();
+      const id = child.key;
+      const locked = t.password ? "🔒 " : "";
+      div.innerHTML += `
+        <div class="card" style="cursor:pointer; border-left:4px solid #ab47bc" onclick="tryJoinTable('${id}', '${t.password || ''}')">
+          <b>${locked}${t.name}</b><br>
+          <small>Mestre: ${t.members[t.master]?.name || 'Desconhecido'}</small>
         </div>`;
     });
-    if(!arr.length) el.innerHTML = '<p style="text-align:center; color:#666">Sem postagens.</p>';
   });
 }
 
-/* ------------------ CHAT & COMANDOS ------------------ */
-
-// --- LISTA DE COMANDOS GLOBAIS (10) ---
-function handleGlobalCommand(msg, pushFunction) {
-    const parts = msg.split(' ');
-    const cmd = parts[0].toLowerCase();
-    const args = parts.slice(1).join(' ');
-
-    switch(cmd) {
-        case '/ajuda':
-            alert("COMANDOS GLOBAIS:\n/d [x] - Rolar dado\n/eu [ação] - Emote\n/moeda - Cara ou Coroa\n/gritar [msg] - Texto destaque\n/sussurro [msg] - Texto discreto\n/mat [conta] - Calculadora\n/data - Hora atual\n/limpar - Limpa tela local\n/status [txt] - Define status\n/r - Atalho para dado");
-            return true;
-        case '/d':
-        case '/r':
-            const roll = rollDice(args || '1d20');
-            if(roll) {
-                pushFunction(`🎲 Rolou ${args||'1d20'}: [${roll.rolls.join('+')}]${roll.modifier? (roll.modifier>0?'+'+roll.modifier:roll.modifier) : ''} = **${roll.total}**`, 'roll');
-            } else {
-                alert('Use formato: /d 1d20+5');
-            }
-            return true;
-        case '/eu':
-            pushFunction(`* ${userDataCache.name} ${args} *`, 'action');
-            return true;
-        case '/moeda':
-            const res = Math.random() > 0.5 ? '👑 Cara' : '🪙 Coroa';
-            pushFunction(`jogou uma moeda e deu: **${res}**`, 'action');
-            return true;
-        case '/gritar':
-            pushFunction(args.toUpperCase(), 'system'); // Reusing system style for boldness logic could be better, but simple push
-            return true;
-        case '/sussurro':
-             pushFunction(`(Sussurro) ${args}`, 'action');
-             return true;
-        case '/mat':
-            try { pushFunction(`🧮 ${args} = ${eval(args.replace(/[^-()\d/*+.]/g, ''))}`, 'system'); } 
-            catch { alert('Cálculo inválido'); }
-            return true;
-        case '/data':
-            pushFunction(`🕒 ${new Date().toLocaleString()}`, 'system');
-            return true;
-        case '/limpar':
-            document.getElementById('chat-msgs').innerHTML = '';
-            return true;
-        case '/status':
-             pushFunction(`está se sentindo: ${args}`, 'action');
-             return true;
-        default:
-            return false;
-    }
-}
-
-// --- LISTA DE COMANDOS DE MESA (10) ---
-function handleTableCommand(msg, pushFunction) {
-    const parts = msg.split(' ');
-    const cmd = parts[0].toLowerCase();
-    const args = parts.slice(1).join(' ');
-
-    switch(cmd) {
-        case '/ajuda':
-            alert("COMANDOS DE MESA:\n/r [x] - Rolar dado\n/atacar [alvo] - Ação de ataque\n/fuga - Tentar fugir\n/inv - Mostrar inventário\n/ouro - Mostrar ouro\n/vida [valor] - Anunciar HP\n/off [txt] - Falar fora do personagem\n/sacar [item] - Empunhar item\n/narrar [txt] - (Destaque)\n/gm [txt] - Falar como Mestre");
-            return true;
-        case '/r':
-            const roll = rollDice(args || '1d20');
-            if(roll) {
-                pushFunction(`🎲 Rolou ${args||'1d20'}: **${roll.total}**`, 'roll');
-            }
-            return true;
-        case '/atacar':
-            pushFunction(`⚔️ ataca ${args || 'o ar'} com ferocidade!`, 'action');
-            return true;
-        case '/fuga':
-            pushFunction(`🏃 tenta fugir da batalha!`, 'action');
-            return true;
-        case '/inv':
-            pushFunction(`🎒 Inventário: ${userDataCache.char ? userDataCache.char.inv.replace(/\n/g, ', ') : 'Vazio'}`, 'system');
-            return true;
-        case '/ouro':
-            pushFunction(`💰 Possui ${userDataCache.wallet ? userDataCache.wallet.ouro : 0} peças de ouro.`, 'system');
-            return true;
-        case '/vida':
-            pushFunction(`❤️ anuncia que seu HP está em: ${args}`, 'action');
-            return true;
-        case '/off':
-            pushFunction(`(( ${args} ))`, 'system');
-            return true;
-        case '/sacar':
-            pushFunction(`🗡️ saca ${args}!`, 'action');
-            return true;
-        case '/narrar':
-            pushFunction(args, 'narrate');
-            return true;
-        case '/gm': // Alias visual
-             pushFunction(`👑 GM: ${args}`, 'narrate');
-             return true;
-        default:
-            return false;
-    }
-}
-
-function openChat(id, key = null){
-  activeChat = id;
-  let path = 'chats/'+id;
-  let title = 'Chat Global';
-  
-  if(id === 'private' && key) {
-      const myKey = userDataCache.key;
-      const sorted = [myKey, key].sort().join('_');
-      path = 'dms/'+sorted;
-      title = 'DM: ' + key;
+function tryJoinTable(id, pass) {
+  pendingJoinId = id;
+  if (pass) {
+    document.getElementById('modal-table-pass').style.display = 'flex';
+  } else {
+    joinTable(id);
   }
+}
+
+function confirmJoinTable() {
+  const input = document.getElementById('join-pass').value;
+  db.ref('tables/' + pendingJoinId + '/password').once('value', s => {
+    if (s.val() == input) {
+      document.getElementById('join-pass').value = "";
+      closeModal(null, 'modal-table-pass');
+      joinTable(pendingJoinId);
+    } else {
+      alert("Senha incorreta!");
+    }
+  });
+}
+
+async function joinTable(id) {
+  currentTableId = id;
+  // Add user to members if not exists
+  await db.ref(`tables/${id}/members/${currentUser.uid}`).update({
+    name: userData.name,
+    role: 'PLAYER' // Default, master overwrites later if needed
+  });
   
-  document.getElementById('chat-title').innerText = title;
-  go('chat-view');
-  
-  const ref = db.ref(path).limitToLast(100);
-  document.getElementById('chat-msgs').innerHTML = '';
-  ref.off();
-  ref.on('child_added', s=>{
+  // Set Master Role correctly
+  db.ref(`tables/${id}/master`).once('value', s => {
+    const masterId = s.val();
+    if (masterId === currentUser.uid) {
+      db.ref(`tables/${id}/members/${currentUser.uid}/role`).set('GM');
+      document.getElementById('gm-tools-btn').style.display = 'block';
+      loadGmControls();
+    } else {
+      document.getElementById('gm-tools-btn').style.display = 'none';
+      document.getElementById('gm-panel').style.display = 'none';
+    }
+  });
+
+  // Listener for Table Data
+  db.ref(`tables/${id}`).on('value', s => {
+    currentTableData = s.val();
+    document.getElementById('session-title').innerText = currentTableData.name;
+  });
+
+  // Listener for Logs
+  loadTableChat(id);
+  go('active-session');
+}
+
+function leaveTable() {
+  currentTableId = null;
+  // Detach listeners if you want optimization
+  back('active-session');
+}
+
+function loadTableChat(id) {
+  const div = document.getElementById('session-log');
+  div.innerHTML = "";
+  db.ref(`tables/${id}/log`).limitToLast(50).on('child_added', s => {
     const m = s.val();
-    const me = m.uid === user.uid;
-    const isSys = m.type === 'system' || m.type === 'narrate';
+    const isMe = m.uid === currentUser.uid;
+    let cls = isMe ? 'me' : 'other';
+    if (m.type === 'system') cls = 'system';
+    if (m.type === 'narrate') cls = 'narrate';
     
-    let cls = me ? 'me' : 'other';
-    if(m.type) cls += ' ' + m.type;
-
-    let content = escapeHtml(m.txt);
-    // Replace markdown-like bold
-    content = content.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-
     let html = `<div class="msg ${cls}">`;
-    if(!isSys) html += `<b style="font-size:10px; opacity:0.7; display:block; margin-bottom:2px;">${escapeHtml(m.u)}</b>`;
-    html += `${content}</div>`;
+    if (m.type !== 'system' && m.type !== 'narrate') html += `<b>${m.u}</b><br>`;
+    html += `${m.txt}</div>`;
     
-    const list = document.getElementById('chat-msgs');
-    list.innerHTML += html;
-    scrollToBottom('chat-msgs');
+    div.innerHTML += html;
+    div.scrollTop = div.scrollHeight;
   });
 }
 
-function openPrivateSetup(){ showModal('chat-private-setup', true); }
-function openPrivateChat(){
-    const k = document.getElementById('dm-key').value.toUpperCase();
-    if(k) openChat('private', k);
-    showModal('chat-private-setup', false);
+function sendSessionMsg() {
+  const txt = document.getElementById('session-msg').value;
+  if (!txt || !currentTableId) return;
+  
+  // Basic Commands Parser
+  if (txt.startsWith('/r ') || txt.startsWith('/d ')) {
+    handleDice(txt);
+  } else if (txt.startsWith('/narrar ') && currentTableData.master === currentUser.uid) {
+    pushLog(txt.replace('/narrar ', ''), 'narrate');
+  } else {
+    pushLog(txt);
+  }
+  document.getElementById('session-msg').value = "";
 }
 
-function sendChat(){
-  const inp = document.getElementById('chat-msg-in');
-  const txt = inp.value.trim();
-  if(!txt || !user) return;
-  
-  inp.value = '';
-  
-  // Define push logic to simplify command handler
-  const pushMsg = (text, type = null) => {
-      let path = 'chats/'+activeChat;
-      if(activeChat === 'private') {
-           const k = document.getElementById('chat-title').innerText.replace('DM: ','');
-           path = 'dms/'+[userDataCache.key, k].sort().join('_');
-      }
-      db.ref(path).push({
-          u: userDataCache.name,
-          uid: user.uid,
-          txt: text,
-          type: type,
-          ts: firebase.database.ServerValue.TIMESTAMP
-      });
-  };
+function pushLog(txt, type = null) {
+  db.ref(`tables/${currentTableId}/log`).push({
+    u: userData.name,
+    uid: currentUser.uid,
+    txt: txt,
+    type: type,
+    ts: firebase.database.ServerValue.TIMESTAMP
+  });
+}
 
-  if(!handleGlobalCommand(txt, pushMsg)) {
-      pushMsg(txt);
+function handleDice(cmd) {
+  // Simple logic: /r 1d20+5
+  const roll = Math.floor(Math.random() * 20) + 1;
+  pushLog(`🎲 Rolou dados: [${roll}]`, 'system');
+}
+
+// --- GM TOOLS REAIS ---
+function loadGmControls() {
+  // Populate Player Select
+  db.ref(`tables/${currentTableId}/members`).on('value', s => {
+    const sel = document.getElementById('gm-target-select');
+    sel.innerHTML = "";
+    s.forEach(c => {
+      if (c.key !== currentUser.uid) { // Don't target self usually
+        sel.innerHTML += `<option value="${c.key}">${c.val().name}</option>`;
+      }
+    });
+  });
+}
+
+function toggleGmPanel() {
+  const p = document.getElementById('gm-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+function gmAction(type) {
+  const targetUid = document.getElementById('gm-target-select').value;
+  if (!targetUid) return alert("Selecione um jogador");
+  
+  const targetRef = db.ref(`users/${targetUid}/char`);
+  
+  if (type === 'hp') {
+    const val = parseInt(document.getElementById('gm-val-hp').value);
+    if (isNaN(val)) return;
+    targetRef.child('hp').transaction(curr => {
+      let next = (curr || 0) + val;
+      // Need maxHp to clamp? Fetch once or accept overhead. Simple addition for now.
+      return next; 
+    });
+    pushLog(`GM alterou HP de ${targetUid.substring(0,4)} em ${val}`, 'system');
+  }
+  
+  if (type === 'xp') {
+    const val = parseInt(document.getElementById('gm-val-xp').value);
+    if (isNaN(val)) return;
+    targetRef.child('xp').transaction(curr => (curr || 0) + val);
+    pushLog(`GM deu ${val} XP para o grupo/jogador.`, 'system');
+  }
+  
+  if (type === 'item') {
+    const item = document.getElementById('gm-val-item').value;
+    if (!item) return;
+    targetRef.child('inv').transaction(curr => curr ? curr + "\n" + item : item);
+    pushLog(`GM entregou [${item}]`, 'system');
   }
 }
 
-/* ------------------ SESSÃO DE RPG ------------------ */
-function createTable(){
-    const n = document.getElementById('table-name').value;
-    if(!n) return;
-    const k = db.ref('tables').push().key;
-    db.ref('tables/'+k).set({
-        name: n,
-        master: user.uid,
-        users: { [user.uid]: userDataCache.name },
-        created: firebase.database.ServerValue.TIMESTAMP
-    });
-    document.getElementById('table-name').value = '';
-    joinTable(k);
-}
-
-function loadTables(){
-    db.ref('tables').limitToLast(20).on('value', s=>{
-        const el = document.getElementById('table-list');
-        el.innerHTML = '';
-        s.forEach(c=>{
-            const t = c.val();
-            el.innerHTML += `<div class="card" onclick="joinTable('${c.key}')" style="cursor:pointer; border-left:4px solid orange"><b>${escapeHtml(t.name)}</b><br><small>Mestre: Humano</small></div>`;
-        });
-        if(!el.innerHTML) el.innerHTML = '<p>Nenhuma mesa ativa.</p>';
-    });
-}
-
-function joinTable(k){
-    activeTable = k;
-    db.ref('tables/'+k).once('value', s=>{
-       const t = s.val();
-       document.getElementById('session-name').innerText = t.name;
-       const isGm = t.master === user.uid;
-       document.getElementById('gm-btn').style.display = isGm ? 'block' : 'none';
-       if(isGm) loadGmTargets(k);
-       go('active-session');
-       loadSessionLog(k);
-    });
-}
-
-function exitTable(){
-    activeTable = null;
-    back('active-session');
-}
-
-function loadGmTargets(k){
-    db.ref('tables/'+k+'/users').on('value', s=>{
-        const sel = document.getElementById('gm-target');
-        sel.innerHTML = '';
-        s.forEach(u=> sel.innerHTML += `<option value="${escapeHtml(u.val())}">${escapeHtml(u.val())}</option>`);
-    });
-}
-
-function toggleGmTools(){
-    const p = document.getElementById('gm-panel');
-    p.style.display = p.style.display === 'none' ? 'block' : 'none';
-}
-
-function gmCmd(type){
-    if(!activeTable) return;
-    const target = document.getElementById('gm-target').value;
-    const val = document.getElementById('gm-val').value;
-    let txt = '';
-    
-    if(type==='hp') txt = `❤️ alterou HP de ${target} em ${val}`;
-    if(type==='xp') txt = `✨ concedeu ${val} XP para ${target}`;
-    if(type==='item') txt = `🎁 entregou [${val}] para ${target}`;
-
-    db.ref('tables/'+activeTable+'/log').push({
-        u: 'Mestre',
-        uid: user.uid,
-        txt: txt,
-        type: 'narrate',
-        ts: firebase.database.ServerValue.TIMESTAMP
-    });
-}
-
-function loadSessionLog(k){
-    const list = document.getElementById('session-log');
-    list.innerHTML = '';
-    db.ref('tables/'+k+'/log').limitToLast(100).on('child_added', s=>{
-        const m = s.val();
-        const me = m.uid === user.uid;
-        let content = escapeHtml(m.txt);
-        // Markdown bold
-        content = content.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-
-        let cls = me ? 'me' : 'other';
-        if(m.type) cls += ' ' + m.type;
-
-        let html = `<div class="msg ${cls}">`;
-        if(m.type !== 'narrate' && m.type !== 'system') html += `<b style="font-size:10px; opacity:0.7; display:block;">${escapeHtml(m.u)}</b>`;
-        html += `${content}</div>`;
-        
-        list.innerHTML += html;
-        scrollToBottom('session-log');
-    });
-}
-
-function sendSession(){
-    const inp = document.getElementById('session-in');
-    const txt = inp.value.trim();
-    if(!txt || !activeTable) return;
-    
-    inp.value = '';
-
-    const pushMsg = (text, type=null) => {
-        db.ref('tables/'+activeTable+'/log').push({
-            u: userDataCache.name,
-            uid: user.uid,
-            txt: text,
-            type: type,
-            ts: firebase.database.ServerValue.TIMESTAMP
-        });
-    };
-
-    if(!handleTableCommand(txt, pushMsg)) {
-        pushMsg(txt);
-    }
-}
-
-/* ------------------ LOJA & BANCO ------------------ */
-function transfer(){
-    const key = document.getElementById('pay-key').value.toUpperCase();
-    const amt = Number(document.getElementById('pay-amt').value);
-    const type = document.getElementById('pay-type').value;
-
-    if(!key || amt <= 0) return alert('Dados inválidos');
-
-    db.ref('users/'+user.uid+'/wallet/'+type).once('value', s=>{
-        const curr = s.val() || 0;
-        if(curr < amt) return alert('Saldo insuficiente');
-        
-        db.ref('users').orderByChild('key').equalTo(key).once('value', r=>{
-            if(!r.exists()) return alert('Destinatário não encontrado');
-            const destId = Object.keys(r.val())[0];
-            
-            db.ref('users/'+user.uid+'/wallet/'+type).set(curr - amt);
-            db.ref('users/'+destId+'/wallet/'+type).transaction(v=>(v||0)+amt);
-            alert('Transferência realizada!');
-        });
-    });
-}
-
-function switchStore(m){
-  document.getElementById('store-sys').style.display = m==='sys'?'block':'none';
-  document.getElementById('store-usr').style.display = m==='usr'?'block':'none';
-  document.getElementById('btn-sys').style.background = m==='sys'?'var(--primary)':'var(--bg-card)';
-  document.getElementById('btn-usr').style.background = m==='usr'?'var(--primary)':'var(--bg-card)';
+// GM INSPECTOR
+let inspectingUid = null;
+function openGmInspect() {
+  inspectingUid = document.getElementById('gm-target-select').value;
+  if (!inspectingUid) return alert("Selecione um jogador");
   
-  if(m==='sys') document.getElementById('btn-usr').style.color = 'var(--text-main)';
-  if(m==='usr') document.getElementById('btn-sys').style.color = 'var(--text-main)';
+  db.ref(`users/${inspectingUid}/char`).once('value', s => {
+    const c = s.val();
+    document.getElementById('gm-edit-uid').value = inspectingUid;
+    document.getElementById('gm-edit-name').value = c.name;
+    document.getElementById('gm-edit-hp').value = c.hp;
+    document.getElementById('gm-edit-maxhp').value = c.maxHp;
+    document.getElementById('gm-edit-inv').value = c.inv;
+    
+    document.getElementById('modal-gm-inspect').style.display = 'flex';
+  });
+}
+
+function gmSavePlayer() {
+  const uid = document.getElementById('gm-edit-uid').value;
+  db.ref(`users/${uid}/char`).update({
+    name: document.getElementById('gm-edit-name').value,
+    hp: parseInt(document.getElementById('gm-edit-hp').value),
+    maxHp: parseInt(document.getElementById('gm-edit-maxhp').value),
+    inv: document.getElementById('gm-edit-inv').value
+  });
+  closeModal(null, 'modal-gm-inspect');
+  pushLog("GM atualizou a ficha de um jogador.", "system");
+}
+
+// --- LOJA DO SISTEMA & MERCADO ---
+function renderSystemStore() {
+  const container = document.getElementById('store-sys');
+  let html = "";
   
-  if(m==='usr') loadMarket();
-}
-
-function buySys(item, price){
-    db.ref('users/'+user.uid+'/wallet/ouro').once('value', s=>{
-        const gold = s.val() || 0;
-        if(gold >= price){
-            db.ref('users/'+user.uid+'/wallet/ouro').set(gold - price);
-            db.ref('users/'+user.uid+'/char/inv').transaction(i => (i ? i+'\n'+item : item));
-            alert('Comprado!');
-        } else alert('Sem ouro.');
+  SYSTEM_STORE.forEach(cat => {
+    html += `<h4 style="margin:10px 0 5px; color:var(--primary);">${cat.cat}</h4>`;
+    cat.items.forEach(item => {
+      html += `
+      <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:10px;">
+        <div>
+          <b>${item.name}</b><br>
+          <small>${item.desc}</small>
+        </div>
+        <button onclick="buySystemItem('${item.name}', ${item.price})" style="width:auto; font-size:12px;">${item.price} Ouro</button>
+      </div>`;
     });
+  });
+  container.innerHTML = html;
 }
 
-function postSell(){
-    const item = document.getElementById('sell-item-select').value;
-    const price = Number(document.getElementById('sell-price').value);
-    if(!item || price<=0) return;
+function buySystemItem(name, price) {
+  if (userData.wallet.gold < price) return alert("Sem ouro suficiente!");
+  
+  // Deduz Ouro
+  db.ref(`users/${currentUser.uid}/wallet/gold`).set(userData.wallet.gold - price);
+  // Adiciona Item
+  const newInv = userData.char.inv ? userData.char.inv + "\n" + name : name;
+  db.ref(`users/${currentUser.uid}/char/inv`).set(newInv);
+  
+  alert(`Comprou ${name}!`);
+}
 
-    db.ref('users/'+user.uid+'/char/inv').once('value', s=>{
-        let inv = (s.val()||'').split('\n');
-        const idx = inv.indexOf(item);
-        if(idx > -1){
-            inv.splice(idx,1);
-            db.ref('users/'+user.uid+'/char/inv').set(inv.join('\n'));
-            db.ref('market').push({
-                s: user.uid,
-                u: userDataCache.name,
-                i: item,
-                p: price
-            });
-            alert('Anunciado!');
-            document.getElementById('sell-item-select').value = '';
-        }
+function toggleStoreTab(tab) {
+  document.getElementById('store-sys').style.display = tab === 'sys' ? 'block' : 'none';
+  document.getElementById('store-usr').style.display = tab === 'usr' ? 'block' : 'none';
+  document.getElementById('tab-sys').style.background = tab === 'sys' ? 'var(--primary)' : 'var(--bg-card)';
+  document.getElementById('tab-usr').style.background = tab === 'usr' ? 'var(--primary)' : 'var(--bg-card)';
+  document.getElementById('tab-sys').style.color = tab === 'sys' ? '#fff' : 'var(--text-sub)';
+  document.getElementById('tab-usr').style.color = tab === 'usr' ? '#fff' : 'var(--text-sub)';
+  
+  if (tab === 'usr') loadMarket();
+}
+
+function postSellItem() {
+  const item = document.getElementById('sell-select').value;
+  const price = parseInt(document.getElementById('sell-price').value);
+  if (!item || isNaN(price) || price < 1) return alert("Item ou preço inválido");
+
+  // Remove do inventário
+  let invArr = userData.char.inv.split('\n');
+  const idx = invArr.indexOf(item);
+  if (idx > -1) {
+    invArr.splice(idx, 1);
+    db.ref(`users/${currentUser.uid}/char/inv`).set(invArr.join('\n'));
+    
+    // Adiciona ao Mercado
+    db.ref('market').push({
+      item: item,
+      price: price,
+      sellerUid: currentUser.uid,
+      sellerName: userData.name
     });
+    alert("Item anunciado!");
+    document.getElementById('sell-price').value = "";
+  }
 }
 
-function loadMarket(){
-    db.ref('market').on('value', s=>{
-        const d = document.getElementById('market-list');
-        d.innerHTML = '';
-        s.forEach(c=>{
-            const i = c.val();
-            if(i.s !== user.uid){
-                d.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><span>${escapeHtml(i.i)}</span><button onclick="buyUsr('${c.key}')" style="width:auto; margin:0; padding:5px;">${i.p} Ouro</button></div><small>Vendedor: ${escapeHtml(i.u)}</small></div>`;
-            }
-        });
-        if(!d.innerHTML) d.innerHTML = '<p>Nenhum item à venda.</p>';
+function loadMarket() {
+  db.ref('market').on('value', s => {
+    const div = document.getElementById('market-list');
+    div.innerHTML = "";
+    s.forEach(child => {
+      const sale = child.val();
+      if (sale.sellerUid !== currentUser.uid) { // Não comprar o próprio item
+        div.innerHTML += `
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div><b>${sale.item}</b><br><small>Vend: ${sale.sellerName}</small></div>
+          <button onclick="buyMarketItem('${child.key}')" style="width:auto;">${sale.price} Ouro</button>
+        </div>`;
+      }
     });
+    if (!div.innerHTML) div.innerHTML = "<small>Nenhum item à venda.</small>";
+  });
 }
 
-function buyUsr(key){
-    db.ref('market/'+key).once('value', s=>{
-        if(!s.exists()) return alert('Vendido.');
-        const i = s.val();
-        db.ref('users/'+user.uid+'/wallet/ouro').once('value', w=>{
-            const gold = w.val() || 0;
-            if(gold >= i.p){
-                db.ref('users/'+user.uid+'/wallet/ouro').set(gold - i.p);
-                db.ref('users/'+i.s+'/wallet/ouro').transaction(v=>(v||0)+i.p);
-                db.ref('market/'+key).remove();
-                db.ref('users/'+user.uid+'/char/inv').transaction(curr => (curr ? curr+'\n'+i.i : i.i));
-                alert('Item comprado!');
-            } else alert('Falta Ouro');
-        });
-    });
+function buyMarketItem(key) {
+  db.ref(`market/${key}`).once('value', s => {
+    const sale = s.val();
+    if (!sale) return alert("Item já vendido.");
+    
+    if (userData.wallet.gold < sale.price) return alert("Falta ouro.");
+    
+    // Transação
+    // 1. Tira ouro do comprador
+    db.ref(`users/${currentUser.uid}/wallet/gold`).set(userData.wallet.gold - sale.price);
+    // 2. Dá ouro ao vendedor
+    db.ref(`users/${sale.sellerUid}/wallet/gold`).transaction(v => (v||0) + sale.price);
+    // 3. Dá item ao comprador
+    db.ref(`users/${currentUser.uid}/char/inv`).transaction(curr => curr ? curr + "\n" + sale.item : sale.item);
+    // 4. Remove do mercado
+    db.ref(`market/${key}`).remove();
+    
+    alert("Compra realizada!");
+  });
 }
 
-/* ------------------ NAVEGAÇÃO ------------------ */
-function go(id){ document.getElementById(id).classList.add('active'); }
-function back(id){ document.getElementById(id).classList.remove('active'); }
-
-function setMode(m){ 
-  const r = document.documentElement.style; 
-  if(m==='light'){ 
-    r.setProperty('--bg-main','#e0e0e0'); 
-    r.setProperty('--bg-surface','#f5f5f5'); 
-    r.setProperty('--bg-card','#ffffff'); 
-    r.setProperty('--text-main','#000000'); 
-    r.setProperty('--border','#cccccc'); 
-    r.setProperty('--input-bg','#eeeeee'); 
-    r.setProperty('--text-sub','#666666');
-  } else { 
-    r.setProperty('--bg-main','#000000'); 
-    r.setProperty('--bg-surface','#121212'); 
-    r.setProperty('--bg-card','#1e1e1e'); 
-    r.setProperty('--text-main','#ffffff'); 
-    r.setProperty('--border','#333333'); 
-    r.setProperty('--input-bg','#2c2c2c'); 
-    r.setProperty('--text-sub','#b0b0b0');
-  } 
+// --- TRANSFERENCIA ---
+function transferGold() {
+  const key = document.getElementById('transf-key').value.toUpperCase();
+  const amt = parseInt(document.getElementById('transf-amount').value);
+  
+  if (userData.wallet.gold < amt) return alert("Saldo insuficiente");
+  
+  db.ref('users').orderByChild('key').equalTo(key).once('value', s => {
+    if (!s.exists()) return alert("Chave inválida");
+    const destUid = Object.keys(s.val())[0];
+    
+    db.ref(`users/${currentUser.uid}/wallet/gold`).set(userData.wallet.gold - amt);
+    db.ref(`users/${destUid}/wallet/gold`).transaction(v => (v||0) + amt);
+    alert("Enviado!");
+  });
 }
 
-function setAccent(c){
-  document.documentElement.style.setProperty('--primary', c);
-  // Calcula contraste simples
-  const hex = c.replace('#','');
-  const r = parseInt(hex.substr(0,2),16);
-  const g = parseInt(hex.substr(2,2),16);
-  const b = parseInt(hex.substr(4,2),16);
-  const yiq = ((r*299)+(g*587)+(b*114))/1000;
-  document.documentElement.style.setProperty('--primary-contrast', (yiq >= 128) ? 'black' : 'white');
+// --- CHAT GLOBAL ---
+function openGlobalChat() {
+  go('global-chat-view');
+  const div = document.getElementById('global-log');
+  div.innerHTML = "";
+  db.ref('chat_global').limitToLast(50).on('child_added', s => {
+    const m = s.val();
+    const isMe = m.uid === currentUser.uid;
+    div.innerHTML += `<div class="msg ${isMe ? 'me' : 'other'}"><b>${m.u}</b><br>${m.txt}</div>`;
+    div.scrollTop = div.scrollHeight;
+  });
 }
+
+function sendGlobalMsg() {
+  const txt = document.getElementById('global-msg').value;
+  if (!txt) return;
+  db.ref('chat_global').push({
+    u: userData.name, uid: currentUser.uid, txt: txt, ts: firebase.database.ServerValue.TIMESTAMP
+  });
+  document.getElementById('global-msg').value = "";
+}
+
+// --- UTILITÁRIOS GERAIS ---
+function openEditSheet() { 
+  // Carrega modal normal, mas bloqueia edição de HP/XP se quiser, aqui deixei atributos livres
+  document.getElementById('modal-sheet-edit').style.display = 'flex'; 
+}
+function saveSheetPlayer() {
+  db.ref(`users/${currentUser.uid}/char`).update({
+    name: document.getElementById('p-char-name').value,
+    img: document.getElementById('p-char-img').value,
+    str: Number(document.getElementById('p-attr-str').value),
+    dex: Number(document.getElementById('p-attr-dex').value),
+    con: Number(document.getElementById('p-attr-con').value),
+    int: Number(document.getElementById('p-attr-int').value)
+  });
+  closeModal(null, 'modal-sheet-edit');
+}
+
+function openEditProfile() { document.getElementById('modal-profile').style.display = 'flex'; }
+function saveProfile() {
+  db.ref(`users/${currentUser.uid}`).update({
+    name: document.getElementById('edit-name').value,
+    img: document.getElementById('edit-img').value,
+    bio: document.getElementById('edit-bio').value
+  });
+  closeModal(null, 'modal-profile');
+}
+
+function saveNote() {
+  db.ref(`users/${currentUser.uid}/notes`).set(document.getElementById('notepad').value);
+  alert("Salvo!");
+}
+
+function closeModal(e, id) {
+  if (e && e.target.id !== id) return;
+  document.getElementById(id).style.display = 'none';
+}
+function go(id) { 
+  document.getElementById(id).classList.add('active'); 
+  if(id === 'notes') {
+     db.ref(`users/${currentUser.uid}/notes`).once('value', s => document.getElementById('notepad').value = s.val() || "");
+  }
+}
+function back(id) { document.getElementById(id).classList.remove('active'); }
+
 </script>
 </body>
 </html>
