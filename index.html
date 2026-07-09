@@ -106,7 +106,7 @@
             animation: slideDownAlert 4.5s ease-in-out forwards;
             min-width: 300px;
             max-width: 90vw;
-            display: none; /* Escondido por padrão, controlado via JS */
+            display: none;
         }
 
         .alerta-mistico.sucesso { display: block; border-color: var(--success-color); box-shadow: 0 10px 30px rgba(0, 255, 102, 0.15); }
@@ -124,7 +124,7 @@
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 440px;
+            max-width: 480px; /* Leve aumento para acomodar melhor os campos lado a lado */
             padding: 20px;
         }
 
@@ -204,6 +204,18 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
+        }
+
+        /* Container para colocar campos lado a lado */
+        .linha-dupla {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .linha-dupla .campo-grupo {
+            flex: 1;
+            min-width: 0; /* Evita quebra de layout em selects */
         }
 
         .campo-grupo label {
@@ -355,21 +367,18 @@
                         <input type="text" id="cadastro-nome" placeholder="Ex: Ladybug, Chat Noir..." required>
                     </div>
 
-                    <div class="campo-grupo">
-                        <label>E-mail de Contato</label>
-                        <input type="email" id="cadastro-email" placeholder="seuemail@caixa.com" required>
-                    </div>
-
-                    <div class="campo-grupo">
-                        <label>Escolha seu Kwami</label>
-                        <select id="cadastro-kwami" required>
-                            <option value="" disabled selected>Selecione um aliado místico (1 de 19)</option>
+                    <div class="linha-dupla">
+                        <div class="campo-grupo">
+                            <label>Seu Aliado (Kwami)</label>
+                            <select id="cadastro-kwami" required>
+                                <option value="" disabled selected>Selecione</option>
                             </select>
-                    </div>
+                        </div>
 
-                    <div class="campo-grupo">
-                        <label>Frase de Ativação (Sua Senha)</label>
-                        <input type="text" id="cadastro-frase" placeholder="Ex: Sass, soltar escamas! / Em palavras" required>
+                        <div class="campo-grupo">
+                            <label>Frase de Ativação (Senha)</label>
+                            <input type="text" id="cadastro-frase" placeholder="Ex: transformar!" required>
+                        </div>
                     </div>
                     
                     <button type="submit" class="btn-principal">Reivindicar Miraculous</button>
@@ -392,7 +401,6 @@
     </div>
 
     <script>
-        // Objeto Kwamis que estava no array PHP
         const kwamis = {
             'tikki': 'Tikki (Joaninha)',
             'plagg': 'Plagg (Gato Preto)',
@@ -416,7 +424,6 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Popular o Select de Kwamis dinamicamente
             const selectKwami = document.getElementById('cadastro-kwami');
             for (const [chave, valor] of Object.entries(kwamis)) {
                 const option = document.createElement('option');
@@ -425,7 +432,6 @@
                 selectKwami.appendChild(option);
             }
 
-            // 2. Gerador de Partículas Mágicas
             const fundo = document.getElementById('fundoParticulas');
             const quantidadeParticulas = 35;
 
@@ -447,7 +453,6 @@
                 fundo.appendChild(particula);
             }
 
-            // 3. Alternância Dinâmica das Abas
             const botoes = document.querySelectorAll('.aba-btn');
             const card = document.getElementById('portalCard');
             const sessaoLogin = document.getElementById('sessao-login');
@@ -472,26 +477,21 @@
                 });
             });
 
-            // 4. Função para Exibir Alertas Místicos (Snackbar)
             const alertaMistico = document.getElementById('alertaMistico');
             
             function exibirAlerta(mensagem, tipo) {
-                // Reseta animação tirando e recolocando a classe
                 alertaMistico.className = 'alerta-mistico';
-                alertaMistico.textContent = mensagem;
+                alertaMistico.textContent = message = mensagem;
                 
-                // Força reflow para reiniciar animação CSS do zero
                 void alertaMistico.offsetWidth; 
                 
                 alertaMistico.classList.add(tipo);
                 
-                // Oculta o elemento após o término da animação do CSS (4.5s)
                 setTimeout(() => {
                     alertaMistico.className = 'alerta-mistico';
                 }, 4500);
             }
 
-            // 5. Interceptação da Lógica de Login (Equivalente ao PHP)
             document.getElementById('form-login').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const usuario = document.getElementById('login-usuario').value;
@@ -504,15 +504,14 @@
                 }
             });
 
-            // 6. Interceptação da Lógica de Cadastro (Equivalente ao PHP)
             document.getElementById('form-cadastro').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const nome = document.getElementById('cadastro-nome').value;
-                const email = document.getElementById('cadastro-email').value;
                 const kwamiEscolhido = document.getElementById('cadastro-kwami').value;
                 const frase = document.getElementById('cadastro-frase').value;
 
-                if (nome && email && kwamiEscolhido && frase) {
+                // Validação simplificada sem o campo e-mail
+                if (nome && kwamiEscolhido && frase) {
                     const nomeKwami = kwamis[kwamiEscolhido] || 'Kwami';
                     exibirAlerta(`Miraculous ativado! Sua jornada com o ${nomeKwami} começou, portador ${nome}.`, "sucesso");
                 } else {
