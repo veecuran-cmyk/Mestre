@@ -1,78 +1,3 @@
-<?php
-session_start();
-
-$mensagem = '';
-$tipo_mensagem = '';
-$aba_ativa = 'login'; // Padrão
-
-// A lista completa com todos os 19 Kwamis da Caixa dos Miraculous principal
-$kwamis = [
-    // Os 7 principais (Camada Superior e Central)
-    'tikki' => 'Tikki (Joaninha)',
-    'plagg' => 'Plagg (Gato Preto)',
-    'trixx' => 'Trixx (Raposa)',
-    'wayzz' => 'Wayzz (Tartaruga)',
-    'pollen' => 'Pollen (Abelha)',
-    'nooroo' => 'Nooroo (Borboleta)',
-    'duusu' => 'Duusu (Pavão)',
-    
-    // Os 12 do Zodíaco (Compartimentos Ciclicos)
-    'mullo' => 'Mullo (Rato)',
-    'stompp' => 'Stompp (Boi)',
-    'roaar' => 'Roaar (Tigre)',
-    'fluff' => 'Fluff (Coelho)',
-    'longg' => 'Longg (Dragão)',
-    'sass' => 'Sass (Cobra)',
-    'kaalki' => 'Kaalki (Cavalo)',
-    'ziggy' => 'Ziggy (Bode)',
-    'xuppu' => 'Xuppu (Macaco)',
-    'orikko' => 'Orikko (Galo)',
-    'barkk' => 'Barkk (Cão)',
-    'daizzi' => 'Daizzi (Porco)'
-];
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['acao'])) {
-        // ================= LOGICA DE LOGIN =================
-        if ($_POST['acao'] == 'login') {
-            $aba_ativa = 'login';
-            $usuario = $_POST['usuario'] ?? '';
-            $frase_ativacao = $_POST['frase_ativacao'] ?? '';
-            
-            // Exemplo de validação simulada com algumas Frases de Ativação clássicas
-            if ($usuario === 'mago' && ($frase_ativacao === 'Plagg, mostrar as garras' || $frase_ativacao === 'Tikki, transformar')) {
-                $mensagem = "Transformação completa! Bem-vindo ao covil dos heróis.";
-                $tipo_mensagem = "sucesso";
-            } else {
-                $mensagem = "Akuma detectado! Frase de ativação ou usuário incorretos.";
-                $tipo_mensagem = "erro";
-            }
-        } 
-        // ================= LOGICA DE CADASTRO =================
-        elseif ($_POST['acao'] == 'cadastro') {
-            $aba_ativa = 'cadastro';
-            $nome = $_POST['nome'] ?? '';
-            $email = $_POST['email'] ?? '';
-            $kwami_escolhido = $_POST['kwami'] ?? '';
-            $frase_ativacao = $_POST['frase_ativacao'] ?? '';
-            
-            if (!empty($nome) && !empty($email) && !empty($kwami_escolhido) && !empty($frase_ativacao)) {
-                $nome_kwami = $kwamis[$kwami_escolhido] ?? 'Kwami';
-                $mensagem = "Miraculous ativado! Sua jornada com o $nome_kwami começou, portador $nome.";
-                $tipo_mensagem = "sucesso";
-            } else {
-                $mensagem = "O Mestre Fu exige que todos os campos sejam preenchidos.";
-                $tipo_mensagem = "erro";
-            }
-        }
-    }
-}
-?>
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -181,10 +106,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             animation: slideDownAlert 4.5s ease-in-out forwards;
             min-width: 300px;
             max-width: 90vw;
+            display: none; /* Escondido por padrão, controlado via JS */
         }
 
-        .alerta-mistico.sucesso { border-color: var(--success-color); box-shadow: 0 10px 30px rgba(0, 255, 102, 0.15); }
-        .alerta-mistico.erro { border-color: var(--error-color); box-shadow: 0 10px 30px rgba(255, 51, 51, 0.15); }
+        .alerta-mistico.sucesso { display: block; border-color: var(--success-color); box-shadow: 0 10px 30px rgba(0, 255, 102, 0.15); }
+        .alerta-mistico.erro { display: block; border-color: var(--error-color); box-shadow: 0 10px 30px rgba(255, 51, 51, 0.15); }
 
         @keyframes slideDownAlert {
             0% { transform: translate(-50%, -120px); opacity: 0; }
@@ -381,35 +307,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class="fundo-mistico" id="fundoParticulas"></div>
 
-    <?php if(!empty($mensagem)): ?>
-        <div class="alerta-mistico <?php echo $tipo_mensagem; ?>">
-            <?php echo $mensagem; ?>
-        </div>
-    <?php endif; ?>
+    <div class="alerta-mistico" id="alertaMistico"></div>
 
     <div class="container-portal">
         
         <div class="abas-controle">
-            <button class="aba-btn <?php echo $aba_ativa === 'login' ? 'ativo' : ''; ?>" data-alvo="login">Entrar</button>
-            <button class="aba-btn <?php echo $aba_ativa === 'cadastro' ? 'ativo' : ''; ?>" data-alvo="cadastro">Cadastrar-se</button>
+            <button class="aba-btn ativo" data-alvo="login" id="btn-aba-login">Entrar</button>
+            <button class="aba-btn" data-alvo="cadastro" id="btn-aba-cadastro">Cadastrar-se</button>
         </div>
 
-        <div class="portal-card estado-<?php echo $aba_ativa; ?>" id="portalCard">
+        <div class="portal-card estado-login" id="portalCard">
             
-            <!-- FORMULÁRIO DE LOGIN -->
-            <div class="sessao-formulario <?php echo $aba_ativa === 'login' ? 'ativo' : ''; ?>" id="sessao-login">
+            <div class="sessao-formulario ativo" id="sessao-login">
                 <h1>Login</h1>
-                <form method="POST" action="">
-                    <input type="hidden" name="acao" value="login">
-                    
+                <form id="form-login">
                     <div class="campo-grupo">
                         <label>Herói</label>
-                        <input type="text" name="usuario" placeholder="Seu codinome heroico" required>
+                        <input type="text" id="login-usuario" placeholder="Seu codinome heroico" required>
                     </div>
                     
                     <div class="campo-grupo">
                         <label>Frase de Ativação</label>
-                        <input type="text" name="frase_ativacao" placeholder="Ex: Plagg, mostrar as garras" required>
+                        <input type="text" id="login-frase" placeholder="Ex: Plagg, mostrar as garras" required>
                     </div>
                     
                     <button type="submit" class="btn-principal">Transformar</button>
@@ -428,35 +347,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </form>
             </div>
 
-            <!-- FORMULÁRIO DE CADASTRO -->
-            <div class="sessao-formulario <?php echo $aba_ativa === 'cadastro' ? 'ativo' : ''; ?>" id="sessao-cadastro">
+            <div class="sessao-formulario" id="sessao-cadastro">
                 <h1>Cadastro</h1>
-                <form method="POST" action="">
-                    <input type="hidden" name="acao" value="cadastro">
-                    
+                <form id="form-cadastro">
                     <div class="campo-grupo">
                         <label>Codinome Heroico</label>
-                        <input type="text" name="nome" placeholder="Ex: Ladybug, Chat Noir..." required>
+                        <input type="text" id="cadastro-nome" placeholder="Ex: Ladybug, Chat Noir..." required>
                     </div>
 
                     <div class="campo-grupo">
                         <label>E-mail de Contato</label>
-                        <input type="email" name="email" placeholder="seuemail@caixa.com" required>
+                        <input type="email" id="cadastro-email" placeholder="seuemail@caixa.com" required>
                     </div>
 
                     <div class="campo-grupo">
                         <label>Escolha seu Kwami</label>
-                        <select name="kwami" required>
+                        <select id="cadastro-kwami" required>
                             <option value="" disabled selected>Selecione um aliado místico (1 de 19)</option>
-                            <?php foreach($kwamis as $chave => $nome_kwami): ?>
-                                <option value="<?php echo $chave; ?>"><?php echo $nome_kwami; ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                            </select>
                     </div>
 
                     <div class="campo-grupo">
                         <label>Frase de Ativação (Sua Senha)</label>
-                        <input type="text" name="frase_ativacao" placeholder="Ex: Sass, soltar escamas! / Em palavras" required>
+                        <input type="text" id="cadastro-frase" placeholder="Ex: Sass, soltar escamas! / Em palavras" required>
                     </div>
                     
                     <button type="submit" class="btn-principal">Reivindicar Miraculous</button>
@@ -479,8 +392,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <script>
+        // Objeto Kwamis que estava no array PHP
+        const kwamis = {
+            'tikki': 'Tikki (Joaninha)',
+            'plagg': 'Plagg (Gato Preto)',
+            'trixx': 'Trixx (Raposa)',
+            'wayzz': 'Wayzz (Tartaruga)',
+            'pollen': 'Pollen (Abelha)',
+            'nooroo': 'Nooroo (Borboleta)',
+            'duusu': 'Duusu (Pavão)',
+            'mullo': 'Mullo (Rato)',
+            'stompp': 'Stompp (Boi)',
+            'roaar': 'Roaar (Tigre)',
+            'fluff': 'Fluff (Coelho)',
+            'longg': 'Longg (Dragão)',
+            'sass': 'Sass (Cobra)',
+            'kaalki': 'Kaalki (Cavalo)',
+            'ziggy': 'Ziggy (Bode)',
+            'xuppu': 'Xuppu (Macaco)',
+            'orikko': 'Orikko (Galo)',
+            'barkk': 'Barkk (Cão)',
+            'daizzi': 'Daizzi (Porco)'
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Gerador de Partículas Mágicas
+            // 1. Popular o Select de Kwamis dinamicamente
+            const selectKwami = document.getElementById('cadastro-kwami');
+            for (const [chave, valor] of Object.entries(kwamis)) {
+                const option = document.createElement('option');
+                option.value = chave;
+                option.textContent = valor;
+                selectKwami.appendChild(option);
+            }
+
+            // 2. Gerador de Partículas Mágicas
             const fundo = document.getElementById('fundoParticulas');
             const quantidadeParticulas = 35;
 
@@ -502,7 +447,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 fundo.appendChild(particula);
             }
 
-            // Alternância Dinâmica das Abas
+            // 3. Alternância Dinâmica das Abas
             const botoes = document.querySelectorAll('.aba-btn');
             const card = document.getElementById('portalCard');
             const sessaoLogin = document.getElementById('sessao-login');
@@ -525,6 +470,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         sessaoCadastro.classList.add('ativo');
                     }
                 });
+            });
+
+            // 4. Função para Exibir Alertas Místicos (Snackbar)
+            const alertaMistico = document.getElementById('alertaMistico');
+            
+            function exibirAlerta(mensagem, tipo) {
+                // Reseta animação tirando e recolocando a classe
+                alertaMistico.className = 'alerta-mistico';
+                alertaMistico.textContent = mensagem;
+                
+                // Força reflow para reiniciar animação CSS do zero
+                void alertaMistico.offsetWidth; 
+                
+                alertaMistico.classList.add(tipo);
+                
+                // Oculta o elemento após o término da animação do CSS (4.5s)
+                setTimeout(() => {
+                    alertaMistico.className = 'alerta-mistico';
+                }, 4500);
+            }
+
+            // 5. Interceptação da Lógica de Login (Equivalente ao PHP)
+            document.getElementById('form-login').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const usuario = document.getElementById('login-usuario').value;
+                const frase = document.getElementById('login-frase').value;
+
+                if (usuario === 'mago' && (frase === 'Plagg, mostrar as garras' || frase === 'Tikki, transformar')) {
+                    exibirAlerta("Transformação completa! Bem-vindo ao covil dos heróis.", "sucesso");
+                } else {
+                    exibirAlerta("Akuma detectado! Frase de ativação ou usuário incorretos.", "erro");
+                }
+            });
+
+            // 6. Interceptação da Lógica de Cadastro (Equivalente ao PHP)
+            document.getElementById('form-cadastro').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const nome = document.getElementById('cadastro-nome').value;
+                const email = document.getElementById('cadastro-email').value;
+                const kwamiEscolhido = document.getElementById('cadastro-kwami').value;
+                const frase = document.getElementById('cadastro-frase').value;
+
+                if (nome && email && kwamiEscolhido && frase) {
+                    const nomeKwami = kwamis[kwamiEscolhido] || 'Kwami';
+                    exibirAlerta(`Miraculous ativado! Sua jornada com o ${nomeKwami} começou, portador ${nome}.`, "sucesso");
+                } else {
+                    exibirAlerta("O Mestre Fu exige que todos os campos sejam preenchidos.", "erro");
+                }
             });
         });
     </script>
