@@ -1,954 +1,528 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>Mestre</title>
+<?php
+session_start();
 
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+$mensagem = '';
+$tipo_mensagem = '';
+$aba_ativa = 'login'; // Padrão
 
-<style>
-/* --- TEMA E VARIÁVEIS --- */
-:root {
-  --primary: #6200ea;
-  --primary-contrast: #ffffff;
-  --bg-main: #050505;
-  --bg-surface: #121212;
-  --bg-card: #1e1e1e;
-  --text-main: #e0e0e0;
-  --text-sub: #a0a0a0;
-  --border: #333333;
-  --input-bg: #252525;
-  --danger: #cf6679;
-  --success: #03dac6;
-  --warn: #ffb74d;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
-  background: var(--bg-main);
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  user-select: none; overflow: hidden;
-}
-
-/* --- LAYOUT DO DISPOSITIVO --- */
-.device {
-  width: 100%; max-width: 420px; height: 100%; max-height: 880px;
-  background: var(--bg-main); position: relative; 
-  display: flex; flex-direction: column; overflow: hidden;
-}
-@media (min-width: 450px) {
-  .device { 
-    height: 85vh; border-radius: 30px; 
-    box-shadow: 0 0 0 10px #1a1a1a, 0 0 30px rgba(0,0,0,0.8); 
-  }
-}
-
-/* --- ESTRUTURA --- */
-.screen {
-  width: 100%; height: 100%; background: var(--bg-surface); color: var(--text-main);
-  display: flex; flex-direction: column; position: relative;
-}
-.header { 
-  height: 60px; display: flex; align-items: center; padding: 0 15px; 
-  background: var(--bg-card); border-bottom: 1px solid var(--border); 
-  font-weight: bold; font-size: 18px; flex-shrink: 0; z-index: 10;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-.content { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
-
-/* --- PÁGINAS (Transições) --- */
-.page { 
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-  background: var(--bg-surface); display: flex; flex-direction: column; 
-  transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
-  z-index: 20; 
-}
-.page.active { transform: translateX(0); }
-
-/* --- COMPONENTES --- */
-.card { 
-  background: var(--bg-card); border-radius: 12px; padding: 15px; 
-  border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-.app-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px;
-}
-.app-icon { 
-  display: flex; flex-direction: column; align-items: center; gap: 5px; 
-  cursor: pointer; transition: 0.2s;
-}
-.app-icon:active { transform: scale(0.9); }
-.icon-box { 
-  width: 60px; height: 60px; background: var(--bg-card); border-radius: 18px; 
-  display: flex; justify-content: center; align-items: center; font-size: 28px;
-  border: 1px solid var(--border);
-}
-
-/* --- FORMULÁRIOS --- */
-input, textarea, select { 
-  width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--border); 
-  border-radius: 8px; color: var(--text-main); margin-bottom: 10px; outline: none; font-size: 14px;
-}
-input:focus { border-color: var(--primary); }
-button { 
-  width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; 
-  background: var(--primary); color: var(--primary-contrast); cursor: pointer; 
-  transition: 0.2s; font-size: 14px;
-}
-button:active { filter: brightness(0.8); }
-.back-btn { width: auto; background: transparent; color: var(--primary); font-size: 24px; padding: 0 15px 0 0; margin: 0; }
-
-/* --- CHAT --- */
-.chat-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.chat-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-.msg { 
-  max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; 
-  position: relative; word-wrap: break-word;
-}
-.msg.me { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 2px; }
-.msg.other { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
-.msg.system { align-self: center; font-size: 11px; color: var(--text-sub); border: 1px dashed var(--border); background: transparent; width: 100%; text-align: center; }
-.msg.narrate { width: 100%; background: #1a237e; border: 1px solid #3949ab; text-align: center; font-style: italic; color: #fff; }
-
-/* --- MODAL --- */
-.modal { 
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-  background: rgba(0,0,0,0.85); z-index: 100; display: none; 
-  justify-content: center; align-items: center; backdrop-filter: blur(4px);
-}
-.modal-content { 
-  background: var(--bg-surface); width: 90%; max-width: 400px; max-height: 90vh; 
-  overflow-y: auto; padding: 20px; border-radius: 16px; border: 1px solid var(--border);
-}
-
-/* --- UTILITÁRIOS --- */
-.stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-.gm-toolbar { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
-.gm-toolbar button { white-space: nowrap; font-size: 12px; padding: 8px; }
-.tag { font-size: 10px; padding: 2px 4px; border-radius: 4px; background: #333; margin-left: 5px; vertical-align: middle; }
-
-/* --- BARRAS DE VIDA --- */
-.hp-bar-bg { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 5px; }
-.hp-bar-fill { height: 100%; background: #d32f2f; transition: width 0.3s; }
-
-</style>
-</head>
-<body onload="init()">
-
-<div class="device">
-  
-  <div id="home" class="screen" style="padding: 20px;">
-    <h2 style="color:var(--primary); text-align: center; margin-bottom: 30px; font-size: 32px;">Mestre<small style="font-size:12px; color:var(--text-sub)">v3.0</small></h2>
+// A lista completa com todos os 19 Kwamis da Caixa dos Miraculous principal
+$kwamis = [
+    // Os 7 principais (Camada Superior e Central)
+    'tikki' => 'Tikki (Joaninha)',
+    'plagg' => 'Plagg (Gato Preto)',
+    'trixx' => 'Trixx (Raposa)',
+    'wayzz' => 'Wayzz (Tartaruga)',
+    'pollen' => 'Pollen (Abelha)',
+    'nooroo' => 'Nooroo (Borboleta)',
+    'duusu' => 'Duusu (Pavão)',
     
-    <div class="app-grid">
-      <div class="app-icon" onclick="go('profile')"><div class="icon-box" style="color:#42a5f5">👤</div><span>Perfil</span></div>
-      <div class="app-icon" onclick="go('sessions')"><div class="icon-box" style="color:#ab47bc">🎲</div><span>Mesas</span></div>
-      <div class="app-icon" onclick="go('chats')"><div class="icon-box" style="color:#66bb6a">💬</div><span>Chats</span></div>
-      <div class="app-icon" onclick="go('sheet')"><div class="icon-box" style="color:#ffa726">📜</div><span>Ficha</span></div>
-      <div class="app-icon" onclick="go('store')"><div class="icon-box" style="color:#8d6e63">🛒</div><span>Loja</span></div>
-      <div class="app-icon" onclick="go('bank')"><div class="icon-box" style="color:#fdd835">🏦</div><span>Banco</span></div>
-      <div class="app-icon" onclick="go('feed')"><div class="icon-box" style="color:#ef5350">📰</div><span>Feed</span></div>
-      <div class="app-icon" onclick="go('notes')"><div class="icon-box" style="color:#78909c">📝</div><span>Notas</span></div>
-      <div class="app-icon" onclick="go('settings')"><div class="icon-box" style="color:#bdbdbd">⚙️</div><span>Config</span></div>
-    </div>
-  </div>
-
-  <div id="profile" class="page">
-    <div class="header"><button class="back-btn" onclick="back('profile')">‹</button> Perfil</div>
-    <div class="content">
-      <div id="view-login">
-        <div class="card">
-          <h3>Bem-vindo</h3>
-          <input type="email" id="login-email" placeholder="E-mail">
-          <input type="password" id="login-pass" placeholder="Senha">
-          <button onclick="doLogin()">Entrar</button>
-          <button onclick="doRegister()" style="background:transparent; border:1px solid var(--border); margin-top:5px;">Criar Conta</button>
-        </div>
-      </div>
-      <div id="view-user" style="display:none">
-        <div class="card" style="text-align:center">
-          <img id="u-img" src="" style="width:80px;height:80px;border-radius:50%;background:#333;object-fit:cover;margin:0 auto 10px; border: 2px solid var(--primary);">
-          <h3 id="u-name" style="margin:5px 0; color:var(--primary)">Usuário</h3>
-          <p id="u-key" style="font-family:monospace; background:#000; padding:4px; display:inline-block; border-radius:4px; font-size:12px;">KEY</p>
-          <div style="margin-top:10px;">
-             <button onclick="openEditProfile()" class="small">Editar Perfil</button>
-             <button onclick="auth.signOut()" style="background:var(--danger)">Sair</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="modal-profile" class="modal" onclick="closeModal(event, 'modal-profile')">
-    <div class="modal-content">
-      <h4>Editar Perfil</h4>
-      <input id="edit-name" placeholder="Nome de Exibição">
-      <input id="edit-img" placeholder="URL da Imagem">
-      <textarea id="edit-bio" placeholder="Biografia curta"></textarea>
-      <button onclick="saveProfile()">Salvar</button>
-    </div>
-  </div>
-
-  <div id="sessions" class="page">
-    <div class="header"><button class="back-btn" onclick="back('sessions')">‹</button> Mesas de RPG</div>
-    <div class="content">
-      <div class="card">
-        <h4>Criar Nova Mesa</h4>
-        <input id="new-table-name" placeholder="Nome da Campanha">
-        <input id="new-table-pass" type="password" placeholder="Senha da Mesa (Opcional)">
-        <button onclick="createTable()">Criar Mesa</button>
-      </div>
-      <hr style="border:0; border-top:1px solid var(--border); width:100%;">
-      <h4>Mesas Disponíveis</h4>
-      <div id="tables-list"></div>
-    </div>
-  </div>
-
-  <div id="modal-table-pass" class="modal" onclick="closeModal(event, 'modal-table-pass')">
-    <div class="modal-content">
-      <h4>Mesa Privada 🔒</h4>
-      <p>Esta mesa requer senha para entrar.</p>
-      <input id="join-pass" type="password" placeholder="Digite a senha">
-      <button onclick="confirmJoinTable()">Entrar</button>
-    </div>
-  </div>
-
-  <div id="active-session" class="page">
-    <div class="header">
-      <button class="back-btn" onclick="leaveTable()">‹</button> 
-      <span id="session-title" style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Mesa</span>
-      <button id="gm-tools-btn" onclick="toggleGmPanel()" style="width:auto; padding:5px 10px; font-size:12px; display:none;">👑 GM</button>
-    </div>
-    
-    <div class="chat-container">
-      <div id="gm-panel" style="display:none; background:var(--bg-card); padding:10px; border-bottom:1px solid var(--primary);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-           <small style="color:var(--primary); font-weight:bold;">FERRAMENTAS DO MESTRE</small>
-           <button onclick="toggleGmPanel()" style="width:auto; padding:2px 8px; font-size:10px; background:var(--danger)">X</button>
-        </div>
-        
-        <select id="gm-target-select" style="margin-bottom:5px; background:#000;"></select>
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px; margin-bottom:5px;">
-           <input id="gm-val-hp" type="number" placeholder="HP (+/-)">
-           <input id="gm-val-xp" type="number" placeholder="XP (+)">
-           <input id="gm-val-item" type="text" placeholder="Nome Item">
-        </div>
-        
-        <div class="gm-toolbar">
-          <button onclick="gmAction('hp')" style="background:var(--danger)">Mod HP</button>
-          <button onclick="gmAction('xp')" style="background:var(--warn); color:#000;">Dar XP</button>
-          <button onclick="gmAction('item')" style="background:var(--success); color:#000;">Dar Item</button>
-          <button onclick="openGmInspect()" style="background:#42a5f5;">🔍 Inspecionar</button>
-        </div>
-      </div>
-
-      <div id="session-log" class="chat-list"></div>
-      
-      <div class="chat-input">
-        <input id="session-msg" placeholder="Mensagem ou /ajuda..." onkeydown="if(event.key==='Enter') sendSessionMsg()">
-        <button onclick="sendSessionMsg()" style="width:50px;">➤</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="modal-gm-inspect" class="modal" onclick="closeModal(event, 'modal-gm-inspect')">
-    <div class="modal-content">
-      <h4>Editor de Personagem (GM)</h4>
-      <input type="hidden" id="gm-edit-uid">
-      <label><small>Nome do Personagem</small></label>
-      <input id="gm-edit-name">
-      <div style="display:flex; gap:5px;">
-        <div><small>HP Atual</small><input id="gm-edit-hp" type="number"></div>
-        <div><small>HP Max</small><input id="gm-edit-maxhp" type="number"></div>
-      </div>
-      <label><small>Inventário (Texto)</small></label>
-      <textarea id="gm-edit-inv" rows="5"></textarea>
-      <button onclick="gmSavePlayer()" style="background:var(--success)">Salvar Alterações</button>
-    </div>
-  </div>
-
-  <div id="sheet" class="page">
-    <div class="header"><button class="back-btn" onclick="back('sheet')">‹</button> Ficha</div>
-    <div class="content">
-      <div class="card">
-        <div style="display:flex; gap:15px; align-items:center;">
-           <img id="char-img-display" src="" style="width:60px; height:60px; border-radius:10px; background:#333; object-fit:cover;">
-           <div style="flex:1;">
-             <h3 id="char-name-display" style="margin:0;">Sem Nome</h3>
-             <small id="char-lvl-display" style="color:var(--warn)">Nível 1</small>
-           </div>
-        </div>
-        <div style="margin-top:10px;">
-          <div style="display:flex; justify-content:space-between; font-size:12px;">
-            <span>HP</span>
-            <span id="hp-text">10/10</span>
-          </div>
-          <div class="hp-bar-bg"><div id="hp-bar" class="hp-bar-fill" style="width:100%"></div></div>
-        </div>
-        <div style="margin-top:10px; display:flex; justify-content:space-between; font-size:12px; color:var(--warn);">
-            <span>XP</span>
-            <span id="xp-text">0</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <h4>Atributos</h4>
-        <div id="attrs-list"></div>
-      </div>
-
-      <div class="card">
-        <h4>Inventário</h4>
-        <pre id="inv-display" style="white-space:pre-wrap; font-family:inherit; color:var(--text-sub); margin:0;">Vazio</pre>
-      </div>
-      <button onclick="openEditSheet()">Editar Detalhes</button>
-    </div>
-  </div>
-
-  <div id="modal-sheet-edit" class="modal" onclick="closeModal(event, 'modal-sheet-edit')">
-    <div class="modal-content">
-      <h4>Editar Ficha</h4>
-      <input id="p-char-name" placeholder="Nome do Herói">
-      <input id="p-char-img" placeholder="URL Imagem">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
-        <input id="p-attr-str" type="number" placeholder="FOR">
-        <input id="p-attr-dex" type="number" placeholder="DES">
-        <input id="p-attr-con" type="number" placeholder="CON">
-        <input id="p-attr-int" type="number" placeholder="INT">
-      </div>
-      <small>Jogadores não editam HP/XP/Inventário diretamente (Peça ao Mestre).</small>
-      <button onclick="saveSheetPlayer()" style="margin-top:10px;">Salvar</button>
-    </div>
-  </div>
-
-  <div id="store" class="page">
-    <div class="header"><button class="back-btn" onclick="back('store')">‹</button> Loja & Mercado</div>
-    <div class="content">
-      <div style="display:flex; gap:10px; margin-bottom:10px;">
-         <button onclick="toggleStoreTab('sys')" id="tab-sys" style="flex:1;">Sistema</button>
-         <button onclick="toggleStoreTab('usr')" id="tab-usr" style="flex:1; background:var(--bg-card); color:var(--text-sub);">Jogadores</button>
-      </div>
-      
-      <div id="store-sys">
-         </div>
-      
-      <div id="store-usr" style="display:none;">
-         <div class="card">
-           <small>Vender item do seu inventário</small>
-           <select id="sell-select"></select>
-           <input id="sell-price" type="number" placeholder="Preço (Ouro)">
-           <button onclick="postSellItem()">Anunciar Venda</button>
-         </div>
-         <div id="market-list"></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="bank" class="page">
-    <div class="header"><button class="back-btn" onclick="back('bank')">‹</button> Banco</div>
-    <div class="content">
-      <div class="card" style="background: linear-gradient(135deg, #fdd835, #f57f17); color:#000;">
-        <h2 id="wallet-gold" style="margin:0; font-size:36px;">0</h2>
-        <small style="color:#000; font-weight:bold;">OURO</small>
-      </div>
-      <div class="card">
-        <h4>Transferência</h4>
-        <input id="transf-key" placeholder="Chave (Key) do Destinatário">
-        <input id="transf-amount" type="number" placeholder="Quantidade">
-        <button onclick="transferGold()">Enviar Ouro</button>
-      </div>
-    </div>
-  </div>
-  
-  <div id="chats" class="page">
-    <div class="header"><button class="back-btn" onclick="back('chats')">‹</button> Chats</div>
-    <div class="content">
-       <div class="card" onclick="openGlobalChat()">
-         <b>🌍 Global</b><br><small>Público para todos</small>
-       </div>
-    </div>
-  </div>
-  
-  <div id="global-chat-view" class="page">
-    <div class="header"><button class="back-btn" onclick="back('global-chat-view')">‹</button> Global</div>
-    <div class="chat-container">
-       <div id="global-log" class="chat-list"></div>
-       <div class="chat-input">
-         <input id="global-msg" placeholder="Mensagem..." onkeydown="if(event.key==='Enter') sendGlobalMsg()">
-         <button onclick="sendGlobalMsg()">➤</button>
-       </div>
-    </div>
-  </div>
-
-  <div id="notes" class="page"><div class="header"><button class="back-btn" onclick="back('notes')">‹</button> Notas</div><div class="content"><textarea id="notepad" style="flex:1; resize:none;" placeholder="Anotações salvas automaticamente..."></textarea><button onclick="saveNote()">Salvar</button></div></div>
-  <div id="feed" class="page"><div class="header"><button class="back-btn" onclick="back('feed')">‹</button> Feed</div><div class="content" id="feed-list"></div></div>
-
-</div>
-
-<script>
-// --- CONFIG FIREBASE (Coloque suas credenciais reais aqui se necessário) ---
-const firebaseConfig = {
-  apiKey: "AIzaSyBykDF5TNKQHejUJTp-ue7s5CKfpJp1HV0",
-  authDomain: "mestre-471a0.firebaseapp.com",
-  databaseURL: "https://mestre-471a0-default-rtdb.firebaseio.com",
-  projectId: "mestre-471a0",
-  storageBucket: "mestre-471a0.firebasestorage.app",
-  messagingSenderId: "142996111628",
-  appId: "1:142996111628:web:c3785e54588632f468c929"
-};
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const auth = firebase.auth();
-
-// --- ESTADO GLOBAL ---
-let currentUser = null;
-let userData = {};
-let currentTableId = null;
-let currentTableData = null;
-let pendingJoinId = null;
-
-// --- ITENS DO SISTEMA (Expandido) ---
-const SYSTEM_STORE = [
-  { cat: "Armas", items: [
-      { name: "Adaga", price: 15, desc: "Dano leve, fácil de esconder." },
-      { name: "Espada Curta", price: 30, desc: "Lâmina padrão." },
-      { name: "Espada Longa", price: 50, desc: "Exige duas mãos ou força." },
-      { name: "Arco Curto", price: 25, desc: "Alcance médio." },
-      { name: "Machado de Batalha", price: 55, desc: "Dano pesado." }
-  ]},
-  { cat: "Armaduras", items: [
-      { name: "Roupas de Viajante", price: 5, desc: "Sem proteção." },
-      { name: "Couro Batido", price: 40, desc: "Proteção leve." },
-      { name: "Cota de Malha", price: 100, desc: "Proteção média, barulhenta." },
-      { name: "Escudo de Madeira", price: 15, desc: "Bloqueio básico." }
-  ]},
-  { cat: "Consumíveis", items: [
-      { name: "Poção de Cura (P)", price: 20, desc: "Recupera 1d6 HP." },
-      { name: "Poção de Cura (M)", price: 50, desc: "Recupera 2d6+2 HP." },
-      { name: "Antídoto", price: 25, desc: "Cura venenos comuns." },
-      { name: "Ração de Viagem", price: 2, desc: "Comida para 1 dia." }
-  ]},
-  { cat: "Utilitários", items: [
-     { name: "Corda (15m)", price: 5, desc: "Essencial." },
-      { name: "Tocha", price: 1, desc: "Ilumina por 1 hora." },
-      { name: "Mochila", price: 10, desc: "Carrega itens." },
-      { name: "Kit de Primeiros Socorros", price: 25, desc: "Estabiliza aliados." }
-  ]}
+    // Os 12 do Zodíaco (Compartimentos Ciclicos)
+    'mullo' => 'Mullo (Rato)',
+    'stompp' => 'Stompp (Boi)',
+    'roaar' => 'Roaar (Tigre)',
+    'fluff' => 'Fluff (Coelho)',
+    'longg' => 'Longg (Dragão)',
+    'sass' => 'Sass (Cobra)',
+    'kaalki' => 'Kaalki (Cavalo)',
+    'ziggy' => 'Ziggy (Bode)',
+    'xuppu' => 'Xuppu (Macaco)',
+    'orikko' => 'Orikko (Galo)',
+    'barkk' => 'Barkk (Cão)',
+    'daizzi' => 'Daizzi (Porco)'
 ];
 
-// --- INICIALIZAÇÃO ---
-function init() {
-  auth.onAuthStateChanged(u => {
-    currentUser = u;
-    if (u) {
-      document.getElementById('view-login').style.display = 'none';
-      document.getElementById('view-user').style.display = 'block';
-      loadUserProfile();
-      loadTables();
-      loadFeed();
-      renderSystemStore();
-    } else {
-      document.getElementById('view-login').style.display = 'block';
-      document.getElementById('view-user').style.display = 'none';
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['acao'])) {
+        // ================= LOGICA DE LOGIN =================
+        if ($_POST['acao'] == 'login') {
+            $aba_ativa = 'login';
+            $usuario = $_POST['usuario'] ?? '';
+            $frase_ativacao = $_POST['frase_ativacao'] ?? '';
+            
+            // Exemplo de validação simulada com algumas Frases de Ativação clássicas
+            if ($usuario === 'mago' && ($frase_ativacao === 'Plagg, mostrar as garras' || $frase_ativacao === 'Tikki, transformar')) {
+                $mensagem = "Transformação completa! Bem-vindo ao covil dos heróis.";
+                $tipo_mensagem = "sucesso";
+            } else {
+                $mensagem = "Akuma detectado! Frase de ativação ou usuário incorretos.";
+                $tipo_mensagem = "erro";
+            }
+        } 
+        // ================= LOGICA DE CADASTRO =================
+        elseif ($_POST['acao'] == 'cadastro') {
+            $aba_ativa = 'cadastro';
+            $nome = $_POST['nome'] ?? '';
+            $email = $_POST['email'] ?? '';
+            $kwami_escolhido = $_POST['kwami'] ?? '';
+            $frase_ativacao = $_POST['frase_ativacao'] ?? '';
+            
+            if (!empty($nome) && !empty($email) && !empty($kwami_escolhido) && !empty($frase_ativacao)) {
+                $nome_kwami = $kwamis[$kwami_escolhido] ?? 'Kwami';
+                $mensagem = "Miraculous ativado! Sua jornada com o $nome_kwami começou, portador $nome.";
+                $tipo_mensagem = "sucesso";
+            } else {
+                $mensagem = "O Mestre Fu exige que todos os campos sejam preenchidos.";
+                $tipo_mensagem = "erro";
+            }
+        }
     }
-  });
 }
+?>
 
-// --- AUTH & PERFIL ---
-async function doLogin() {
-  try {
-    await auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-pass').value);
-  } catch(e) { alert("Erro: " + e.message); }
-}
-async function doRegister() {
-  try {
-    const email = document.getElementById('login-email').value;
-    const pass = document.getElementById('login-pass').value;
-    const cred = await auth.createUserWithEmailAndPassword(email, pass);
-    
-    // Schema Inicial do Usuário
-    const uid = cred.user.uid;
-    const key = uid.substring(0, 6).toUpperCase();
-    await db.ref('users/' + uid).set({
-      name: "Aventureiro " + key,
-      key: key,
-      email: email,
-      bio: "Novo no sistema.",
-      wallet: { gold: 100 },
-      char: {
-        name: "Sem Nome",
-        hp: 20, maxHp: 20, xp: 0,
-        str: 10, dex: 10, con: 10, int: 10,
-        inv: "Roupas Simples\nAdaga Enferrujada",
-        img: ""
-      }
-    });
-  } catch(e) { alert("Erro ao criar: " + e.message); }
-}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caixa dos Miraculous - Portal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
 
-function loadUserProfile() {
-  db.ref('users/' + currentUser.uid).on('value', s => {
-    userData = s.val() || {};
-    // Header UI
-    document.getElementById('u-name').innerText = userData.name;
-    document.getElementById('u-key').innerText = userData.key;
-    if(userData.img) document.getElementById('u-img').src = userData.img;
-    
-    // Wallet
-    const gold = userData.wallet ? userData.wallet.gold : 0;
-    document.getElementById('wallet-gold').innerText = gold;
+        :root {
+            --bg-dark: #020204;
+            --card-dark: rgba(10, 10, 14, 0.8);
+            --chat-green: #39ff14;
+            --ladybug-red: #ff003c;
+            --text-light: #f8f8f8;
+            --text-muted: #6e6e85;
+            --error-color: #ff3333;
+            --success-color: #00ff66;
+        }
 
-    // Sheet UI
-    const char = userData.char || {};
-    document.getElementById('char-name-display').innerText = char.name;
-    document.getElementById('char-img-display').src = char.img || "";
-    document.getElementById('hp-text').innerText = `${char.hp}/${char.maxHp}`;
-    const hpPct = Math.min(100, Math.max(0, (char.hp / char.maxHp) * 100));
-    document.getElementById('hp-bar').style.width = hpPct + "%";
-    document.getElementById('xp-text').innerText = char.xp;
-    document.getElementById('inv-display').innerText = char.inv || "";
-    
-    document.getElementById('attrs-list').innerHTML = `
-      <div class="stat-row"><span>FOR</span><b>${char.str}</b></div>
-      <div class="stat-row"><span>DES</span><b>${char.dex}</b></div>
-      <div class="stat-row"><span>CON</span><b>${char.con}</b></div>
-      <div class="stat-row"><span>INT</span><b>${char.int}</b></div>
-    `;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
 
-    // Populate Sell Select
-    const invList = (char.inv || "").split('\n').filter(i => i.trim().length > 0);
-    const sel = document.getElementById('sell-select');
-    sel.innerHTML = invList.length ? invList.map(i => `<option>${i}</option>`).join('') : '<option>Vazio</option>';
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-    // Edit Modal Prefill
-    document.getElementById('p-char-name').value = char.name;
-    document.getElementById('p-char-img').value = char.img || "";
-    document.getElementById('p-attr-str').value = char.str;
-    document.getElementById('p-attr-dex').value = char.dex;
-    document.getElementById('p-attr-con').value = char.con;
-    document.getElementById('p-attr-int').value = char.int;
-  });
-}
+        /* ----- FUNDO MÍSTICO ----- */
+        .fundo-mistico {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            overflow: hidden;
+            pointer-events: none;
+        }
 
-// --- FUNÇÕES DE MESA ---
-function createTable() {
-  const name = document.getElementById('new-table-name').value;
-  const pass = document.getElementById('new-table-pass').value;
-  if (!name) return alert("Nome obrigatório");
-  
-  const newRef = db.ref('tables').push();
-  newRef.set({
-    name: name,
-    master: currentUser.uid,
-    password: pass, // Simples, em app real usaria hash
-    members: { [currentUser.uid]: { name: userData.name, role: 'GM' } },
-    created: firebase.database.ServerValue.TIMESTAMP
-  });
-  document.getElementById('new-table-name').value = "";
-  document.getElementById('new-table-pass').value = "";
-}
+        .fundo-mistico::before, .fundo-mistico::after {
+            content: '';
+            position: absolute;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.2;
+            animation: flutuarNuvens 15s infinite alternate ease-in-out;
+        }
 
-function loadTables() {
-  db.ref('tables').limitToLast(20).on('value', s => {
-    const div = document.getElementById('tables-list');
-    div.innerHTML = "";
-    s.forEach(child => {
-      const t = child.val();
-      const id = child.key;
-      const locked = t.password ? "🔒 " : "";
-      div.innerHTML += `
-        <div class="card" style="cursor:pointer; border-left:4px solid #ab47bc" onclick="tryJoinTable('${id}', '${t.password || ''}')">
-          <b>${locked}${t.name}</b><br>
-          <small>Mestre: ${t.members[t.master]?.name || 'Desconhecido'}</small>
-        </div>`;
-    });
-  });
-}
+        .fundo-mistico::before {
+            background: var(--chat-green);
+            top: -50px; left: -50px;
+        }
 
-function tryJoinTable(id, pass) {
-  pendingJoinId = id;
-  if (pass) {
-    document.getElementById('modal-table-pass').style.display = 'flex';
-  } else {
-    joinTable(id);
-  }
-}
+        .fundo-mistico::after {
+            background: var(--ladybug-red);
+            bottom: -50px; right: -50px;
+            animation-delay: -7s;
+        }
 
-function confirmJoinTable() {
-  const input = document.getElementById('join-pass').value;
-  db.ref('tables/' + pendingJoinId + '/password').once('value', s => {
-    if (s.val() == input) {
-      document.getElementById('join-pass').value = "";
-      closeModal(null, 'modal-table-pass');
-      joinTable(pendingJoinId);
-    } else {
-      alert("Senha incorreta!");
-    }
-  });
-}
+        .particula {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: subirParticula var(--d) linear infinite;
+            bottom: -20px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
 
-async function joinTable(id) {
-  currentTableId = id;
-  // Add user to members if not exists
-  await db.ref(`tables/${id}/members/${currentUser.uid}`).update({
-    name: userData.name,
-    role: 'PLAYER' // Default, master overwrites later if needed
-  });
-  
-  // Set Master Role correctly
-  db.ref(`tables/${id}/master`).once('value', s => {
-    const masterId = s.val();
-    if (masterId === currentUser.uid) {
-      db.ref(`tables/${id}/members/${currentUser.uid}/role`).set('GM');
-      document.getElementById('gm-tools-btn').style.display = 'block';
-      loadGmControls();
-    } else {
-      document.getElementById('gm-tools-btn').style.display = 'none';
-      document.getElementById('gm-panel').style.display = 'none';
-    }
-  });
+        @keyframes flutuarNuvens {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(80px, 50px) scale(1.2); }
+        }
 
-  // Listener for Table Data
-  db.ref(`tables/${id}`).on('value', s => {
-    currentTableData = s.val();
-    document.getElementById('session-title').innerText = currentTableData.name;
-  });
+        @keyframes subirParticula {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-105vh) scale(0); opacity: 0; }
+        }
 
-  // Listener for Logs
-  loadTableChat(id);
-  go('active-session');
-}
+        /* ----- NOTIFICAÇÕES (SNACKBAR) ----- */
+        .alerta-mistico {
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 30px;
+            border-radius: 12px;
+            background: rgba(15, 15, 20, 0.95);
+            backdrop-filter: blur(15px);
+            color: #fff;
+            font-weight: 600;
+            z-index: 2000;
+            text-align: center;
+            border-left: 5px solid;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            animation: slideDownAlert 4.5s ease-in-out forwards;
+            min-width: 300px;
+            max-width: 90vw;
+        }
 
-function leaveTable() {
-  currentTableId = null;
-  // Detach listeners if you want optimization
-  back('active-session');
-}
+        .alerta-mistico.sucesso { border-color: var(--success-color); box-shadow: 0 10px 30px rgba(0, 255, 102, 0.15); }
+        .alerta-mistico.erro { border-color: var(--error-color); box-shadow: 0 10px 30px rgba(255, 51, 51, 0.15); }
 
-function loadTableChat(id) {
-  const div = document.getElementById('session-log');
-  div.innerHTML = "";
-  db.ref(`tables/${id}/log`).limitToLast(50).on('child_added', s => {
-    const m = s.val();
-    const isMe = m.uid === currentUser.uid;
-    let cls = isMe ? 'me' : 'other';
-    if (m.type === 'system') cls = 'system';
-    if (m.type === 'narrate') cls = 'narrate';
-    
-    let html = `<div class="msg ${cls}">`;
-    if (m.type !== 'system' && m.type !== 'narrate') html += `<b>${m.u}</b><br>`;
-    html += `${m.txt}</div>`;
-    
-    div.innerHTML += html;
-    div.scrollTop = div.scrollHeight;
-  });
-}
+        @keyframes slideDownAlert {
+            0% { transform: translate(-50%, -120px); opacity: 0; }
+            12% { transform: translate(-50%, 0); opacity: 1; }
+            88% { transform: translate(-50%, 0); opacity: 1; }
+            100% { transform: translate(-50%, -120px); opacity: 0; }
+        }
 
-function sendSessionMsg() {
-  const txt = document.getElementById('session-msg').value;
-  if (!txt || !currentTableId) return;
-  
-  // Basic Commands Parser
-  if (txt.startsWith('/r ') || txt.startsWith('/d ')) {
-    handleDice(txt);
-  } else if (txt.startsWith('/narrar ') && currentTableData.master === currentUser.uid) {
-    pushLog(txt.replace('/narrar ', ''), 'narrate');
-  } else {
-    pushLog(txt);
-  }
-  document.getElementById('session-msg').value = "";
-}
+        /* ----- CONTAINER PRINCIPAL ----- */
+        .container-portal {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+        }
 
-function pushLog(txt, type = null) {
-  db.ref(`tables/${currentTableId}/log`).push({
-    u: userData.name,
-    uid: currentUser.uid,
-    txt: txt,
-    type: type,
-    ts: firebase.database.ServerValue.TIMESTAMP
-  });
-}
+        .abas-controle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
 
-function handleDice(cmd) {
-  // Simple logic: /r 1d20+5
-  const roll = Math.floor(Math.random() * 20) + 1;
-  pushLog(`🎲 Rolou dados: [${roll}]`, 'system');
-}
+        .aba-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
 
-// --- GM TOOLS REAIS ---
-function loadGmControls() {
-  // Populate Player Select
-  db.ref(`tables/${currentTableId}/members`).on('value', s => {
-    const sel = document.getElementById('gm-target-select');
-    sel.innerHTML = "";
-    s.forEach(c => {
-      if (c.key !== currentUser.uid) { // Don't target self usually
-        sel.innerHTML += `<option value="${c.key}">${c.val().name}</option>`;
-      }
-    });
-  });
-}
+        .aba-btn.ativo[data-alvo="login"] { background: var(--chat-green); color: #000; font-weight: 800; }
+        .aba-btn.ativo[data-alvo="cadastro"] { background: var(--ladybug-red); color: #fff; font-weight: 800; }
 
-function toggleGmPanel() {
-  const p = document.getElementById('gm-panel');
-  p.style.display = p.style.display === 'none' ? 'block' : 'none';
-}
+        .portal-card {
+            background: var(--card-dark);
+            backdrop-filter: blur(25px);
+            border-radius: 24px;
+            padding: 35px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.5s ease, box-shadow 0.5s ease;
+        }
 
-function gmAction(type) {
-  const targetUid = document.getElementById('gm-target-select').value;
-  if (!targetUid) return alert("Selecione um jogador");
-  
-  const targetRef = db.ref(`users/${targetUid}/char`);
-  
-  if (type === 'hp') {
-    const val = parseInt(document.getElementById('gm-val-hp').value);
-    if (isNaN(val)) return;
-    targetRef.child('hp').transaction(curr => {
-      let next = (curr || 0) + val;
-      // Need maxHp to clamp? Fetch once or accept overhead. Simple addition for now.
-      return next; 
-    });
-    pushLog(`GM alterou HP de ${targetUid.substring(0,4)} em ${val}`, 'system');
-  }
-  
-  if (type === 'xp') {
-    const val = parseInt(document.getElementById('gm-val-xp').value);
-    if (isNaN(val)) return;
-    targetRef.child('xp').transaction(curr => (curr || 0) + val);
-    pushLog(`GM deu ${val} XP para o grupo/jogador.`, 'system');
-  }
-  
-  if (type === 'item') {
-    const item = document.getElementById('gm-val-item').value;
-    if (!item) return;
-    targetRef.child('inv').transaction(curr => curr ? curr + "\n" + item : item);
-    pushLog(`GM entregou [${item}]`, 'system');
-  }
-}
+        .portal-card.estado-login { border-color: rgba(57, 255, 20, 0.2); box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 30px rgba(57, 255, 20, 0.05); }
+        .portal-card.estado-cadastro { border-color: rgba(255, 0, 60, 0.2); box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 30px rgba(255, 0, 60, 0.05); }
 
-// GM INSPECTOR
-let inspectingUid = null;
-function openGmInspect() {
-  inspectingUid = document.getElementById('gm-target-select').value;
-  if (!inspectingUid) return alert("Selecione um jogador");
-  
-  db.ref(`users/${inspectingUid}/char`).once('value', s => {
-    const c = s.val();
-    document.getElementById('gm-edit-uid').value = inspectingUid;
-    document.getElementById('gm-edit-name').value = c.name;
-    document.getElementById('gm-edit-hp').value = c.hp;
-    document.getElementById('gm-edit-maxhp').value = c.maxHp;
-    document.getElementById('gm-edit-inv').value = c.inv;
-    
-    document.getElementById('modal-gm-inspect').style.display = 'flex';
-  });
-}
+        .sessao-formulario {
+            display: none;
+            animation: fadeInSessao 0.4s ease forwards;
+        }
 
-function gmSavePlayer() {
-  const uid = document.getElementById('gm-edit-uid').value;
-  db.ref(`users/${uid}/char`).update({
-    name: document.getElementById('gm-edit-name').value,
-    hp: parseInt(document.getElementById('gm-edit-hp').value),
-    maxHp: parseInt(document.getElementById('gm-edit-maxhp').value),
-    inv: document.getElementById('gm-edit-inv').value
-  });
-  closeModal(null, 'modal-gm-inspect');
-  pushLog("GM atualizou a ficha de um jogador.", "system");
-}
+        .sessao-formulario.ativo {
+            display: block;
+        }
 
-// --- LOJA DO SISTEMA & MERCADO ---
-function renderSystemStore() {
-  const container = document.getElementById('store-sys');
-  let html = "";
-  
-  SYSTEM_STORE.forEach(cat => {
-    html += `<h4 style="margin:10px 0 5px; color:var(--primary);">${cat.cat}</h4>`;
-    cat.items.forEach(item => {
-      html += `
-      <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:10px;">
-        <div>
-          <b>${item.name}</b><br>
-          <small>${item.desc}</small>
+        @keyframes fadeInSessao {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 25px;
+            letter-spacing: -0.5px;
+        }
+
+        .estado-login h1 { color: var(--chat-green); text-shadow: 0 0 15px rgba(57,255,20,0.2); }
+        .estado-cadastro h1 { color: var(--ladybug-red); text-shadow: 0 0 15px rgba(255,0,60,0.2); }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .campo-grupo {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .campo-grupo label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding-left: 4px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 16px 18px;
+            border: 2px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        select {
+            appearance: none;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='white'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+        }
+        
+        select option {
+            background-color: #0b0b0f;
+            color: #fff;
+        }
+
+        input::placeholder { color: #505064; }
+
+        .estado-login input:focus, .estado-login select:focus { border-color: var(--chat-green); box-shadow: 0 0 15px rgba(57, 255, 20, 0.1); outline: none; }
+        .estado-cadastro input:focus, .estado-cadastro select:focus { border-color: var(--ladybug-red); box-shadow: 0 0 15px rgba(255, 0, 60, 0.1); outline: none; }
+
+        .btn-principal {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .estado-login .btn-principal { background: var(--chat-green); color: #000; }
+        .estado-login .btn-principal:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(57, 255, 20, 0.3); }
+
+        .estado-cadastro .btn-principal { background: var(--ladybug-red); color: #fff; }
+        .estado-cadastro .btn-principal:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255, 0, 60, 0.3); }
+
+        .divisor {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin: 5px 0;
+        }
+        .divisor::before, .divisor::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .divisor:not(:empty)::before { margin-right: .5em; }
+        .divisor:not(:empty)::after { margin-left: .5em; }
+
+        .btn-google {
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-google:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-google svg { width: 18px; height: 18px; }
+    </style>
+</head>
+<body>
+
+    <div class="fundo-mistico" id="fundoParticulas"></div>
+
+    <?php if(!empty($mensagem)): ?>
+        <div class="alerta-mistico <?php echo $tipo_mensagem; ?>">
+            <?php echo $mensagem; ?>
         </div>
-        <button onclick="buySystemItem('${item.name}', ${item.price})" style="width:auto; font-size:12px;">${item.price} Ouro</button>
-      </div>`;
-    });
-  });
-  container.innerHTML = html;
-}
+    <?php endif; ?>
 
-function buySystemItem(name, price) {
-  if (userData.wallet.gold < price) return alert("Sem ouro suficiente!");
-  
-  // Deduz Ouro
-  db.ref(`users/${currentUser.uid}/wallet/gold`).set(userData.wallet.gold - price);
-  // Adiciona Item
-  const newInv = userData.char.inv ? userData.char.inv + "\n" + name : name;
-  db.ref(`users/${currentUser.uid}/char/inv`).set(newInv);
-  
-  alert(`Comprou ${name}!`);
-}
+    <div class="container-portal">
+        
+        <div class="abas-controle">
+            <button class="aba-btn <?php echo $aba_ativa === 'login' ? 'ativo' : ''; ?>" data-alvo="login">Entrar</button>
+            <button class="aba-btn <?php echo $aba_ativa === 'cadastro' ? 'ativo' : ''; ?>" data-alvo="cadastro">Cadastrar-se</button>
+        </div>
 
-function toggleStoreTab(tab) {
-  document.getElementById('store-sys').style.display = tab === 'sys' ? 'block' : 'none';
-  document.getElementById('store-usr').style.display = tab === 'usr' ? 'block' : 'none';
-  document.getElementById('tab-sys').style.background = tab === 'sys' ? 'var(--primary)' : 'var(--bg-card)';
-  document.getElementById('tab-usr').style.background = tab === 'usr' ? 'var(--primary)' : 'var(--bg-card)';
-  document.getElementById('tab-sys').style.color = tab === 'sys' ? '#fff' : 'var(--text-sub)';
-  document.getElementById('tab-usr').style.color = tab === 'usr' ? '#fff' : 'var(--text-sub)';
-  
-  if (tab === 'usr') loadMarket();
-}
+        <div class="portal-card estado-<?php echo $aba_ativa; ?>" id="portalCard">
+            
+            <!-- FORMULÁRIO DE LOGIN -->
+            <div class="sessao-formulario <?php echo $aba_ativa === 'login' ? 'ativo' : ''; ?>" id="sessao-login">
+                <h1>Login</h1>
+                <form method="POST" action="">
+                    <input type="hidden" name="acao" value="login">
+                    
+                    <div class="campo-grupo">
+                        <label>Herói</label>
+                        <input type="text" name="usuario" placeholder="Seu codinome heroico" required>
+                    </div>
+                    
+                    <div class="campo-grupo">
+                        <label>Frase de Ativação</label>
+                        <input type="text" name="frase_ativacao" placeholder="Ex: Plagg, mostrar as garras" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-principal">Transformar</button>
+                    
+                    <div class="divisor">ou</div>
+                    
+                    <button type="button" class="btn-google">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.96 1 12 1 7.35 1 3.4 3.65 1.45 7.5l3.8 2.95C6.15 7.14 8.84 5.04 12 5.04z"/>
+                            <path fill="#4285F4" d="M23.45 12.3c0-.82-.07-1.6-.2-2.3H12v4.4h6.43c-.28 1.44-1.1 2.66-2.33 3.47l3.6 2.8c2.1-1.94 3.3-4.8 3.3-8.37z"/>
+                            <path fill="#FBBC05" d="M5.25 14.5c-.25-.75-.4-1.55-.4-2.5s.15-1.75.4-2.5L1.45 6.55C.53 8.4 0 10.15 0 12s.53 3.6 1.45 5.45l3.8-2.95z"/>
+                            <path fill="#34A853" d="M12 23c3.24 0 5.97-1.08 7.96-2.93l-3.6-2.8c-1.2.8-2.73 1.28-4.36 1.28-3.16 0-5.85-2.1-6.8-5.46L1.4 15.95C3.4 19.8 7.35 23 12 23z"/>
+                        </svg>
+                        Entrar com o Google
+                    </button>
+                </form>
+            </div>
 
-function postSellItem() {
-  const item = document.getElementById('sell-select').value;
-  const price = parseInt(document.getElementById('sell-price').value);
-  if (!item || isNaN(price) || price < 1) return alert("Item ou preço inválido");
+            <!-- FORMULÁRIO DE CADASTRO -->
+            <div class="sessao-formulario <?php echo $aba_ativa === 'cadastro' ? 'ativo' : ''; ?>" id="sessao-cadastro">
+                <h1>Cadastro</h1>
+                <form method="POST" action="">
+                    <input type="hidden" name="acao" value="cadastro">
+                    
+                    <div class="campo-grupo">
+                        <label>Codinome Heroico</label>
+                        <input type="text" name="nome" placeholder="Ex: Ladybug, Chat Noir..." required>
+                    </div>
 
-  // Remove do inventário
-  let invArr = userData.char.inv.split('\n');
-  const idx = invArr.indexOf(item);
-  if (idx > -1) {
-    invArr.splice(idx, 1);
-    db.ref(`users/${currentUser.uid}/char/inv`).set(invArr.join('\n'));
-    
-    // Adiciona ao Mercado
-    db.ref('market').push({
-      item: item,
-      price: price,
-      sellerUid: currentUser.uid,
-      sellerName: userData.name
-    });
-    alert("Item anunciado!");
-    document.getElementById('sell-price').value = "";
-  }
-}
+                    <div class="campo-grupo">
+                        <label>E-mail de Contato</label>
+                        <input type="email" name="email" placeholder="seuemail@caixa.com" required>
+                    </div>
 
-function loadMarket() {
-  db.ref('market').on('value', s => {
-    const div = document.getElementById('market-list');
-    div.innerHTML = "";
-    s.forEach(child => {
-      const sale = child.val();
-      if (sale.sellerUid !== currentUser.uid) { // Não comprar o próprio item
-        div.innerHTML += `
-        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-          <div><b>${sale.item}</b><br><small>Vend: ${sale.sellerName}</small></div>
-          <button onclick="buyMarketItem('${child.key}')" style="width:auto;">${sale.price} Ouro</button>
-        </div>`;
-      }
-    });
-    if (!div.innerHTML) div.innerHTML = "<small>Nenhum item à venda.</small>";
-  });
-}
+                    <div class="campo-grupo">
+                        <label>Escolha seu Kwami</label>
+                        <select name="kwami" required>
+                            <option value="" disabled selected>Selecione um aliado místico (1 de 19)</option>
+                            <?php foreach($kwamis as $chave => $nome_kwami): ?>
+                                <option value="<?php echo $chave; ?>"><?php echo $nome_kwami; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-function buyMarketItem(key) {
-  db.ref(`market/${key}`).once('value', s => {
-    const sale = s.val();
-    if (!sale) return alert("Item já vendido.");
-    
-    if (userData.wallet.gold < sale.price) return alert("Falta ouro.");
-    
-    // Transação
-    // 1. Tira ouro do comprador
-    db.ref(`users/${currentUser.uid}/wallet/gold`).set(userData.wallet.gold - sale.price);
-    // 2. Dá ouro ao vendedor
-    db.ref(`users/${sale.sellerUid}/wallet/gold`).transaction(v => (v||0) + sale.price);
-    // 3. Dá item ao comprador
-    db.ref(`users/${currentUser.uid}/char/inv`).transaction(curr => curr ? curr + "\n" + sale.item : sale.item);
-    // 4. Remove do mercado
-    db.ref(`market/${key}`).remove();
-    
-    alert("Compra realizada!");
-  });
-}
+                    <div class="campo-grupo">
+                        <label>Frase de Ativação (Sua Senha)</label>
+                        <input type="text" name="frase_ativacao" placeholder="Ex: Sass, soltar escamas! / Em palavras" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-principal">Reivindicar Miraculous</button>
 
-// --- TRANSFERENCIA ---
-function transferGold() {
-  const key = document.getElementById('transf-key').value.toUpperCase();
-  const amt = parseInt(document.getElementById('transf-amount').value);
-  
-  if (userData.wallet.gold < amt) return alert("Saldo insuficiente");
-  
-  db.ref('users').orderByChild('key').equalTo(key).once('value', s => {
-    if (!s.exists()) return alert("Chave inválida");
-    const destUid = Object.keys(s.val())[0];
-    
-    db.ref(`users/${currentUser.uid}/wallet/gold`).set(userData.wallet.gold - amt);
-    db.ref(`users/${destUid}/wallet/gold`).transaction(v => (v||0) + amt);
-    alert("Enviado!");
-  });
-}
+                    <div class="divisor">ou</div>
+                    
+                    <button type="button" class="btn-google">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.96 1 12 1 7.35 1 3.4 3.65 1.45 7.5l3.8 2.95C6.15 7.14 8.84 5.04 12 5.04z"/>
+                            <path fill="#4285F4" d="M23.45 12.3c0-.82-.07-1.6-.2-2.3H12v4.4h6.43c-.28 1.44-1.1 2.66-2.33 3.47l3.6 2.8c2.1-1.94 3.3-4.8 3.3-8.37z"/>
+                            <path fill="#FBBC05" d="M5.25 14.5c-.25-.75-.4-1.55-.4-2.5s.15-1.75.4-2.5L1.45 6.55C.53 8.4 0 10.15 0 12s.53 3.6 1.45 5.45l3.8-2.95z"/>
+                            <path fill="#34A853" d="M12 23c3.24 0 5.97-1.08 7.96-2.93l-3.6-2.8c-1.2.8-2.73 1.28-4.36 1.28-3.16 0-5.85-2.1-6.8-5.46L1.4 15.95C3.4 19.8 7.35 23 12 23z"/>
+                        </svg>
+                        Cadastrar com o Google
+                    </button>
+                </form>
+            </div>
 
-// --- CHAT GLOBAL ---
-function openGlobalChat() {
-  go('global-chat-view');
-  const div = document.getElementById('global-log');
-  div.innerHTML = "";
-  db.ref('chat_global').limitToLast(50).on('child_added', s => {
-    const m = s.val();
-    const isMe = m.uid === currentUser.uid;
-    div.innerHTML += `<div class="msg ${isMe ? 'me' : 'other'}"><b>${m.u}</b><br>${m.txt}</div>`;
-    div.scrollTop = div.scrollHeight;
-  });
-}
+        </div>
+    </div>
 
-function sendGlobalMsg() {
-  const txt = document.getElementById('global-msg').value;
-  if (!txt) return;
-  db.ref('chat_global').push({
-    u: userData.name, uid: currentUser.uid, txt: txt, ts: firebase.database.ServerValue.TIMESTAMP
-  });
-  document.getElementById('global-msg').value = "";
-}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Gerador de Partículas Mágicas
+            const fundo = document.getElementById('fundoParticulas');
+            const quantidadeParticulas = 35;
 
-// --- UTILITÁRIOS GERAIS ---
-function openEditSheet() { 
-  // Carrega modal normal, mas bloqueia edição de HP/XP se quiser, aqui deixei atributos livres
-  document.getElementById('modal-sheet-edit').style.display = 'flex'; 
-}
-function saveSheetPlayer() {
-  db.ref(`users/${currentUser.uid}/char`).update({
-    name: document.getElementById('p-char-name').value,
-    img: document.getElementById('p-char-img').value,
-    str: Number(document.getElementById('p-attr-str').value),
-    dex: Number(document.getElementById('p-attr-dex').value),
-    con: Number(document.getElementById('p-attr-con').value),
-    int: Number(document.getElementById('p-attr-int').value)
-  });
-  closeModal(null, 'modal-sheet-edit');
-}
+            for (let i = 0; i < quantidadeParticulas; i++) {
+                const particula = document.createElement('div');
+                particula.classList.add('particula');
+                
+                const tamanho = Math.random() * 4 + 2;
+                const posicaoX = Math.random() * 100;
+                const duracao = Math.random() * 8 + 6;
+                const atraso = Math.random() * -12;
 
-function openEditProfile() { document.getElementById('modal-profile').style.display = 'flex'; }
-function saveProfile() {
-  db.ref(`users/${currentUser.uid}`).update({
-    name: document.getElementById('edit-name').value,
-    img: document.getElementById('edit-img').value,
-    bio: document.getElementById('edit-bio').value
-  });
-  closeModal(null, 'modal-profile');
-}
+                particula.style.width = `${tamanho}px`;
+                particula.style.height = `${tamanho}px`;
+                particula.style.left = `${posicaoX}%`;
+                particula.style.setProperty('--d', `${duracao}s`);
+                particula.style.animationDelay = `${atraso}s`;
 
-function saveNote() {
-  db.ref(`users/${currentUser.uid}/notes`).set(document.getElementById('notepad').value);
-  alert("Salvo!");
-}
+                fundo.appendChild(particula);
+            }
 
-function closeModal(e, id) {
-  if (e && e.target.id !== id) return;
-  document.getElementById(id).style.display = 'none';
-}
-function go(id) { 
-  document.getElementById(id).classList.add('active'); 
-  if(id === 'notes') {
-     db.ref(`users/${currentUser.uid}/notes`).once('value', s => document.getElementById('notepad').value = s.val() || "");
-  }
-}
-function back(id) { document.getElementById(id).classList.remove('active'); }
+            // Alternância Dinâmica das Abas
+            const botoes = document.querySelectorAll('.aba-btn');
+            const card = document.getElementById('portalCard');
+            const sessaoLogin = document.getElementById('sessao-login');
+            const sessaoCadastro = document.getElementById('sessao-cadastro');
 
-</script>
+            botoes.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    botoes.forEach(b => b.classList.remove('ativo'));
+                    btn.classList.add('ativo');
+
+                    const alvo = btn.getAttribute('data-alvo');
+
+                    if (alvo === 'login') {
+                        card.className = 'portal-card estado-login';
+                        sessaoCadastro.classList.remove('ativo');
+                        sessaoLogin.classList.add('ativo');
+                    } else {
+                        card.className = 'portal-card estado-cadastro';
+                        sessaoLogin.classList.remove('ativo');
+                        sessaoCadastro.classList.add('ativo');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
